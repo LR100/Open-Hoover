@@ -1,10 +1,4 @@
 ﻿
-/*
- Name:		Queue.h
- Created:	3/23/2019 9:20:14 AM
- Author:	Loic Robin
-*/
-
 template <class Q>
 class Queue
 {

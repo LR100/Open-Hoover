@@ -31,12 +31,6 @@ template<class E> inline Print &operator <<(Print &obj, E arg) { obj.print(arg);
 #define DEBUGRF24_SEND_CALL 0
 #define DEBUGRF24_MEMORY 0
 
-/*
- Name:		RF24SC.h
- Created:	3/25/2019 1:47:14 PM
- Author:	Loic Robin
-*/
-
 #include "Queue.h"
 
 void	DumpObject(char* object, uint8_t sizeObject)
