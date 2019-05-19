@@ -1,0 +1,278 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BGContextSDL.h" />
+    <ClInclude Include="Events\EventHandlerSDL.h" />
+    <ClInclude Include="Events\IEvent.h" />
+    <ClInclude Include="Events\IEventHandler.h" />
+    <ClInclude Include="Events\MouseTools.h" />
+    <ClInclude Include="Graphic\Color.h" />
+    <ClInclude Include="Graphic\ColorTools.h" />
+    <ClInclude Include="Graphic\Drawer2DSDL.h" />
+    <ClInclude Include="Graphic\IDrawer2D.h" />
+    <ClInclude Include="Graphic\IImage.h" />
+    <ClInclude Include="Graphic\ImageRaw.h" />
+    <ClInclude Include="Graphic\ImageSDL.h" />
+    <ClInclude Include="Graphic\IWindow.h" />
+    <ClInclude Include="Graphic\Sprite.h" />
+    <ClInclude Include="Graphic\ToolDrawer2DCurve.h" />
+    <ClInclude Include="Graphic\ToolDrawer2DGraphBar.h" />
+    <ClInclude Include="Graphic\Tools\FPSComputer.h" />
+    <ClInclude Include="Graphic\Tools\RelativePostion.h" />
+    <ClInclude Include="Graphic\WindowSDL.h" />
+    <ClInclude Include="Maths\Line.h" />
+    <ClInclude Include="Maths\Matrix.h" />
+    <ClInclude Include="Maths\XML\AABBXML.h" />
+    <ClInclude Include="Maths\XML\VectorXML.h" />
+    <ClInclude Include="IBGContext.h" />
+    <ClInclude Include="Maths\AABB.h" />
+    <ClInclude Include="Maths\IntersectionComputer.h" />
+    <ClInclude Include="Maths\ValueTable.h" />
+    <ClInclude Include="Maths\ValueTools.h" />
+    <ClInclude Include="Maths\Vector.h" />
+    <ClInclude Include="Maths\VectorTransformer.h" />
+    <ClInclude Include="Physic\PX2Body.h" />
+    <ClInclude Include="Physic\PX2BodyManager.h" />
+    <ClInclude Include="Physic\PX2CollisionListener.h" />
+    <ClInclude Include="Physic\PX2CollisionQuadTree.h" />
+    <ClInclude Include="Physic\PX2CollisionSolver.h" />
+    <ClInclude Include="Physic\PX2DebugDrawer.h" />
+    <ClInclude Include="Physic\PX2Manifold.h" />
+    <ClInclude Include="Physic\PX2ManifoldList.h" />
+    <ClInclude Include="Physic\PX2Shapes.h" />
+    <ClInclude Include="Physic\PX2World.h" />
+    <ClInclude Include="Physic\XML\PX2WorldXML.h" />
+    <ClInclude Include="QuadTree.hpp" />
+    <ClInclude Include="Robovac.h" />
+    <ClInclude Include="RobovacSimulation.h" />
+    <ClInclude Include="RobovacWorld.h" />
+    <ClInclude Include="RobovacWorldEditor.h" />
+    <ClInclude Include="Tools\ConsoleParser.h" />
+    <ClInclude Include="Tools\CSafeMemory.h" />
+    <ClInclude Include="Tools\CStr.h" />
+    <ClInclude Include="Tools\DList.h" />
+    <ClInclude Include="Tools\DMemoryManager.h" />
+    <ClInclude Include="Tools\DObject.h" />
+    <ClInclude Include="Tools\File.h" />
+    <ClInclude Include="Tools\GenericLexer.h" />
+    <ClInclude Include="Tools\LinkedList.hpp" />
+    <ClInclude Include="Tools\Logger.h" />
+    <ClInclude Include="Tools\MySorting.h" />
+    <ClInclude Include="Tools\MyTimer.h" />
+    <ClInclude Include="Tools\NTree.h" />
+    <ClInclude Include="Tools\PathFinding.h" />
+    <ClInclude Include="Tools\SingleTon.h" />
+    <ClInclude Include="Tools\StrTools.h" />
+    <ClInclude Include="Tools\ThreadPool.h" />
+    <ClInclude Include="Tools\TimeDateFormatter.h" />
+    <ClInclude Include="Tools\XMLNode.h" />
+    <ClInclude Include="Tools\XMLParser.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BGContextSDL.cpp" />
+    <ClCompile Include="Events\EventHandlerSDL.cpp" />
+    <ClCompile Include="Events\IEvent.cpp" />
+    <ClCompile Include="Events\IEventHandler.cpp" />
+    <ClCompile Include="Events\MouseTools.cpp" />
+    <ClCompile Include="Graphic\Color.cpp" />
+    <ClCompile Include="Graphic\ColorTools.cpp" />
+    <ClCompile Include="Graphic\Drawer2DSDL.cpp" />
+    <ClCompile Include="Graphic\IImage.cpp" />
+    <ClCompile Include="Graphic\ImageRaw.cpp" />
+    <ClCompile Include="Graphic\ImageSDL.cpp" />
+    <ClCompile Include="Graphic\Sprite.cpp" />
+    <ClCompile Include="Graphic\ToolDrawer2DCurve.cpp" />
+    <ClCompile Include="Graphic\ToolDrawer2DGraphBar.cpp" />
+    <ClCompile Include="Graphic\Tools\FPSComputer.cpp" />
+    <ClCompile Include="Graphic\Tools\RelativePostion.cpp" />
+    <ClCompile Include="Graphic\WindowSDL.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Maths\AABB.cpp" />
+    <ClCompile Include="Maths\IntersectionComputer.cpp" />
+    <ClCompile Include="Maths\Line.cpp" />
+    <ClCompile Include="Maths\Matrix.cpp" />
+    <ClCompile Include="Maths\ValueTable.cpp" />
+    <ClCompile Include="Maths\ValueTools.cpp" />
+    <ClCompile Include="Maths\Vector.cpp" />
+    <ClCompile Include="Maths\VectorTransformer.cpp" />
+    <ClCompile Include="Physic\PX2Body.cpp" />
+    <ClCompile Include="Physic\PX2BodyManager.cpp" />
+    <ClCompile Include="Physic\PX2CollisionListener.cpp" />
+    <ClCompile Include="Physic\PX2CollisionQuadTree.cpp" />
+    <ClCompile Include="Physic\PX2CollisionSolver.cpp" />
+    <ClCompile Include="Physic\PX2DebugDrawer.cpp" />
+    <ClCompile Include="Physic\PX2Manifold.cpp" />
+    <ClCompile Include="Physic\PX2ManifoldList.cpp" />
+    <ClCompile Include="Physic\PX2Shapes.cpp" />
+    <ClCompile Include="Physic\PX2World.cpp" />
+    <ClCompile Include="Physic\XML\PX2WorldXML.cpp" />
+    <ClCompile Include="Robovac.cpp" />
+    <ClCompile Include="RobovacSimulation.cpp" />
+    <ClCompile Include="RobovacWorld.cpp" />
+    <ClCompile Include="RobovacWorldEditor.cpp" />
+    <ClCompile Include="Tools\ConsoleParser.cpp" />
+    <ClCompile Include="Tools\CStr.cpp" />
+    <ClCompile Include="Tools\DMemoryManager.cpp" />
+    <ClCompile Include="Tools\DObject.cpp" />
+    <ClCompile Include="Tools\File.cpp" />
+    <ClCompile Include="Tools\GenericLexer.cpp" />
+    <ClCompile Include="Tools\Logger.cpp" />
+    <ClCompile Include="Tools\MyTimer.cpp" />
+    <ClCompile Include="Tools\StrTools.cpp" />
+    <ClCompile Include="Tools\ThreadPool.cpp" />
+    <ClCompile Include="Tools\TimeDateFormatter.cpp" />
+    <ClCompile Include="Tools\XMLNode.cpp" />
+    <ClCompile Include="Tools\XMLParser.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5F2F0499-6B56-492C-8597-7EC51F210EC3}</ProjectGuid>
+    <RootNamespace>_2DEngine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <ProjectName>RobovacSimulation</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SDL2_HOME)/include;$(SDL2TTF_HOME)/include;$(SDL2IMAGE_HOME)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(SDL2_HOME)\lib\x86;$(SDL2TTF_HOME)\lib\x86;$(SDL2IMAGE_HOME)\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <WholeProgramOptimization>
+      </WholeProgramOptimization>
+      <PrecompiledHeaderFile />
+      <AdditionalIncludeDirectories>$(SDL2_HOME)/include;$(SDL2TTF_HOME)/include;$(SDL2IMAGE_HOME)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(SDL2_HOME)\lib\x64;$(SDL2TTF_HOME)\lib\x64;$(SDL2IMAGE_HOME)\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SDL2_HOME)/include;$(SDL2TTF_HOME)/include;$(SDL2IMAGE_HOME)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SDL2_HOME)\lib\x86;$(SDL2TTF_HOME)\lib\x86;$(SDL2IMAGE_HOME)\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PrecompiledHeaderFile />
+      <AdditionalIncludeDirectories>$(SDL2_HOME)/include;$(SDL2TTF_HOME)/include;$(SDL2IMAGE_HOME)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <WholeProgramOptimization>
+      </WholeProgramOptimization>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <BrowseInformation>true</BrowseInformation>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SDL2_HOME)\lib\x64;$(SDL2TTF_HOME)\lib\x64;$(SDL2IMAGE_HOME)\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

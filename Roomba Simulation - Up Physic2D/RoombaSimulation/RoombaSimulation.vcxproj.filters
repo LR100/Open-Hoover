@@ -1,0 +1,445 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Fichiers d%27en-tête">
+      <UniqueIdentifier>{e818e8e1-4abf-4474-a57c-6f4f80830bf8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources">
+      <UniqueIdentifier>{8afbba65-18b5-4277-b3b7-ce8bbbf52aba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Graphic">
+      <UniqueIdentifier>{e8c2da14-1f7a-45a7-b2b9-75aac49b8a68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Graphic">
+      <UniqueIdentifier>{76b9c74c-4b6c-4575-8c6d-c1d0aaf81645}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Graphic\Tools">
+      <UniqueIdentifier>{8d65e32b-8b16-4d4b-887d-f18aecadd533}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Graphic\Tools">
+      <UniqueIdentifier>{53c96279-db5c-46d7-bf68-88a6c665992e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Maths">
+      <UniqueIdentifier>{b9cbc3ca-aec7-4672-b917-e0910f7e3cc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Maths">
+      <UniqueIdentifier>{9556a1a7-a23f-45fe-a54d-b07563ccf9fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Tools">
+      <UniqueIdentifier>{20dd9351-6cf4-41d7-8b95-1f9d9370973d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Tools">
+      <UniqueIdentifier>{27b9a793-9b17-48c4-b740-149bf2008606}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Events">
+      <UniqueIdentifier>{71c3dd1a-9213-4c08-b5df-fad60e858408}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Events">
+      <UniqueIdentifier>{ba3a0883-de22-4351-8786-9a7ce858a3c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Physic">
+      <UniqueIdentifier>{0a77c72a-213c-45ad-b050-4ec0238d5a09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Physic">
+      <UniqueIdentifier>{2a251c3a-183f-4d71-a1e6-ac2d740c794d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\SDL">
+      <UniqueIdentifier>{b9ab13e1-345e-4b46-a0da-03685b1ecf95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\SDL">
+      <UniqueIdentifier>{4ac0ab3d-f350-4bbf-8f82-53fb8b9ff939}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Events\SDL">
+      <UniqueIdentifier>{8893d850-a376-4237-b7b7-07db26df1a4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Graphic\SDL">
+      <UniqueIdentifier>{fe8c3cdf-d97c-4f33-b527-e2e93cc00bd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Graphic\SDL">
+      <UniqueIdentifier>{846280be-be65-4137-912a-fb19408c30d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Events\SDL">
+      <UniqueIdentifier>{be840a8e-c13c-4388-86a1-95717f18dafc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Robot">
+      <UniqueIdentifier>{4c5fb6aa-cdb8-47d0-b131-89f94b95ebae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Robot">
+      <UniqueIdentifier>{ef3f6b20-0b4b-4a80-aa80-ad8b04adf2bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Maths\XML">
+      <UniqueIdentifier>{8ef5377d-012f-48ad-bfe3-dd3c5e14f57a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Maths\XML">
+      <UniqueIdentifier>{e30089a0-2ca6-42ea-a2eb-321f0438fc51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Physic\XML">
+      <UniqueIdentifier>{9748f829-4995-4514-9a2e-ad4578f5a500}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Physic\XML">
+      <UniqueIdentifier>{3aa6d956-116d-41f2-93c2-92044b760525}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Graphic\IDrawer2D.h">
+      <Filter>Fichiers d%27en-tête\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\IImage.h">
+      <Filter>Fichiers d%27en-tête\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\ImageRaw.h">
+      <Filter>Fichiers d%27en-tête\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\Tools\FPSComputer.h">
+      <Filter>Fichiers d%27en-tête\Graphic\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\Tools\RelativePostion.h">
+      <Filter>Fichiers d%27en-tête\Graphic\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Events\MouseTools.h">
+      <Filter>Fichiers d%27en-tête\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\ValueTools.h">
+      <Filter>Fichiers d%27en-tête\Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\CStr.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\File.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\GenericLexer.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\Logger.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\MySorting.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\MyTimer.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\NTree.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\PathFinding.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\SingleTon.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\StrTools.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\ThreadPool.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\TimeDateFormatter.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\CSafeMemory.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\XMLParser.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\ConsoleParser.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\Vector.h">
+      <Filter>Fichiers d%27en-tête\Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\VectorTransformer.h">
+      <Filter>Fichiers d%27en-tête\Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\ValueTable.h">
+      <Filter>Fichiers d%27en-tête\Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\IntersectionComputer.h">
+      <Filter>Fichiers d%27en-tête\Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\Color.h">
+      <Filter>Fichiers d%27en-tête\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\ColorTools.h">
+      <Filter>Fichiers d%27en-tête\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\IWindow.h">
+      <Filter>Fichiers d%27en-tête\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\ToolDrawer2DCurve.h">
+      <Filter>Fichiers d%27en-tête\Graphic\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\ToolDrawer2DGraphBar.h">
+      <Filter>Fichiers d%27en-tête\Graphic\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Events\IEvent.h">
+      <Filter>Fichiers d%27en-tête\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="IBGContext.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="BGContextSDL.h">
+      <Filter>Fichiers d%27en-tête\SDL</Filter>
+    </ClInclude>
+    <ClInclude Include="Events\IEventHandler.h">
+      <Filter>Fichiers d%27en-tête\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\AABB.h">
+      <Filter>Fichiers d%27en-tête\Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\DList.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\DMemoryManager.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\DObject.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\Sprite.h">
+      <Filter>Fichiers d%27en-tête\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Events\EventHandlerSDL.h">
+      <Filter>Fichiers d%27en-tête\Events\SDL</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\Drawer2DSDL.h">
+      <Filter>Fichiers d%27en-tête\Graphic\SDL</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\ImageSDL.h">
+      <Filter>Fichiers d%27en-tête\Graphic\SDL</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\WindowSDL.h">
+      <Filter>Fichiers d%27en-tête\Graphic\SDL</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\Line.h">
+      <Filter>Fichiers d%27en-tête\Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="QuadTree.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="RobovacSimulation.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="RobovacWorld.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="RobovacWorldEditor.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Robovac.h">
+      <Filter>Fichiers d%27en-tête\Robot</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\LinkedList.hpp">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\XML\AABBXML.h">
+      <Filter>Fichiers d%27en-tête\Maths\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\XML\VectorXML.h">
+      <Filter>Fichiers d%27en-tête\Maths\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\XMLNode.h">
+      <Filter>Fichiers d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Physic\PX2Body.h">
+      <Filter>Fichiers d%27en-tête\Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Physic\PX2BodyManager.h">
+      <Filter>Fichiers d%27en-tête\Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Physic\PX2CollisionListener.h">
+      <Filter>Fichiers d%27en-tête\Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Physic\PX2CollisionQuadTree.h">
+      <Filter>Fichiers d%27en-tête\Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Physic\PX2CollisionSolver.h">
+      <Filter>Fichiers d%27en-tête\Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Physic\PX2DebugDrawer.h">
+      <Filter>Fichiers d%27en-tête\Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Physic\PX2Manifold.h">
+      <Filter>Fichiers d%27en-tête\Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Physic\PX2ManifoldList.h">
+      <Filter>Fichiers d%27en-tête\Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Physic\PX2Shapes.h">
+      <Filter>Fichiers d%27en-tête\Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Physic\PX2World.h">
+      <Filter>Fichiers d%27en-tête\Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Physic\XML\PX2WorldXML.h">
+      <Filter>Fichiers d%27en-tête\Physic\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\Matrix.h">
+      <Filter>Fichiers d%27en-tête\Maths</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Graphic\IImage.cpp">
+      <Filter>Fichiers sources\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\ToolDrawer2DCurve.cpp">
+      <Filter>Fichiers sources\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\ToolDrawer2DGraphBar.cpp">
+      <Filter>Fichiers sources\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\Tools\FPSComputer.cpp">
+      <Filter>Fichiers sources\Graphic\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\Tools\RelativePostion.cpp">
+      <Filter>Fichiers sources\Graphic\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Events\MouseTools.cpp">
+      <Filter>Fichiers sources\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="Maths\ValueTools.cpp">
+      <Filter>Fichiers sources\Maths</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\CStr.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\File.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\GenericLexer.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\Logger.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\MyTimer.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\StrTools.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\ThreadPool.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\TimeDateFormatter.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\XMLParser.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\ConsoleParser.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Maths\Vector.cpp">
+      <Filter>Fichiers sources\Maths</Filter>
+    </ClCompile>
+    <ClCompile Include="Maths\VectorTransformer.cpp">
+      <Filter>Fichiers sources\Maths</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Maths\ValueTable.cpp">
+      <Filter>Fichiers sources\Maths</Filter>
+    </ClCompile>
+    <ClCompile Include="Maths\IntersectionComputer.cpp">
+      <Filter>Fichiers sources\Maths</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\Color.cpp">
+      <Filter>Fichiers sources\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\ColorTools.cpp">
+      <Filter>Fichiers sources\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Events\IEvent.cpp">
+      <Filter>Fichiers sources\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="BGContextSDL.cpp">
+      <Filter>Fichiers sources\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="Events\IEventHandler.cpp">
+      <Filter>Fichiers sources\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="Maths\AABB.cpp">
+      <Filter>Fichiers sources\Maths</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\DMemoryManager.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\DObject.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Events\EventHandlerSDL.cpp">
+      <Filter>Fichiers sources\Events\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\Drawer2DSDL.cpp">
+      <Filter>Fichiers sources\Graphic\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\ImageSDL.cpp">
+      <Filter>Fichiers sources\Graphic\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\ImageRaw.cpp">
+      <Filter>Fichiers sources\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\Sprite.cpp">
+      <Filter>Fichiers sources\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Maths\Line.cpp">
+      <Filter>Fichiers sources\Maths</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\WindowSDL.cpp">
+      <Filter>Fichiers sources\Graphic\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="RobovacWorldEditor.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="RobovacWorld.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="RobovacSimulation.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Robovac.cpp">
+      <Filter>Fichiers sources\Robot</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\PX2Body.cpp">
+      <Filter>Fichiers sources\Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\PX2BodyManager.cpp">
+      <Filter>Fichiers sources\Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\PX2CollisionListener.cpp">
+      <Filter>Fichiers sources\Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\PX2CollisionQuadTree.cpp">
+      <Filter>Fichiers sources\Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\PX2CollisionSolver.cpp">
+      <Filter>Fichiers sources\Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\PX2DebugDrawer.cpp">
+      <Filter>Fichiers sources\Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\PX2Manifold.cpp">
+      <Filter>Fichiers sources\Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\PX2ManifoldList.cpp">
+      <Filter>Fichiers sources\Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\PX2Shapes.cpp">
+      <Filter>Fichiers sources\Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\PX2World.cpp">
+      <Filter>Fichiers sources\Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\XMLNode.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\XML\PX2WorldXML.cpp">
+      <Filter>Fichiers sources\Physic\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="Maths\Matrix.cpp">
+      <Filter>Fichiers sources\Maths</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
