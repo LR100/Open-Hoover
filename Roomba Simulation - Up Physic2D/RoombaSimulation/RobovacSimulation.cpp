@@ -367,7 +367,7 @@ bool markersAreEqual(float* markersA, float* markersB, float nbMarkers, float di
 		//diff = fabsf(diffToA - diffToB);
 
 		//if (diff < 20) // 10 ?
-//			markerMatchCount += 1;
+		//			markerMatchCount += 1;
 	}
 
 	if (markerMatchCount < markerMatchToMatch)
@@ -379,10 +379,15 @@ bool markersAreEqual(float* markersA, float* markersB, float nbMarkers, float di
 #include <chrono> // TMP for Sleep
 #include <thread> 
 
+
+#define DRAW_CALIBRATE 1
+
+float angularVelocityToGuess = 242.0f; // This value should be Guessed
+
 float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float angularVelocityMax, size_t markersCount, float angularRotateDesired = 5, float diffAccept, float percentAccept)
 {
 	//_drawer->ClearImage();
-	float angularVelocityToGuess = 142.0f; // This value should be Guessed
+
 
 
 	//float minAngularRotateDesired = 2; // Minimum angle between each mesure
@@ -430,10 +435,10 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 	float timeStop = timeMaxToReachFullRotate + (timeMaxToReachFullRotate * 0.5f);
 
 
-	int diffX = 0;
-	int diffY = 0; // Simulate non-perfect rotation of robot
+	int diffX = 10;
+	int diffY = 10; // Simulate non-perfect rotation of robot
 
-				   // Distance of sensor from origin //
+					// Distance of sensor from origin //
 	float distSensor = 20.0f;
 
 	while (timePassed < timeStop)
@@ -447,8 +452,8 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 		rotatePos += (angularVelocityStepToGuess);
 		//rotatePos += (((float)((rand() % 1000) - 1000)) / 10000.0f) * angularVelocityStepToGuess; // add error in rotation (from 0 to 10% of normal rotation)
 
-		pos.x = (origin.x + (dir.x * distSensor)) + ((rand() % 10) - 5);
-		pos.y = (origin.y + (dir.y * distSensor)) + ((rand() % 10) - 5);
+		pos.x = (origin.x + (dir.x * distSensor)) + ((rand() % 10) - 5) + (dir.x * ((rand() % diffX) - (diffX / 2)));
+		pos.y = (origin.y + (dir.y * distSensor)) + ((rand() % 10) - 5) + (dir.y * ((rand() % diffY) - (diffY / 2)));
 
 
 
@@ -477,20 +482,23 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 		if (measureCount < markersCount)
 		{
 			markers[measureCount] = distance;
+#if DRAW_CALIBRATE
 			_drawer->DrawLine(posI.x, posI.y, posD.x, posD.y, Color::GREEN());
+#endif
 		}
 		else
 		{
 
-			if (measureCount > (markersCount * 1.5f))
+			if (measureCount >(markersCount * 1.5f))
 			{
 				if (markersAreEqual(markers, &dist[measureCount - markersCount], markersCount, diffAccept, percentAccept))
 				{
 					std::cout << "MARKERS ARE EQUAL !!\n";
 
-
+#if DRAW_CALIBRATE
 					_drawer->DrawLine(posI.x, posI.y, posD.x, posD.y, Color::RED());
 					_drawer->DrawCircleFill(posD.x, posD.y, 10, Color::RED());
+#endif
 
 
 					std::cout << "Time Total Passed (" << timePassed << ")\n";
@@ -498,32 +506,46 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 					std::cout << "Time Passed Minus Markers (" << timePassed << ")\n";
 					std::cout << "Guessed Angular Velocity (" << 360.0f / timePassed << ")degree/s To Guess (" << angularVelocityToGuess << ")d/s\n";
 
+#if DRAW_CALIBRATE
 					_window->Refresh();
+#endif
 					//system("pause");
-					return ((360.0f / timePassed));
+					delete(markers);
+					delete(dist);
 
+					return ((360.0f / timePassed));
 
 					timePassed = timeStop;
 
 				}
+#if DRAW_CALIBRATE
 				_drawer->DrawLine(posI.x, posI.y, posD.x, posD.y, line);
+#endif
 			}
 			else
 			{
+#if DRAW_CALIBRATE
 				_drawer->DrawLine(posI.x, posI.y, posD.x, posD.y, Color::YELLOW());
+#endif
 			}
 
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds((int)(timeAverageToRotateDesired * 1000.0f)));
+		//std::this_thread::sleep_for(std::chrono::milliseconds((int)(timeAverageToRotateDesired * 1000.0f)));
+#if DRAW_CALIBRATE
 		_window->Refresh();
+#endif
 
 		measureCount += 1;
 		timePassed += timeAverageToRotateDesired;
 	}
 
-
+	std::cout << "CALIB FAILED !! Time Total Passed (" << timePassed << ")\n";
+	timePassed -= (markersCount * timeAverageToRotateDesired);
+	std::cout << "Time Passed Minus Markers (" << timePassed << ")\n";
+	std::cout << "Guessed Angular Velocity (" << 360.0f / timePassed << ")degree/s To Guess (" << angularVelocityToGuess << ")d/s\n";
 	delete(markers);
 	delete(dist);
+	return ((angularVelocityMax + angularVelocityMin) / 2.0f);
 }
 
 void RobovacSimulation::DrawTree()
@@ -533,18 +555,47 @@ void RobovacSimulation::DrawTree()
 	std::cout << "\n--Start Calibrating Angular Velocity--\n";
 	float minA = 90;
 	float maxA = 360;
-	float A = CalibrateAngularRotate(minA, maxA, 30, 2, 0.05, 0.80f);
+
+
+	static float percentAccept = 100.0f;
+	static float diffAccept = 0.0f;
+
+	float A = CalibrateAngularRotate(minA, maxA, 30, 2, diffAccept, percentAccept);
 
 	minA = (A - 20);
 	maxA = (A + 20);
 
 
-	float B = CalibrateAngularRotate(minA, maxA, 60, 1, 0.05, 0.80f);
+	float B;
 
+	//B = CalibrateAngularRotate(minA, maxA, 60, 1, 0.05, 0.80f);
+	B = A;
 	float aV = ((A + B) * 0.5f);
 
 	std::cout << "Angular Velocity (" << aV << ")Degree/Seconds\n";
+	if (std::fabs(angularVelocityToGuess - aV) < (angularVelocityToGuess / 90.0f))
+	{
+		std::cout << "OK\n\n";
+		std::cout << "PERCENT ACCEPT: (" << percentAccept << ")\n";
+		std::cout << "DIFF ACCEPT: (" << diffAccept << ")\n";
+		std::cout << "OK :) :) :) \n\n";
+		std::cout << "OK :) :) :) \n\n";
+		system("pause");
+	}
+	else
+	{
+		percentAccept -= 0.5f;
+		if (percentAccept < 60.0f)
+		{
+			diffAccept += 0.01f;
+			percentAccept = 100.0f;
+		}
+		std::cout << "!!! NOT OK !!!!\n\n";
+		std::cout << "PERCENT ACCEPT: (" << percentAccept << ")\n";
+		std::cout << "DIFF ACCEPT: (" << diffAccept << ")\n";
+		std::cout << "!!! NOT OK !!!!\n\n";
 
+	}
 	//system("pause");
 	/*
 
@@ -552,19 +603,19 @@ void RobovacSimulation::DrawTree()
 
 	if (dirs == NULL)
 	{
-		Vec2	odir(1, 0);
-		Vec2	dir;
-		float	rotate = 0;
+	Vec2	odir(1, 0);
+	Vec2	dir;
+	float	rotate = 0;
 
-		dirs = new Vec2[NB_DIRS];
+	dirs = new Vec2[NB_DIRS];
 
-		for (size_t i = 0; i < NB_DIRS; i += 1)
-		{
-			dir = odir;
-			VectorTransformer::Rotate(dir, rotate);
-			VectorTransformer::Normalize(dir, dirs[i]);
-			rotate += goodRotate;
-		}
+	for (size_t i = 0; i < NB_DIRS; i += 1)
+	{
+	dir = odir;
+	VectorTransformer::Rotate(dir, rotate);
+	VectorTransformer::Normalize(dir, dirs[i]);
+	rotate += goodRotate;
+	}
 	}*/
 
 
