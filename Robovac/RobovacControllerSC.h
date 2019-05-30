@@ -16,13 +16,22 @@ public:
 
 	}
 
-	void SendCommandMovement(MovementType move)
+	void SendCommandMovement(MovementType move, float power = 10.0f, bool forceSendBuffer = false)
 	{
 		RobovacCommandMovement movementCmd; 
 
 		movementCmd.movementType = move;
+		movementCmd.power = power;
 		Serial << "Send Command Movement of type (" << movementCmd.type << ")\n";
-		SendCommand(&movementCmd, sizeof(RobovacCommandMovement));
+		
+		if (SendBufferIsEmpty() || forceSendBuffer)
+			SendCommand(&movementCmd, sizeof(RobovacCommandMovement));
+	}
+
+	void SendCommandCalibrate()
+	{
+		RobovacCommandCalibrate	calibrateCmd;
+		SendCommand(&calibrateCmd, sizeof(RobovacCommandCalibrate));
 	}
 
 private:
@@ -33,11 +42,11 @@ private:
 		RF24Server::OnReadData(data, dataSize, type);
 		if (type == RobovacRF24DataType::CALIBRATE_INFO)
 		{
-			OnReadCalibreateInfo();
+			OnReadCalibrateInfo();
 		}
 	}
 	
-	void	OnReadCalibreateInfo()
+	void	OnReadCalibrateInfo()
 	{
 
 	}

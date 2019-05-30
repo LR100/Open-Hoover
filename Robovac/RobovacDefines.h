@@ -7,7 +7,7 @@
 
 #endif
 
-enum MovementType
+enum MovementType : uint8_t
 {
 	STOP = 0,
 	FORWARD = 1,

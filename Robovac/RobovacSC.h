@@ -35,6 +35,7 @@ private:
 			}
 			else if (command->type == RobovacCommandType::RBVC_CMD_MOVEMENT)
 			{
+				Serial << "Robovac Command Movement\n";
 				RobovacCommandMovement* commandMovement = (RobovacCommandMovement*)command;
 				OnReadCommandMovement(commandMovement);
 			}

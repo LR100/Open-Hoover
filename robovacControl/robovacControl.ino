@@ -221,6 +221,9 @@ typedef Vec2T<int> Vec2i;
 // - PathFinding
 // - Combine with clean detection ?
 
+
+#include <RobovacSC.h>
+
 // Motor With simple action // No Intensity Control
 class Motor
 {
@@ -344,10 +347,10 @@ private:
 	unsigned long   _timePassed; // also In Ms
 };
 
-#define MOTOR_LEFT_P 10
-#define MOTOR_LEFT_M 11
-#define MOTOR_RIGHT_P 9
-#define MOTOR_RIGHT_M 8
+#define MOTOR_LEFT_P 22
+#define MOTOR_LEFT_M 24
+#define MOTOR_RIGHT_P 28
+#define MOTOR_RIGHT_M 26
 
 #include <RobovacDefines.h>
 
@@ -380,6 +383,7 @@ public:
 	{
 		if (_moveIsFinished || force)
 		{
+      Serial << "Movement Controller Move\n";
 			_moveIsFinished = false;
 			_movementType = movementType;
 			_timePassedForCurrentMove = 0;
@@ -471,7 +475,6 @@ private:
 
 #endif
 
-#include <RobovacSC.h>
 
 #define RF24_PIN_CE 7
 #define RF24_PIN_CS 8
@@ -506,7 +509,6 @@ public:
 		_dtMs = (float)dtMs;
 		_movementController.Update(_dtMs);
 		UpdateCommunication(); // Update Client
-
 	}
 
 private:
@@ -518,7 +520,8 @@ private:
 
 	virtual void	OnReadCommandMovement(RobovacCommandMovement* command) override 
 	{
-      _movementController.Move(command->movementType, 10, true);
+    Serial << "Command Movement of type:(" << command->movementType << ")\n";
+      _movementController.Move(command->movementType, command->power * 10, true);
 	}
 
 

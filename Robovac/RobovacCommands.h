@@ -36,7 +36,7 @@ struct RobovacCommandMovement : public RobovacCommand
 	}
 
 	MovementType	movementType;
-	float			value;
+	float			power;
 };
 
 struct RobovacCommandCalibrate : public RobovacCommand
