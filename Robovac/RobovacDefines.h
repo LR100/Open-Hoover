@@ -7,7 +7,7 @@
 
 #endif
 
-enum MoveType
+enum MovementType
 {
 	STOP = 0,
 	FORWARD = 1,

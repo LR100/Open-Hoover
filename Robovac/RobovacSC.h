@@ -5,8 +5,8 @@
 #endif
 
 
-#include <Robovac/RobovacCommands.h>
-#include <RF24SC/RF24SCClient.h>
+#include <RobovacCommands.h>
+#include <RF24SCClient.h>
 
 class RobovacSC : public RF24Client // Can Become a client too
 {
@@ -22,14 +22,18 @@ private:
 	
 	virtual void	OnReadData(char* data, uint16_t dataSize, uint8_t type) override
 	{
+		RF24Client::OnReadData(data, dataSize, type);
+		Serial << "RobovacSC on Read Data of type: (" << type << ") \n";
 		if (type == RobovacRF24DataType::COMMAND)
 		{
+			Serial << "RobovacSC on Read a Command\n";
 			RobovacCommand* command = (RobovacCommand*)data;
-			if (command->type == RobovacCommandType::CALIBRATE)
+			Serial << "Command Type (" << command->type <<")\n";
+			if (command->type == RobovacCommandType::RBVC_CMD_CALIBRATE)
 			{
 				OnReadCommandCalibrate(command);
 			}
-			else if (command->type == RobovacCommandType::MOVEMENT)
+			else if (command->type == RobovacCommandType::RBVC_CMD_MOVEMENT)
 			{
 				RobovacCommandMovement* commandMovement = (RobovacCommandMovement*)command;
 				OnReadCommandMovement(commandMovement);

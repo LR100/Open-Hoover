@@ -5,16 +5,16 @@
 #endif
 
 //#include <RF24SC/RF24SCClient.h>
-#include <Robovac/RobovacDefines.h>
-#include <RF24SC/RF24SC.h>
+#include <RobovacDefines.h>
+#include <RF24SC.h>
 
 typedef enum RobovacCommandType : uint8_t
 {
-	CALIBRATE = 0,
-	MOVEMENT = 1,
-	STOP, // Low power mode but still listening
-	START,
-	RESTART,
+	RBVC_CMD_CALIBRATE = 0,
+	RBVC_CMD_MOVEMENT = 1,
+	RBVC_CMD_STOP, // Low power mode but still listening
+	RBVC_CMD_START,
+	RBVC_CMD_RESTART,
 } RobovacCommandType;
 
 typedef enum RobovacRF24DataType : uint16_t
@@ -31,6 +31,17 @@ struct RobovacCommand
 
 struct RobovacCommandMovement : public RobovacCommand
 {
-	MoveType	type;
-	float		value;
+	RobovacCommandMovement() {
+		type = RobovacCommandType::RBVC_CMD_MOVEMENT;
+	}
+
+	MovementType	movementType;
+	float			value;
+};
+
+struct RobovacCommandCalibrate : public RobovacCommand
+{
+	RobovacCommandCalibrate() {
+		type = RobovacCommandType::RBVC_CMD_CALIBRATE;
+	}
 };

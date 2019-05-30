@@ -154,7 +154,7 @@ class MovementControler
 {
 public:
 #define MOVEMENTCONTROLLER_NBMOVE 5
-	enum MoveType
+	enum MovementType
 	{
 		STOP = 0,
 		FORWARD = 1,
@@ -166,7 +166,7 @@ public:
 	MovementControler() : _motorLeft(MOTOR_LEFT_P, MOTOR_LEFT_M), _motorRight(MOTOR_RIGHT_P, MOTOR_RIGHT_M)
 	{
 		_moveIsFinished = false,
-			_moveType = MoveType::STOP;
+			_moveType = MovementType::STOP;
 		_speedLinear = 10.0f;
 		_speedAngular = 20.0f; // 20° per second
 		 // Movement is in 2D (The Ground) 
@@ -183,7 +183,7 @@ public:
 
 
 	// Unit could be an Angle (in degree) or a Distance (in cm)
-	void        Move(MoveType moveType, float unit, bool force = false)
+	void        Move(MovementType moveType, float unit, bool force = false)
 	{
 		if (_moveIsFinished || force)
 		{
@@ -208,7 +208,7 @@ public:
 		}
 	}
 
-	const MoveType&   GetMoveType() const { return (_moveType); };
+	const MovementType&   GetMovementType() const { return (_moveType); };
 	const float&    GetSpeedLinear() const { return (_speedLinear); };
 	const float&    GetSpeedAngular() const { return (_speedAngular); };
 	const bool&     IsMoveFinished() const { return (_moveIsFinished); };
@@ -265,7 +265,7 @@ private:
 
 	Motor       _motorLeft;
 	Motor       _motorRight;
-	MoveType	_moveType;
+	MovementType	_moveType;
 };
 
 
@@ -278,14 +278,14 @@ class Robovac
 public:
 	Robovac()
 	{
-		_movementController.Move(MovementControler::MoveType::FORWARD, 20);
+		_movementController.Move(MovementControler::MovementType::FORWARD, 20);
 		_frontDistanceSensor = new DistanceSensorUltrasonic(ULTRASONIC_FONT_PIN_P, ULTRASONIC_FRONT_PIN_M);
 #ifndef WIN
 #define RELAY_ALIM_PIN 4
 		pinMode(RELAY_ALIM_PIN, OUTPUT);
 		digitalWrite(RELAY_ALIM_PIN, HIGH);
 #endif
-		_movementController.Move(MovementControler::MoveType::STOP, 10, true);
+		_movementController.Move(MovementControler::MovementType::STOP, 10, true);
 	}
 	~Robovac()
 	{
@@ -311,7 +311,7 @@ public:
 		// Case Is Too Far From
 		while (distance >= ULTRASONIC_MAX_DISTANCE)
 		{
-			_movementController.Move(MovementControler::MoveType::FORWARD, 10);
+			_movementController.Move(MovementControler::MovementType::FORWARD, 10);
 #ifndef WIN
 			timeCurrent = millis();
 #endif
@@ -323,9 +323,9 @@ public:
 				if (distance == _frontDistanceSensor->GetDistancePrev()) // Is Stuck ! Try Random Rotate
 				{
 					if (distance % 2 == 0)
-						_movementController.Move(MovementControler::MoveType::ROTATE_LEFT, 40, true);
+						_movementController.Move(MovementControler::MovementType::ROTATE_LEFT, 40, true);
 					else
-						_movementController.Move(MovementControler::MoveType::ROTATE_RIGHT, 40, true);
+						_movementController.Move(MovementControler::MovementType::ROTATE_RIGHT, 40, true);
 				}
 #ifndef WIN
 				Serial.print("Distance:");
@@ -334,7 +334,7 @@ public:
 #endif
 			}
 		}
-		_movementController.Move(MovementControler::MoveType::STOP, 10, true);
+		_movementController.Move(MovementControler::MovementType::STOP, 10, true);
 
 
 		bool isCalibrated = false;
@@ -383,13 +383,13 @@ private:
 
 #endif
 
-			_movementController.Move(MovementControler::MoveType::STOP, 100, true);
+			_movementController.Move(MovementControler::MovementType::STOP, 100, true);
 			angleSupposed += rcdf * _movementController.GetSpeedAngular();
 			_frontDistanceSensor->SetDistance();
 			distances[i] = _frontDistanceSensor->GetDistance();
-			_movementController.Move(MovementControler::MoveType::ROTATE_RIGHT, 100, true);
+			_movementController.Move(MovementControler::MovementType::ROTATE_RIGHT, 100, true);
 		}
-		_movementController.Move(MovementControler::MoveType::STOP, 100, true);
+		_movementController.Move(MovementControler::MovementType::STOP, 100, true);
 #ifndef WIN
 		for (unsigned int i = 0; i < ROTATE_CALIBRATE_COUNT_MAX; i += 1)
 		{

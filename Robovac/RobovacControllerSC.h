@@ -4,9 +4,8 @@
 
 #endif
 
-
-#include <Robovac/RobovacCommands.h>
-#include <RF24SC/RF24SCServer.h>
+#include <RobovacCommands.h>
+#include <RF24SCServer.h>
 
 class RobovacControllerSC : public RF24Server // Can Become a client too
 {
@@ -17,6 +16,15 @@ public:
 
 	}
 
+	void SendCommandMovement(MovementType move)
+	{
+		RobovacCommandMovement movementCmd; 
+
+		movementCmd.movementType = move;
+		Serial << "Send Command Movement of type (" << movementCmd.type << ")\n";
+		SendCommand(&movementCmd, sizeof(RobovacCommandMovement));
+	}
+
 private:
 
 	
@@ -25,7 +33,7 @@ private:
 		RF24Server::OnReadData(data, dataSize, type);
 		if (type == RobovacRF24DataType::CALIBRATE_INFO)
 		{
-			
+			OnReadCalibreateInfo();
 		}
 	}
 	
