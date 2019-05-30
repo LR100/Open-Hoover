@@ -228,9 +228,6 @@
     <ClInclude Include="RobovacWorldEditor.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Robovac.h">
-      <Filter>Fichiers d%27en-tête\Robot</Filter>
-    </ClInclude>
     <ClInclude Include="Tools\LinkedList.hpp">
       <Filter>Fichiers d%27en-tête\Tools</Filter>
     </ClInclude>
@@ -278,6 +275,9 @@
     </ClInclude>
     <ClInclude Include="Maths\Matrix.h">
       <Filter>Fichiers d%27en-tête\Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="Robovac.h">
+      <Filter>Fichiers d%27en-tête\Robot</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

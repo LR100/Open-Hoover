@@ -87,7 +87,7 @@ public:
 
 public:
 
-	const Node::Index*		GetFirstIndexInRay(const Vec2& origin, const Vec2& dir, float& distance, float maxDist = 10000.0f) const
+	const Node::Index*		GetFirstIndexInRay(const Vec2& origin, const Vec2& dir, Vec2& intersection, float maxDist = 10000.0f) const
 	{
 		Ray			ray;
 
@@ -143,19 +143,20 @@ public:
 
 			if (ray.t != FLT_MAX) // STOP !!
 			{
-				QuadtreeDrawer->DrawLine(ray.origin.x, ray.origin.y, ray.point.x, ray.point.y, Color::PURPLE());
-				QuadtreeDrawer->DrawCircleFill(ray.point.x, ray.point.y, 8, Color::ORANGE());
+				//QuadtreeDrawer->DrawLine(ray.origin.x, ray.origin.y, ray.point.x, ray.point.y, Color::PURPLE());
+				//QuadtreeDrawer->DrawCircleFill(ray.point.x, ray.point.y, 8, Color::ORANGE());
 				ray.index = ray.index;
 				nodeMove = NULL;
 				inc = incMax;
+				intersection = ray.point;
 			}
 			PX2CollisionQuadTree::PASS += 1;
 			inc += 1;
 			//std::cout << "PASS" << std::endl;
 		} while (nodeMove && inc < incMax);
 
-		if (ray.t == FLT_MAX)
-			QuadtreeDrawer->DrawLine(ray.origin.x, ray.origin.y, ray.end.x, ray.end.y, Color::PURPLE());
+		//if (ray.t == FLT_MAX)
+			//QuadtreeDrawer->DrawLine(ray.origin.x, ray.origin.y, ray.end.x, ray.end.y, Color::PURPLE());
 		return (ray.index);
 	}
 	static float PASS;

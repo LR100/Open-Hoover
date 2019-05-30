@@ -1029,10 +1029,8 @@ private:
 		const uint8_t	connectionTryResponseMax = 10;
 		const uint8_t	connectionTryResponseDelay = 20; // in ms
 
-
 		//packetToSend->Display();
 		//DumpObject((char*)&packetToSend[0], packetToSend->GetSize());
-
 
 #ifndef _WIN32
 
@@ -1303,7 +1301,7 @@ private:
 		Serial << "Read Auth Write OK\n";
 #endif
 		SendCall();
-		// If multi clients is implemented // Here it would be possible to now from packet who want to write
+		// If multi clients is implemented // Here it would be possible to know from packet who want to write
 	}
 
 	bool	InitRequestFcts()
@@ -1350,7 +1348,7 @@ private:
 	unsigned long		_time;
 	uint16_t			_timeDtMs;
 	bool				_isListening = false;
-	uint16_t			_memoryBufferUsed; // Size Of Datas + Size Of Calls + Size Of Nodes + Size Of ItSelf + Size of Data Buffer
+	uint16_t			_memoryBufferUsed; // Size Of Datas + Size Of Calls + Size Of Nodes + Size Of Object ItSelf + Size of Data Buffer
 	uint16_t			_memoryBufferMax;
 };
 

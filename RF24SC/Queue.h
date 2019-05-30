@@ -36,7 +36,7 @@ public:
 
 	void	PushBack(Q data)
 	{
-		if (!_front)
+		if (!_front) // First one
 		{
 			_front = new Node();
 			_front->next = NULL;

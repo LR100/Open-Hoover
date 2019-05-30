@@ -199,6 +199,8 @@ void RobovacSimulation::Draw()
 	// Clear Screen
 	_drawer->ClearImage();
 
+	_roombaWorld->Draw(_drawer);
+
 	// TMP DEBUG
 	if (_treeMode)
 	{
@@ -209,7 +211,7 @@ void RobovacSimulation::Draw()
 	// END TMP DEBUG
 
 
-	_roombaWorld->Draw(_drawer);
+	
 
 
 	Color				colorText;
@@ -329,16 +331,222 @@ void DebugDrawQuadTreeAABB(const PX2CollisionQuadTree::Node* node, IWindow* wind
 	drawer->DrawBorder(x, y, w, h, color, color);
 }
 
+
 #include "Physic/PX2BodyManager.h" // TMP
 
 Vec2* dirs = NULL;
-size_t NB_DIRS = 90;
+
+
+bool markersAreEqual(float* markersA, float* markersB, float nbMarkers, float diffAccept = 0.05, float percentAccept = 0.80f)
+{
+	float percentageToBeOk = percentAccept; // 80 %
+	float diff = 0;
+	float diffDist = 0;
+	float maxDiff = diffAccept; //  % dist diff
+
+	size_t markerMatchToMatch = (nbMarkers * percentageToBeOk);
+	size_t markerMatchCount = 0;
+
+
+	float diffToA = 0;
+	float diffToB = 0;
+
+
+	for (size_t i = 0; i < nbMarkers; i += 1)
+	{
+		//diffToA = (markersA[i - 1] - markersA[i]);
+		//diffToB = (markersB[i - 1] - markersB[i]);
+
+		diffDist = fabsf(markersA[i] - markersB[i]);
+
+		if (diffDist < (maxDiff * markersA[i]))
+		{
+			markerMatchCount += 1;
+		}
+
+		//diff = fabsf(diffToA - diffToB);
+
+		//if (diff < 20) // 10 ?
+//			markerMatchCount += 1;
+	}
+
+	if (markerMatchCount < markerMatchToMatch)
+		return (false);
+
+	return (true);
+}
+
+#include <chrono> // TMP for Sleep
+#include <thread> 
+
+float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float angularVelocityMax, size_t markersCount, float angularRotateDesired = 5, float diffAccept, float percentAccept)
+{
+	//_drawer->ClearImage();
+	float angularVelocityToGuess = 142.0f; // This value should be Guessed
+
+
+	//float minAngularRotateDesired = 2; // Minimum angle between each mesure
+	//float maxAngularRotateDesired = 5; // Maximum angle between each mesure
+	///float angularRotateDesired = 5;
+
+	float timeMintoMaxAngularRotate = (angularRotateDesired / angularVelocityMax); // Time Min to reach the Max angular rotation per mesure Desired
+	float timeMaxtoMinAngularRotate = (angularRotateDesired / angularVelocityMin); // Time Max to reach the Min angular rotation per mesure Desired
+
+	float timeMaxToReachFullRotate = (360.0f / angularVelocityMin);
+
+	//std::cout << "timetoMinAngularRotate (" << delayToAngularMax << ")\n";
+	std::cout << "Max time to reach Full Rotate (" << timeMaxToReachFullRotate << ") s\n";
+	std::cout << "Time Min to Max Angular Rotate (" << timeMintoMaxAngularRotate << ") s\n";
+	std::cout << "Time Max to Min Angular Rotate (" << timeMaxtoMinAngularRotate << ") s\n";
+
+	float timeAverageToRotateDesired = ((timeMintoMaxAngularRotate + timeMaxtoMinAngularRotate) / 2.0f); // Still In Seconds
+	float timePassed = 0;
+
+
+	float angularVelocityStepToGuess = (angularVelocityToGuess * timeAverageToRotateDesired); // This value should be Guessed
+	std::cout << "angularVelocityStepToGuess (" << angularVelocityStepToGuess << ") degree/s\n";
+
+
+
+	float* markers = new float[markersCount];
+	float* dist = new float[5000]; // Fat distance buffers
+
+
+
+	Vec2	pos(300, 300);
+	Vec2	origin(300, 300);
+
+	Vec2i posI;
+	posI.x = pos.x;
+	posI.y = pos.y;
+
+
+	//_drawer->DrawCircleFill(posI.x, posI.y, 100, Color::ORANGE());
+	float rotatePos = 0;
+
+	Color line(255, 0, 0);
+	Vec2 inter;
+	size_t measureCount = 0;
+	float timeStop = timeMaxToReachFullRotate + (timeMaxToReachFullRotate * 0.5f);
+
+
+	int diffX = 0;
+	int diffY = 0; // Simulate non-perfect rotation of robot
+
+				   // Distance of sensor from origin //
+	float distSensor = 20.0f;
+
+	while (timePassed < timeStop)
+	{
+		Vec2 dir(1, 0);
+		VectorTransformer::Rotate(dir, rotatePos);
+
+		VectorTransformer::Normalize(dir);
+		float distance = 0;
+
+		rotatePos += (angularVelocityStepToGuess);
+		//rotatePos += (((float)((rand() % 1000) - 1000)) / 10000.0f) * angularVelocityStepToGuess; // add error in rotation (from 0 to 10% of normal rotation)
+
+		pos.x = (origin.x + (dir.x * distSensor)) + ((rand() % 10) - 5);
+		pos.y = (origin.y + (dir.y * distSensor)) + ((rand() % 10) - 5);
+
+
+
+		_roombaWorld->_pxWorld->GetBodyManager()->GetTreeCollision()->GetFirstIndexInRay(pos, dir, inter);
+
+
+		distance = VectorTransformer::Distance(inter, pos);
+		dist[measureCount] = distance;
+		// std::cout << "Distance (" << distance << ")" << std::endl;
+
+		Vec2i posD;
+		posI.x = pos.x;
+		posI.y = pos.y;
+
+
+		posD = posI;
+		posD.x += dir.x * distance;
+		posD.y += dir.y * distance;
+
+		line.b += 20;
+		line.g += 10;
+		line.ComputeValue();
+
+
+
+		if (measureCount < markersCount)
+		{
+			markers[measureCount] = distance;
+			_drawer->DrawLine(posI.x, posI.y, posD.x, posD.y, Color::GREEN());
+		}
+		else
+		{
+
+			if (measureCount > (markersCount * 1.5f))
+			{
+				if (markersAreEqual(markers, &dist[measureCount - markersCount], markersCount, diffAccept, percentAccept))
+				{
+					std::cout << "MARKERS ARE EQUAL !!\n";
+
+
+					_drawer->DrawLine(posI.x, posI.y, posD.x, posD.y, Color::RED());
+					_drawer->DrawCircleFill(posD.x, posD.y, 10, Color::RED());
+
+
+					std::cout << "Time Total Passed (" << timePassed << ")\n";
+					timePassed -= (markersCount * timeAverageToRotateDesired);
+					std::cout << "Time Passed Minus Markers (" << timePassed << ")\n";
+					std::cout << "Guessed Angular Velocity (" << 360.0f / timePassed << ")degree/s To Guess (" << angularVelocityToGuess << ")d/s\n";
+
+					_window->Refresh();
+					//system("pause");
+					return ((360.0f / timePassed));
+
+
+					timePassed = timeStop;
+
+				}
+				_drawer->DrawLine(posI.x, posI.y, posD.x, posD.y, line);
+			}
+			else
+			{
+				_drawer->DrawLine(posI.x, posI.y, posD.x, posD.y, Color::YELLOW());
+			}
+
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds((int)(timeAverageToRotateDesired * 1000.0f)));
+		_window->Refresh();
+
+		measureCount += 1;
+		timePassed += timeAverageToRotateDesired;
+	}
+
+
+	delete(markers);
+	delete(dist);
+}
 
 void RobovacSimulation::DrawTree()
 {
 	DebugDrawQuadTreeAABB(_roombaWorld->_pxWorld->GetBodyManager()->GetTreeCollision()->GetRoot(), _window, _drawer, Color(150, 150, 150));
 
-	Vec2	pos(500, 500);
+	std::cout << "\n--Start Calibrating Angular Velocity--\n";
+	float minA = 90;
+	float maxA = 360;
+	float A = CalibrateAngularRotate(minA, maxA, 30, 2, 0.05, 0.80f);
+
+	minA = (A - 20);
+	maxA = (A + 20);
+
+
+	float B = CalibrateAngularRotate(minA, maxA, 60, 1, 0.05, 0.80f);
+
+	float aV = ((A + B) * 0.5f);
+
+	std::cout << "Angular Velocity (" << aV << ")Degree/Seconds\n";
+
+	//system("pause");
+	/*
 
 	float goodRotate = 360.0f / (float)(NB_DIRS);
 
@@ -357,21 +565,41 @@ void RobovacSimulation::DrawTree()
 			VectorTransformer::Normalize(dir, dirs[i]);
 			rotate += goodRotate;
 		}
-	}
+	}*/
 
-	for (size_t i = 0; i < NB_DIRS; i += 1)
-	{
-		VectorTransformer::Rotate(dirs[i], 0.05f);
-		VectorTransformer::Normalize(dirs[i]);
-		float distance;
-		_roombaWorld->_pxWorld->GetBodyManager()->GetTreeCollision()->GetFirstIndexInRay(pos, dirs[i], distance);
-	}
 
-	////VectorTransformer::Rotate(dir, 0.2f);
 
-	//VectorTransformer::Normalize(dir);
-	//float distance;
-	//_roombaWorld->_pxWorld->GetBodyManager()->GetTreeCollision()->GetFirstIndexInRay(pos, dir, distance);
+
+	//float velocitityAngularSupposed = 180.0; // In Degree per Second (could be 90 or 360)
+
+
+
+	//float angularMinDesiredForMarkers = 20; // Angle Minimum in case of Max Velocity
+	//float angularMaxDesiredForMarkers = 180; // Angle Minimum in case of Max Velocity
+
+	//float delayToAngularMin = (angularMinDesiredForMarkers / angularVelocityMin); // TO have at least MarkersCount From The first 180 degree for case with angularVelocityMax
+	//float delayToAngularMax = (angularMaxDesiredForMarkers / angularVelocityMax); // TO have at least MarkersCount From The first 180 degree for case with angularVelocityMax
+	//
+
+
+
+	// CALIBRATION CONTROL INFO
+
+	float angularVelocityMin = 90; // IN degree / s
+	float angularVelocityMax = 360;
+
+	//_window->Refresh();
+
+	//float delayForMarkersCount = delayToAngular / markersCount;
+
+	//float angularVelocityStepToGuess = (172.0f; // This value should be Guessed
+
+	//// ROTATE
+	//// delay
+	//// STOP 
+	//// MEASURE 
+
+
 }
 
 void RobovacSimulation::SwitchTreeMode()
