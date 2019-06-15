@@ -2,6 +2,7 @@
 #define _COLORS_H_
 
 #include <vector>
+#include <string>
 
 class Color
 {

@@ -1,4 +1,10 @@
 ﻿
+/*
+ Name:		Queue.h
+ Created:	3/23/2019 9:20:14 AM
+ Author:	Loic Robin
+*/
+
 template <class Q>
 class Queue
 {
@@ -36,7 +42,7 @@ public:
 
 	void	PushBack(Q data)
 	{
-		if (!_front) // First one
+		if (!_front)
 		{
 			_front = new Node();
 			_front->next = NULL;

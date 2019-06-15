@@ -118,7 +118,7 @@ void RobovacSimulation::SetEventsGeneric()
 	_eventHandler->AddHandlerToEvent(ControlKey::WINDOW_CLOSE, &RobovacSimulation::Stop, this);
 	_eventHandler->AddHandlerToEvent(ControlKey::KEY_ESCAPE, ControlKeyState::RELEASED, &RobovacSimulation::Stop, this);
 	_eventHandler->AddHandlerToEvent(ControlKey::KEY_E, ControlKeyState::RELEASED, &RobovacSimulation::SwitchModeNotify, this);
-	_eventHandler->AddHandlerToEvent(ControlKey::KEY_C, ControlKeyState::RELEASED, &RobovacSimulation::ClearWorld, this);
+	_eventHandler->AddHandlerToEvent(ControlKey::KEY_RETURN, ControlKeyState::RELEASED, &RobovacSimulation::ClearWorld, this);
 	_eventHandler->AddHandlerToEvent(ControlKey::KEY_S, ControlKeyState::RELEASED, &RobovacSimulation::SaveWorld, this);
 	_eventHandler->AddHandlerToEvent(ControlKey::KEY_R, ControlKeyState::RELEASED, &RobovacSimulation::ReloadWorld, this);
 
@@ -126,6 +126,7 @@ void RobovacSimulation::SetEventsGeneric()
 	// TMP DEBUG
 	_eventHandler->AddHandlerToEvent(ControlKey::KEY_LCTRL, &RobovacWorld::AddRobovac, _roombaWorld, Vec2(300, 300));
 	_eventHandler->AddHandlerToEvent(ControlKey::KEY_T, ControlKeyState::RELEASED, &RobovacSimulation::SwitchTreeMode, this);
+	_eventHandler->AddHandlerToEvent(ControlKey::KEY_C, ControlKeyState::RELEASED, &RobovacSimulation::SwitchCalibrateMode, this);
 	// END TMP DEBUG
 
 }
@@ -202,9 +203,14 @@ void RobovacSimulation::Draw()
 	_roombaWorld->Draw(_drawer);
 
 	// TMP DEBUG
+	/// DRaw Over The World
 	if (_treeMode)
 	{
 		DrawTree();
+	}
+	if (_calibrateMode)
+	{
+		DrawCalibrate();
 	}
 
 
@@ -337,38 +343,28 @@ void DebugDrawQuadTreeAABB(const PX2CollisionQuadTree::Node* node, IWindow* wind
 Vec2* dirs = NULL;
 
 
-bool markersAreEqual(float* markersA, float* markersB, float nbMarkers, float diffAccept = 0.05, float percentAccept = 0.80f)
+bool markersAreEqual(uint16_t* markersA, uint16_t* markersB, uint8_t nbMarkers, float diffAccept = 0.05, float percentAccept = 0.80f)
 {
 	float percentageToBeOk = percentAccept; // 80 %
-	float diff = 0;
 	float diffDist = 0;
 	float maxDiff = diffAccept; //  % dist diff
 
-	size_t markerMatchToMatch = (nbMarkers * percentageToBeOk);
-	size_t markerMatchCount = 0;
+	// std::cout << "Nb markers:" << nbMarkers << std::endl;
 
+	uint8_t markerMatchToMatch = (uint8_t)((float)nbMarkers * percentageToBeOk);
+	uint8_t markerMatchCount = 0;
+	//std::cout << "Nb markers: TO Match" << (float)markerMatchToMatch << std::endl;
 
-	float diffToA = 0;
-	float diffToB = 0;
-
-
-	for (size_t i = 0; i < nbMarkers; i += 1)
+	for (uint16_t i = 0; i < nbMarkers; i += 1)
 	{
-		//diffToA = (markersA[i - 1] - markersA[i]);
-		//diffToB = (markersB[i - 1] - markersB[i]);
+		diffDist = fabsf((float)markersA[i] - (float)markersB[i]);
 
-		diffDist = fabsf(markersA[i] - markersB[i]);
-
-		if (diffDist < (maxDiff * markersA[i]))
+		if (diffDist < (maxDiff * (float)markersA[i]))
 		{
 			markerMatchCount += 1;
 		}
-
-		//diff = fabsf(diffToA - diffToB);
-
-		//if (diff < 20) // 10 ?
-		//			markerMatchCount += 1;
 	}
+	//std::cout << "markerMatchCount:" << markerMatchCount << " markerMatchToMatch:" << markerMatchToMatch << std::endl;
 
 	if (markerMatchCount < markerMatchToMatch)
 		return (false);
@@ -382,14 +378,13 @@ bool markersAreEqual(float* markersA, float* markersB, float nbMarkers, float di
 
 #define DRAW_CALIBRATE 1
 
-float angularVelocityToGuess = 242.0f; // This value should be Guessed
+float angularVelocityToGuess = 275.0f; // This value should be Guessed
 
-float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float angularVelocityMax, size_t markersCount, float angularRotateDesired = 5, float diffAccept, float percentAccept)
+
+
+
+float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float angularVelocityMax, uint16_t markersCount, float angularRotateDesired = 5, float diffAccept, float percentAccept)
 {
-	//_drawer->ClearImage();
-
-
-
 	//float minAngularRotateDesired = 2; // Minimum angle between each mesure
 	//float maxAngularRotateDesired = 5; // Maximum angle between each mesure
 	///float angularRotateDesired = 5;
@@ -412,10 +407,10 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 	std::cout << "angularVelocityStepToGuess (" << angularVelocityStepToGuess << ") degree/s\n";
 
 
-
-	float* markers = new float[markersCount];
-	float* dist = new float[5000]; // Fat distance buffers
-
+	uint16_t  maxMeasure = (720 / angularRotateDesired);
+	uint16_t* markers = new uint16_t[markersCount];
+	uint16_t* dist = new uint16_t[maxMeasure]; // Fat distance buffers
+	
 
 
 	Vec2	pos(300, 300);
@@ -431,7 +426,7 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 
 	Color line(255, 0, 0);
 	Vec2 inter;
-	size_t measureCount = 0;
+	uint16_t measureCount = 0;
 	float timeStop = timeMaxToReachFullRotate + (timeMaxToReachFullRotate * 0.5f);
 
 
@@ -441,7 +436,7 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 					// Distance of sensor from origin //
 	float distSensor = 20.0f;
 
-	while (timePassed < timeStop)
+	while (timePassed < timeStop && measureCount < maxMeasure) // To avoid overflow in measure
 	{
 		Vec2 dir(1, 0);
 		VectorTransformer::Rotate(dir, rotatePos);
@@ -454,8 +449,6 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 
 		pos.x = (origin.x + (dir.x * distSensor)) + ((rand() % 10) - 5) + (dir.x * ((rand() % diffX) - (diffX / 2)));
 		pos.y = (origin.y + (dir.y * distSensor)) + ((rand() % 10) - 5) + (dir.y * ((rand() % diffY) - (diffY / 2)));
-
-
 
 		_roombaWorld->_pxWorld->GetBodyManager()->GetTreeCollision()->GetFirstIndexInRay(pos, dir, inter);
 
@@ -478,7 +471,6 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 		line.ComputeValue();
 
 
-
 		if (measureCount < markersCount)
 		{
 			markers[measureCount] = distance;
@@ -489,7 +481,7 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 		else
 		{
 
-			if (measureCount >(markersCount * 1.5f))
+			if (measureCount > (markersCount * 1.5f))
 			{
 				if (markersAreEqual(markers, &dist[measureCount - markersCount], markersCount, diffAccept, percentAccept))
 				{
@@ -543,56 +535,83 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 	timePassed -= (markersCount * timeAverageToRotateDesired);
 	std::cout << "Time Passed Minus Markers (" << timePassed << ")\n";
 	std::cout << "Guessed Angular Velocity (" << 360.0f / timePassed << ")degree/s To Guess (" << angularVelocityToGuess << ")d/s\n";
+
 	delete(markers);
 	delete(dist);
+
 	return ((angularVelocityMax + angularVelocityMin) / 2.0f);
 }
 
-void RobovacSimulation::DrawTree()
+
+static float percentAcceptGlobal = 1.0f;
+static float diffAcceptGlobal = 0.0f;
+
+void RobovacSimulation::DrawCalibrate()
 {
-	DebugDrawQuadTreeAABB(_roombaWorld->_pxWorld->GetBodyManager()->GetTreeCollision()->GetRoot(), _window, _drawer, Color(150, 150, 150));
 
 	std::cout << "\n--Start Calibrating Angular Velocity--\n";
 	float minA = 90;
 	float maxA = 360;
 
 
-	static float percentAccept = 100.0f;
-	static float diffAccept = 0.0f;
+	
+	float B;
+	float A;
 
-	float A = CalibrateAngularRotate(minA, maxA, 30, 2, diffAccept, percentAccept);
+	float aV;
 
+	A = CalibrateAngularRotate(minA, maxA, 40, 1, diffAcceptGlobal, percentAcceptGlobal);
 	minA = (A - 20);
 	maxA = (A + 20);
+	B = CalibrateAngularRotate(minA, maxA, 40, 1, diffAcceptGlobal, percentAcceptGlobal);
+	aV = ((A + B) * 0.5f);
 
-
-	float B;
-
-	//B = CalibrateAngularRotate(minA, maxA, 60, 1, 0.05, 0.80f);
-	B = A;
-	float aV = ((A + B) * 0.5f);
+	
 
 	std::cout << "Angular Velocity (" << aV << ")Degree/Seconds\n";
 	if (std::fabs(angularVelocityToGuess - aV) < (angularVelocityToGuess / 90.0f))
 	{
-		std::cout << "OK\n\n";
-		std::cout << "PERCENT ACCEPT: (" << percentAccept << ")\n";
-		std::cout << "DIFF ACCEPT: (" << diffAccept << ")\n";
-		std::cout << "OK :) :) :) \n\n";
-		std::cout << "OK :) :) :) \n\n";
-		system("pause");
+
+
+		// Go For Validation -> Retry it 15 times 
+		const int nbTest = 15;
+		int i = 0;
+
+		for (; i < nbTest; i += 1)
+		{
+			A = CalibrateAngularRotate(minA, maxA, 80, 2, diffAcceptGlobal, percentAcceptGlobal);
+			minA = (A - 20);
+			maxA = (A + 20);
+			B = A;
+			aV = ((A + B) * 0.5f);
+			if (!(std::fabs(angularVelocityToGuess - aV) < (angularVelocityToGuess / 90.0f)))
+			{
+				std::cout << "Failed Validation Test";
+				i = 666; // Failed
+			}
+		}
+		if (i != 666) // VALIDATE
+		{
+			std::cout << "OK\n\n";
+			std::cout << "PERCENT ACCEPT: (" << percentAcceptGlobal << ")\n";
+			std::cout << "DIFF ACCEPT: (" << diffAcceptGlobal << ")\n";
+			std::cout << "OK :) :) :) \n\n";
+			std::cout << "OK :) :) :) \n\n";
+
+			system("pause");
+		}
 	}
 	else
 	{
-		percentAccept -= 0.5f;
-		if (percentAccept < 60.0f)
+		percentAcceptGlobal -= 0.02f;
+		if (percentAcceptGlobal < 0.6f)
 		{
-			diffAccept += 0.01f;
-			percentAccept = 100.0f;
+			diffAcceptGlobal += 0.01f;
+			percentAcceptGlobal = 1.0f; // 100%
 		}
 		std::cout << "!!! NOT OK !!!!\n\n";
-		std::cout << "PERCENT ACCEPT: (" << percentAccept << ")\n";
-		std::cout << "DIFF ACCEPT: (" << diffAccept << ")\n";
+		std::cout << "PERCENT ACCEPT: (" << percentAcceptGlobal << ")\n";
+		std::cout << "DIFF ACCEPT: (" << diffAcceptGlobal << ")\n";
 		std::cout << "!!! NOT OK !!!!\n\n";
 
 	}
@@ -653,9 +672,49 @@ void RobovacSimulation::DrawTree()
 
 }
 
+//struct Robovac {
+//
+//	if (state == WORK)
+//	{
+//		
+//
+//	}
+//
+//	void Work()
+//	{
+//		distance = 0; // 
+//
+//		if (distance < 5) // CM
+//		{
+//
+//
+//		}
+//
+//
+//	}
+//	
+//	
+//
+//
+//	Vec2	_positionEstimated;
+//};
+
+void RobovacSimulation::DrawTree()
+{
+	DebugDrawQuadTreeAABB(_roombaWorld->_pxWorld->GetBodyManager()->GetTreeCollision()->GetRoot(), _window, _drawer, Color(150, 150, 150));
+}
+
 void RobovacSimulation::SwitchTreeMode()
 {
 	_treeMode = !_treeMode;
+}
+
+void RobovacSimulation::SwitchCalibrateMode()
+{
+	_calibrateMode = !_calibrateMode;
+	// Reset Calibrate Values 
+	percentAcceptGlobal = 1.0f;
+	diffAcceptGlobal = 0.0f;
 }
 
 

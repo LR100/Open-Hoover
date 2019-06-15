@@ -64,9 +64,13 @@ private:
 	// TMP DEBUG
 
 	void	DrawTree();
-	float	CalibrateAngularRotate(float angularVelocityMin, float angularVelocityMax, size_t markersCount, float angularRotateDesired, float diffAccept = 0.05f, float percentAccept = 0.80f);
+
+	void	DrawCalibrate();
+	float	CalibrateAngularRotate(float angularVelocityMin, float angularVelocityMax, uint16_t markersCount, float angularRotateDesired, float diffAccept = 0.05f, float percentAccept = 0.80f);
 	void	SwitchTreeMode();
+	void	SwitchCalibrateMode();
 	bool	_treeMode;
+	bool	_calibrateMode;
 
 
 	// END TMP DEBUG

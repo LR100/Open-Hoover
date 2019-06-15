@@ -84,33 +84,86 @@ class RobovacController : public RobovacControllerSC
   void  CheckJoystick()
   {
     _joyStick.Update();
+    int         cmdJoy;
+    static int  lastCmdJoy = 0;
+    static int  timeSinceLastCmd = 0;
+    int         sameCmdCount = 0;
+    const int   maxTimeCountCmd = 500; // After ms Launch cmd
 
-  float x = _joyStick.GetX();
-  float y = _joyStick.GetY();
-  //Serial << "Joystick X: (" << _joyStick.GetX() << ") Y: (" << _joyStick.GetY() << ")\n";
+    float x = _joyStick.GetX();
+    float y = _joyStick.GetY();
+    //Serial << "Joystick X: (" << _joyStick.GetX() << ") Y: (" << _joyStick.GetY() << ")\n";
 
-  if (_joyStick.GetSW()){
-    SendCommandCalibrate();
-  }
-    
-    if (abs(x) > 0.02) {
+    cmdJoy = 0;
+
+    if (_joyStick.GetSW()){
+      cmdJoy = 1;
+    } else if (abs(x) > 0.02) {
       // Rotate
       if (x < 0) {
-        SendCommandMovement(MovementType::ROTATE_LEFT, abs(x) / 2);
+        cmdJoy = 2;
       } else { 
-       SendCommandMovement(MovementType::ROTATE_RIGHT, abs(x) / 2);
+        cmdJoy = 3;
       }
     } else if (abs(y) > 0.02) {
       if (y < 0) { // BackWard
-        SendCommandMovement(MovementType::FORWARD, abs(y) );
+        cmdJoy = 4;
       } else { // Forward
-        SendCommandMovement(MovementType::BACKWARD, abs(y));
+        cmdJoy = 5;
       }
+    }  
+    
+    if (cmdJoy != 0)
+    {
+        timeSinceLastCmd = 0;
+        lastCmdJoy = cmdJoy;
+        
+    } else {
+      
+        if (lastCmdJoy != 0)
+        {
+            timeSinceLastCmd += _dtMs;
+            
+              if (timeSinceLastCmd > maxTimeCountCmd) {
+                  // Execute
+                
+                  lastCmdJoy = 0; // Remove last Cmd  
+              }
+        }
+    }
+
+    
+    
+
+    
+    
+    
+
+    
+  }
+
+  void doCommand(int cmd, int count) {
+    if (cmd == 1) {
+      if (count == 1) {// Double Click SW -> Calibrate
+        SendCommandCalibrate();
+      } else if (count == 0) {
+        
+      }
+      
+    } else if (cmd == 2) {
+      SendCommandMovement(MovementType::ROTATE_LEFT, abs(x) / 2);  
+    } else if (cmd == 3) {
+      SendCommandMovement(MovementType::ROTATE_RIGHT, abs(x) / 2);
+    } else if (cmd == 4) {
+      SendCommandMovement(MovementType::FORWARD, abs(y) );  
+    } else if (cmd == 5) {
+      SendCommandMovement(MovementType::BACKWARD, abs(y));  
     }
   }
 
   float               _dtMs;
   JoyStick            _joyStick;
+  float               _dtLastCmd;
 };
 
 /////////////////////////////////////////////////////

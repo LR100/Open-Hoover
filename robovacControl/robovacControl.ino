@@ -291,7 +291,7 @@ protected:
 
 #endif // !WIN
 
-#define ULTRASONIC_MAX_DISTANCE 200 // In CM 
+#define ULTRASONIC_MAX_DISTANCE 250 // In CM 
 #define ULTRASONIC_MIN_TIME_REFRESH 33 // IN MS
 
 class DistanceSensorUltrasonic : public DistanceSensor
@@ -347,10 +347,10 @@ private:
 	unsigned long   _timePassed; // also In Ms
 };
 
-#define MOTOR_LEFT_P 22
-#define MOTOR_LEFT_M 24
-#define MOTOR_RIGHT_P 28
-#define MOTOR_RIGHT_M 26
+#define MOTOR_LEFT_P 28
+#define MOTOR_LEFT_M 26
+#define MOTOR_RIGHT_P 22
+#define MOTOR_RIGHT_M 24
 
 #include <RobovacDefines.h>
 
@@ -379,7 +379,7 @@ public:
 
 
 	// Unit could be an Angle (in degree) or a Distance (in cm)
-	void        Move(MovementType movementType, float unit, bool force = false)
+	void        Move(MovementType movementType, uint16_t unit, bool force = false)
 	{
 		if (_moveIsFinished || force)
 		{
@@ -391,6 +391,16 @@ public:
 			(this->*_initFunction[_movementType])(unit);
 		}
 	}
+
+ void        MoveNow(MovementType movementType, uint16_t unit)
+ {
+    Move(movementType, unit, true);
+    while (!_moveIsFinished)
+    {
+      delay(10);
+      Update(10);
+    }
+  }
 
 	void        Update(const float& dtMs)
 	{
@@ -412,40 +422,39 @@ public:
 
 private:
 
-	void        Forward(float unit)
+	void        Forward(uint16_t unit)
 	{
-		_timeForCurrentMove = (unit / _speedLinear) * 1000.f; // to MS
+		_timeForCurrentMove = ((float)unit / _speedLinear) * 1000.f; // to MS
 		_motorLeft.Forward();
 		_motorRight.Forward();
 	}
-	void        Backward(float unit)
+	void        Backward(uint16_t unit)
 	{
-		_timeForCurrentMove = (unit / _speedLinear) * 1000.f; // to MS
+		_timeForCurrentMove = ((float)unit / _speedLinear) * 1000.f; // to MS
 		_motorLeft.Backward();
 		_motorRight.Backward();
 	}
-	void        RotateLeft(float unit)
+	void        RotateLeft(uint16_t unit)
 	{
-		Serial.print("RotateLeft");
-		_timeForCurrentMove = (unit / _speedAngular) * 1000.f; // to MS
+		_timeForCurrentMove = ((float)unit / _speedAngular) * 1000.f; // to MS
 		_motorLeft.Forward();
 		_motorRight.Backward();
 	}
-	void        RotateRight(float unit)
+	void        RotateRight(uint16_t unit)
 	{
-		_timeForCurrentMove = (unit / _speedAngular) * 1000.f; // to MS
+		_timeForCurrentMove = ((float)unit / _speedAngular) * 1000.f; // to MS
 		_motorLeft.Backward();
 		_motorRight.Forward();
 	}
 
-	void        Stop(float unit)
+	void        Stop(uint16_t unit)
 	{
-		_timeForCurrentMove = unit;
+		_timeForCurrentMove = (float)unit;
 		_motorLeft.Stop();
 		_motorRight.Stop();
 	}
 
-	typedef void (MovementControler::*MoveFunction)(float);
+	typedef void (MovementControler::*MoveFunction)(uint16_t);
 	MoveFunction    _initFunction[MOVEMENTCONTROLLER_NBMOVE];
 
 	bool        _moveIsFinished;
@@ -483,9 +492,23 @@ private:
 class Robovac : public RobovacSC
 {
 public:
+  typedef enum RobovacState : uint8_t
+  {
+    REST = 0,
+    CALIBRATE = 1,
+    MAP = 2,
+    NAVIGATE,
+    WORK,
+    BLOCKED,
+  } RobovacState;
+
 	Robovac() : RobovacSC(RF24_PIN_CE, RF24_PIN_CS)
 	{
-		_movementController.Move(MovementType::FORWARD, 20);
+    _movementController.SetSpeedAngular(246.0f); // Value Is Known from precedent Calibrate Call 
+		//_movementController.Move(MovementType::FORWARD, 20);
+    _dtMsVerification = 0;
+    _robotState = REST;
+    _robotDiameter = 30; // In Cm - Must be Set Manually for the moment - Could be self calibrate
 		_frontDistanceSensor = new DistanceSensorUltrasonic(ULTRASONIC_FRONT_PIN_P, ULTRASONIC_FRONT_PIN_M);
 #ifndef WIN
 
@@ -493,7 +516,7 @@ public:
 		pinMode(RELAY_ALIM_PIN, OUTPUT);
 		digitalWrite(RELAY_ALIM_PIN, HIGH);
 #endif
-		_movementController.Move(MovementType::STOP, 10, true);
+		_movementController.Move(MovementType::STOP, 1000, true);
 	}
 	~Robovac()
 	{
@@ -507,125 +530,308 @@ public:
 	void Operate(unsigned long dtMs)
 	{
 		_dtMs = (float)dtMs;
+    UpdateCommunication(); // Update Client
+    UpdateFromState();
 		_movementController.Update(_dtMs);
-		UpdateCommunication(); // Update Client
 	}
 
 private:
 
+  void UpdateFromState()
+  {
+    if (_robotState == CALIBRATE){
+      _robotState = REST; // At End OF Calibrate -> Robot Is Resting
+      _dtMs = 0; // Was calibrating _dtMs is reset
+      Demo();
+    } else if (_robotState == MAP) {
+      
+    } else {
+      SendMsg("I'm Resting");
+    }
+    _dtMsVerification += _dtMs; // If Verification is needed
+    if (_dtMsVerification > 200)
+    {
+      _frontDistanceSensor->SetDistance();
+      if (_frontDistanceSensor->GetDistance() < 6) // TOO Close !! -> STOP
+      {
+          _movementController.Move(MovementType::STOP, 10, true);
+          
+      } 
+      _frontDistanceLast = _frontDistanceSensor->GetDistance();
+    }
+  }
+
+  void Demo()
+  {
+     _movementController.MoveNow(MovementType::ROTATE_LEFT, 45); // Notify That Robot is Calibrate
+      delay(2000);
+      _movementController.MoveNow(MovementType::ROTATE_RIGHT, 45);
+      delay(2000);
+      _movementController.MoveNow(MovementType::ROTATE_LEFT, 90); // Notify That Robot is Well Calibrate
+      delay(2000);
+      _movementController.MoveNow(MovementType::ROTATE_RIGHT, 90);
+      delay(2000);
+       _movementController.MoveNow(MovementType::ROTATE_LEFT, 180); // Notify That Robot is Well Calibrate
+      delay(2000);
+      _movementController.MoveNow(MovementType::ROTATE_RIGHT, 180);
+      delay(2000);
+  }
+
+  void MapAngle(uint16_t angleStart, uint16_t angleEnd, uint8_t angleStep) // ex: angleStart: 80° angleEnd: 
+  {
+    
+  }
+
 	virtual void	OnReadCommandCalibrate(RobovacCommand* command) override
 	{
+    if (_robotState != CALIBRATE) // Already Calibrating
+    {
+      _robotState = CALIBRATE;
 		  Calibrate();
+    }
 	}
 
 	virtual void	OnReadCommandMovement(RobovacCommandMovement* command) override 
 	{
-    Serial << "Command Movement of type:(" << command->movementType << ")\n";
+    if (_robotState != CALIBRATE) // Already Calibrating
+    {
       _movementController.Move(command->movementType, command->power * 10, true);
+    }
 	}
 
+  void  RotateFromAngle(float angle)
+  {
+    if (angle < 0) {
+        _movementController.MoveNow(MovementType::ROTATE_LEFT, (uint16_t)(-angle));
+    } else {
+        _movementController.MoveNow(MovementType::ROTATE_RIGHT, (uint16_t)(angle));
+    }
+  }
+
+  bool FindFreePath(uint16_t minDist = 20, uint16_t maxDist = ULTRASONIC_MAX_DISTANCE) // Return a angle to Rotate for a free path direction 
+  { // Negative Angle -> Rotate Left (anticlockwise) -- Positive Angle -> Rotate Right (clockwise)
+    
+     // Position Start
+     const uint8_t fovToGo = 90;
+     const uint8_t steps = 10;
+     const uint8_t angleRotate = (fovToGo / steps);
+     
+     _movementController.MoveNow(MovementType::ROTATE_LEFT, (uint16_t)(fovToGo / 2));
+     uint8_t distOkCount = 0;
+     const uint8_t maxSteps = (360 / steps);
+     uint16_t distance;
+     
+     for (uint8_t s = 0; s < maxSteps; s+= 1)
+     {
+        _frontDistanceSensor->SetDistance();
+        distance = _frontDistanceSensor->GetDistance(); // Get Distance from Sensor
+        if (distance > minDist && distance < maxDist)
+        {
+          distOkCount = 0;
+          _movementController.MoveNow(MovementType::ROTATE_RIGHT, 20);
+        }
+        else 
+        {
+          _movementController.MoveNow(MovementType::ROTATE_RIGHT, angleRotate);
+          distOkCount += 1;
+        }
+        if (distOkCount == (steps - 1))
+        {
+           _movementController.MoveNow(MovementType::ROTATE_LEFT, (uint16_t)(fovToGo / 2));
+           return (true);
+        }
+     }
+     return (false);
+  }
 
 	void Calibrate()
 	{
-		CalibrateAngularSpeed();
-		// Then From Angular speed and around map get linear speed by good direction
-		_frontDistanceSensor->SetDistance();
-		unsigned int distance = _frontDistanceSensor->GetDistance();
-
-		unsigned long timeStart = 0;
-		unsigned long timeElapsed = 0;
-		unsigned long timeCurrent = 0;
-#ifndef WIN
-		timeStart = millis();
-		Serial.print("Distance:");
-		Serial.print(distance);
-		Serial.print("Cm\n");
-#endif
-		// Case Is Too Far From
-		while (distance >= ULTRASONIC_MAX_DISTANCE)
-		{
-			_movementController.Move(MovementType::FORWARD, 10);
-#ifndef WIN
-			timeCurrent = millis();
-#endif
-			timeElapsed = timeCurrent - timeStart;
-			timeStart = timeCurrent;
-			if (_frontDistanceSensor->Update(timeElapsed))
-			{
-				distance = _frontDistanceSensor->GetDistance();
-				if (distance == _frontDistanceSensor->GetDistancePrev()) // Is Stuck ! Try Random Rotate
-				{
-					if (distance % 2 == 0)
-						_movementController.Move(MovementType::ROTATE_LEFT, 40, true);
-					else
-						_movementController.Move(MovementType::ROTATE_RIGHT, 40, true);
-				}
-#ifndef WIN
-				Serial.print("Distance:");
-				Serial.print(distance);
-				Serial.print("Cm\n");
-#endif
-			}
-		}
-		_movementController.Move(MovementType::STOP, 10, true);
-
-
-		bool isCalibrated = false;
-		while (!isCalibrated)
-		{
-			_frontDistanceSensor->SetDistance();
-			unsigned int distance = _frontDistanceSensor->GetDistance();
-
-#ifndef WIN
-			timeCurrent = millis();
-#endif
-			timeElapsed = timeCurrent - timeStart;
-			timeStart = timeCurrent;
-
-		}
+    Demo();
+		// CalibrateAngularSpeed();
+    // Find Free Path
+    if (FindFreePath(100, (ULTRASONIC_MAX_DISTANCE - 40)))
+    {
+        CalibrateLinearSpeed(100);
+    }
 	}
 
-#define ROTATE_CALIBRATE_COUNT_MAX 360
-#define ROTATE_CALIBRATE_DELAY 36
+	bool markersAreEqual(uint16_t* markersA, uint16_t* markersB, uint8_t nbMarkers, float diffAccept = 0.05, float percentAccept = 0.80f)
+	{
+		float diffDist = 0;
+
+		uint8_t markerMatchToMatch = (uint8_t)((float)nbMarkers * percentAccept);
+		uint8_t markerMatchCount = 0;
+
+		for (uint16_t i = 0; i < nbMarkers; i += 1)
+		{
+			diffDist = fabsf((float)markersA[i] - (float)markersB[i]);
+			if (diffDist < (diffAccept * (float)markersA[i]))
+			{
+				markerMatchCount += 1;
+			}
+		}
+
+    //UpdateCommunication();
+    
+    SendMsg("D:"+String(markersB[nbMarkers - 1])+"MMC:" + String(markerMatchCount)+"MMT:"+String(markerMatchToMatch));
+
+		if (markerMatchCount < markerMatchToMatch)
+			return (false);
+
+		return (true);
+	}
+
+	float CalibrateAngularRotate(uint16_t angularVelocityMin, uint16_t angularVelocityMax, uint16_t markersCount, float angularRotateDesired, float diffAccept = 0.05f, float percentAccept = 0.80f)
+	{
+		float timeMintoMaxAngularRotate = (angularRotateDesired / (float)angularVelocityMax); // Time Min to reach the Max angular rotation per mesure Desired
+		float timeMaxtoMinAngularRotate = (angularRotateDesired / (float)angularVelocityMin); // Time Max to reach the Min angular rotation per mesure Desired
+		float timeMaxToReachFullRotate = (360.0f / (float)angularVelocityMin);
+		float timeAverageToRotateDesired = ((timeMintoMaxAngularRotate + timeMaxtoMinAngularRotate) / 2.0f); // Still In Seconds
+		float timePassed = 0;
+
+		uint16_t  maxMeasure = (720 / angularRotateDesired);
+		uint16_t* markers = new uint16_t[markersCount];
+		uint16_t* dist = new uint16_t[maxMeasure]; // Fat distance buffers
+		uint16_t  measureCount = 0;
+		uint16_t  distance;
+
+		float timeStop = timeMaxToReachFullRotate + (timeMaxToReachFullRotate * 0.5f);
+
+    _movementController.Move(MovementType::ROTATE_RIGHT, 400, true);
+    delay((int)(timeAverageToRotateDesired * 3000.0f)); // Prepare Motor
+    _movementController.Move(MovementType::STOP, 10000, true);
+    SendMsg("Go Calibrate");
+
+
+    int minGo = 10;
+    int markerPosEnd = (markersCount + minGo);
+    int waitedRotate = 0;
+    int toWaitRotate = (timeAverageToRotateDesired * 1000.0f);
+	
+		while (timePassed < timeStop && measureCount < maxMeasure) // To avoid overflow in measure
+		{
+      UpdateCommunication();
+      _frontDistanceSensor->SetDistance();
+			distance = _frontDistanceSensor->GetDistance(); // Get Distance from Sensor
+			dist[measureCount] = distance;
+      if (measureCount == markerPosEnd)
+      {
+        delay(6000); // LET 6 seconds for user to see where markerPosEnd is !!!
+      }
+
+			if (measureCount > minGo && measureCount < markerPosEnd)
+			{
+				markers[measureCount] = distance;
+        SendMsg("Mark:"+String(distance)+"CNT:"+String(measureCount));
+			}
+			else
+			{
+				if (measureCount > markerPosEnd) // Start to compare Markers and Current Distance
+				{
+					if (measureCount > (markerPosEnd + 10) && markersAreEqual(markers, &dist[measureCount - markersCount], markersCount, diffAccept, percentAccept))
+					{
+						delete(markers);
+						delete(dist);
+            SendMsg("OK CALIB:"+String(360.0f / timePassed));
+						return ((360.0f / timePassed));
+					}
+          timePassed += timeAverageToRotateDesired; // So also start to count time passed to found markers again
+				}
+			}
+     
+      delay(100);
+			_movementController.Move(MovementType::ROTATE_LEFT, 4000, true);
+      waitedRotate = 0;
+      while (waitedRotate < toWaitRotate) {
+         delay(10);
+         waitedRotate += 10;
+      }
+			_movementController.Move(MovementType::STOP, 10000, true);
+
+			// std::this_thread::sleep_for(std::chrono::milliseconds((int)(timeAverageToRotateDesired * 1000.0f)));
+
+			measureCount += 1;
+			
+		}
+
+		delete(markers);
+		delete(dist);
+    SendMsg("BAD CALIB:"+String((((float)angularVelocityMax + (float)angularVelocityMin) / 2.0f)));
+		return (((float)angularVelocityMax + (float)angularVelocityMin) / 2.0f);
+	}
 
 	void          CalibrateAngularSpeed()
 	{
-#ifndef WIN
-
-		Serial.print("CalibrateAngularSpeed\n");
-#endif
-		unsigned int    distances[ROTATE_CALIBRATE_COUNT_MAX];
-		float       angleSupposed = 0;
-		float       rcdf = (float)ROTATE_CALIBRATE_DELAY;
-
-		for (unsigned int i = 0; i < ROTATE_CALIBRATE_COUNT_MAX; i += 1)
-		{
-#ifndef WIN
-			delay(ROTATE_CALIBRATE_DELAY);
-
-#endif
-
-			_movementController.Move(MovementType::STOP, 100, true);
-			angleSupposed += rcdf * _movementController.GetSpeedAngular();
-			_frontDistanceSensor->SetDistance();
-			distances[i] = _frontDistanceSensor->GetDistance();
-			_movementController.Move(MovementType::ROTATE_RIGHT, 100, true);
-		}
-		_movementController.Move(MovementType::STOP, 100, true);
-#ifndef WIN
-		for (unsigned int i = 0; i < ROTATE_CALIBRATE_COUNT_MAX; i += 1)
-		{
-			Serial.print("Distance:");
-			Serial.print(distances[i]);
-			Serial.print("Cm\n");
-		}
-#endif
-
+     float angularSpeed = CalibrateAngularRotate(90, 360, 40, 4.0f, 0.34, 0.72);
+     SendMsg("CALIB:"+String(angularSpeed));
+     angularSpeed *= 1.80f; // Considering Inertia Speed - Should also be considered in MovementController
+		_movementController.SetSpeedAngular(angularSpeed);
 	}
 
+
+ float         GetMeasureLinearSpeed(uint16_t timeMoveMs, bool forward)
+ {
+    _frontDistanceSensor->SetDistance();
+    uint16_t distanceOld = _frontDistanceSensor->GetDistance(); // Get Distance from Sensor
+    uint16_t distance = 0;
+    uint16_t distanceDiff = 0;
+
+    delay(100);
+    if (forward) {
+      _movementController.Move(MovementType::FORWARD, 4000, true);
+    } else {
+      _movementController.Move(MovementType::BACKWARD, 4000, true);
+    }
+    uint16_t waitedMove = 0;
+    while (waitedMove < timeMoveMs) {
+         delay(10);
+         waitedMove += 10;
+    }
+    _movementController.Move(MovementType::STOP, 1000, true);
+    // Get New Distance
+    _frontDistanceSensor->SetDistance();
+     distance = _frontDistanceSensor->GetDistance();
+     if (forward) {
+        distanceDiff = distanceOld - distance;
+     } else {
+        distanceDiff = distance - distanceOld;
+     }
+     return ((float)((float)distanceDiff / ((float)timeMoveMs / 1000.0f)));
+ }
+
+ void          CalibrateLinearSpeed(uint16_t freeDist)
+ {
+    float linearSpeedA = GetMeasureLinearSpeed(500, true);
+    float linearSpeedB = GetMeasureLinearSpeed(500, false);
+
+    float linearSpeed = ((linearSpeedA + linearSpeedB) * 0.5f);
+    SendMsg("Linear Speed:"+String(linearSpeed));
+ }
+
+  typedef struct RobotPosition {
+      float     angle = 0;
+      Vec2      dir;
+      Vec2      pos;
+      void      Reset()
+      {
+        angle = 0;
+        pos.x = 0;
+        pos.y = 0;
+        dir.x = 1;
+        dir.y = 0;
+      }
+  } RobotPosition;
+
 	DistanceSensor*     _frontDistanceSensor;
+  float               _frontDistanceLast;
+ 
 	MovementControler   _movementController;
+  float               _dtMsVerification;
 	float               _dtMs;
+
+  uint8_t              _robotDiameter;
+  RobotPosition       _robotPosition;
+  RobovacState        _robotState;
 };
 
 

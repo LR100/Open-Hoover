@@ -31,6 +31,12 @@ template<class E> inline Print &operator <<(Print &obj, E arg) { obj.print(arg);
 #define DEBUGRF24_SEND_CALL 0
 #define DEBUGRF24_MEMORY 0
 
+/*
+ Name:		RF24SC.h
+ Created:	3/25/2019 1:47:14 PM
+ Author:	Loic Robin
+*/
+
 #include "Queue.h"
 
 void	DumpObject(char* object, uint8_t sizeObject)
@@ -199,54 +205,14 @@ public:
 		uint8_t sizeObject = ((sizeof(*this)) - 2); // Checksum is not added
 		char* object = (char*)&(*this);
 
-		//Display();
-		//Serial << "CSC() sizeObject(" << sizeObject << ")\n";
-
-
 
 		for (uint8_t i = 0; i < sizeObject; i += 1)
 		{
 			tmp = (uint16_t)object[i];
 			_checksum += ((tmp * 3) % 3750);
-			//Serial << _checksum << "\n";
 		}
 		_checksum += (time % 20000);
 
-
-		//if (header.dataSpec.size > 0)
-		//{
-		//	sizeObject = (uint8_t)header.dataSpec.size;
-		//	object = GetData();
-
-		//	for (uint8_t i = 0; i < sizeObject; i += 1)
-		//	{
-		//		tmp = (uint16_t)object[i];
-		//		_checksum += tmp;
-
-		//		//Serial << _checksum << "\n";
-		//	}
-
-		//}
-
-		//uint16_t	_checksum = 0;
-
-	/*	_checksum += (header.requestType * 11);
-		_checksum += (header.dataSpec.size * 7);
-		_checksum += (header.dataSpec.type * 2);
-		_checksum += (header.senderDeviceID * 5);
-		_checksum += (header.receiverDeviceID * 3);
-		_checksum += time;
-*/
-//Serial << "PreCheckSUm(" << _checksum <<")\n";
-//if (header.dataSpec.size > 0)
-//{
-//	for (uint16_t a = 0; a < (header.dataSpec.size - 1); a += 1)
-//	{
-//		Serial << ((uint16_t)((uint8_t)GetData()[a])) << "\n";
-//		//_checksum += (uint16_t)((uint8_t)GetData()[a]);
-//	}
-//	//_checksum += (uint16_t)((uint8_t)GetData()[header.dataSpec.size - 1]);
-//}
 		return (_checksum);
 	}
 
@@ -370,7 +336,7 @@ public:
 	{
 		Serial << "Constructor\n";
 		_memoryBufferUsed = sizeof(*this) + RF24_DATA_FAT_MAX_SIZE; // Size of all essential buffers 
-		_memoryBufferMax = 2048; // 2Ko
+		_memoryBufferMax = 1024; // 1024 octets
 		_lastChecksum = 0;
 		_deviceID = 0;
 		_deviceIDReceiver = RF24ALL_ID;
@@ -394,7 +360,7 @@ public:
 #endif
 
 	// Init Basics and then overridable Extended
-	bool	Init()
+	bool	InitCommunication()
 	{
 		Serial << "Init\n";
 		if (_lastChecksum == 0)
@@ -430,7 +396,7 @@ private:
 	uint16_t debugLifeTimeCounter = 0;
 public:
 
-	void	Update()
+	void	UpdateCommunication()
 	{
 		if (_lastChecksum == 0)
 			return;
@@ -811,7 +777,7 @@ private:
 	void	PrepareCall(RF24Call* call)
 	{
 		_callQueue.PushBack(call);
-		Update(); // Take Opportunity of having time with communicator to update Read/Write
+		UpdateCommunication(); // Take Opportunity of having time with communicator to update Read/Write
 	}
 
 	// 
@@ -1029,8 +995,10 @@ private:
 		const uint8_t	connectionTryResponseMax = 10;
 		const uint8_t	connectionTryResponseDelay = 20; // in ms
 
+
 		//packetToSend->Display();
 		//DumpObject((char*)&packetToSend[0], packetToSend->GetSize());
+
 
 #ifndef _WIN32
 
@@ -1301,7 +1269,7 @@ private:
 		Serial << "Read Auth Write OK\n";
 #endif
 		SendCall();
-		// If multi clients is implemented // Here it would be possible to know from packet who want to write
+		// If multi clients is implemented // Here it would be possible to now from packet who want to write
 	}
 
 	bool	InitRequestFcts()
@@ -1348,7 +1316,7 @@ private:
 	unsigned long		_time;
 	uint16_t			_timeDtMs;
 	bool				_isListening = false;
-	uint16_t			_memoryBufferUsed; // Size Of Datas + Size Of Calls + Size Of Nodes + Size Of Object ItSelf + Size of Data Buffer
+	uint16_t			_memoryBufferUsed; // Size Of Datas + Size Of Calls + Size Of Nodes + Size Of ItSelf + Size of Data Buffer
 	uint16_t			_memoryBufferMax;
 };
 
