@@ -23,6 +23,7 @@ RobovacSimulation::RobovacSimulation()
 	_switchMode = false;
 
 
+	_calibrateMode = false;
 	_editMode = true;
 
 	_fpsAimed = 100.0f;

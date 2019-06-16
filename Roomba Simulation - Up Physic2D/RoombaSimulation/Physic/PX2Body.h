@@ -45,6 +45,8 @@ public:
 	PX2Body(PX2World* world, Properties & properties);
 	~PX2Body();
 
+	PX2World*			GetWorld() const;
+
 	void				SetShape(PX2Shape* shape);
 	const PX2Shape*		GetShape() const;
 

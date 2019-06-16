@@ -5,10 +5,15 @@
 CosTable VectorTransformer::_cosTable = CosTable(PRECISION_ROTATION);
 SinTable VectorTransformer::_sinTable = SinTable(PRECISION_ROTATION);
 
+#include <iostream> // TMP
+
 void VectorTransformer::Rotate(Vec2 & vec, const float & angle)
 {
 	if (angle < 0)
-		RotateInv(vec, -angle);
+	{
+		Rotate(vec, (360.f + angle));
+		return;
+	}
 	unsigned int iangle = GetScaledAngle(angle);
 	Vec2 tmp;
 	tmp.x = vec.x;

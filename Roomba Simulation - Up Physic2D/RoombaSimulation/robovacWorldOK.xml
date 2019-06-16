@@ -1,0 +1,82 @@
+<World>
+  <Vec2 id="gravity" x="0" y="980"/>
+  <Bodies>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714854096" type="0">
+      <Vec2 id="position" x="1330" y="724.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714857680" type="0">
+      <Vec2 id="position" x="1334.5" y="135.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714856336" type="0">
+      <Vec2 id="position" x="281" y="98.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714853200" type="0">
+      <Vec2 id="position" x="498" y="409"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714854656" type="0">
+      <Vec2 id="position" x="209.5" y="406"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714855216" type="0">
+      <Vec2 id="position" x="391" y="528.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714855888" type="0">
+      <Vec2 id="position" x="381" y="101.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714854768" type="0">
+      <Vec2 id="position" x="294.5" y="139.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714853424" type="0">
+      <Vec2 id="position" x="176" y="109"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714853984" type="0">
+      <Vec2 id="position" x="1250.5" y="46.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714856896" type="0">
+      <Vec2 id="position" x="471.5" y="48.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714855104" type="0">
+      <Vec2 id="position" x="1403.5" y="420"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714857792" type="0">
+      <Vec2 id="position" x="1266.5" y="806.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714859696" type="0">
+      <Vec2 id="position" x="501.5" y="806.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+    <Body friction="0.5" mass="10" restitution="0.8" shape="2384714854320" type="0">
+      <Vec2 id="position" x="53.5" y="429"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+    </Body>
+  </Bodies>
+  <Shapes>
+    <Shape height="145" id="2384714854096" type="1" width="132"/>
+    <Shape height="92" id="2384714853424" type="1" width="26"/>
+    <Shape height="133" id="2384714857680" type="1" width="105"/>
+    <Shape height="55" id="2384714856336" type="1" width="172"/>
+    <Shape height="115" id="2384714855216" type="1" width="648"/>
+    <Shape height="76" id="2384714853200" type="1" width="74"/>
+    <Shape height="35" id="2384714854768" type="1" width="207"/>
+    <Shape height="66" id="2384714854656" type="1" width="65"/>
+    <Shape height="81" id="2384714855888" type="1" width="36"/>
+    <Shape height="35" id="2384714853984" type="1" width="335"/>
+    <Shape height="31" id="2384714856896" type="1" width="881"/>
+    <Shape height="794" id="2384714855104" type="1" width="27"/>
+    <Shape height="31" id="2384714857792" type="1" width="303"/>
+    <Shape height="35" id="2384714859696" type="1" width="909"/>
+    <Shape height="794" id="2384714854320" type="1" width="33"/>
+  </Shapes>
+</World>

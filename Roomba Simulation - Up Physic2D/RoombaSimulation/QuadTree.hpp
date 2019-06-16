@@ -611,10 +611,10 @@ private:
 	struct NodeManipulation
 	{
 		Vec2T<T>	vec;
-		size_t		pos;
-		size_t		posOld;
-		size_t		i;
-		Node*		cursor;
+		size_t		pos = 0;
+		size_t		posOld = 0;
+		size_t		i = 0;
+		Node*		cursor = NULL;
 	};
 
 	NodeManipulation	_nM;

@@ -58,6 +58,11 @@ PX2Body::~PX2Body()
 	//_world->GetBodyManager()->DestroyBody(_id);
 }
 
+PX2World* PX2Body::GetWorld() const
+{
+	return (_world);
+}
+
 void PX2Body::SetShape(PX2Shape * shape)
 {
 	_shape = shape;

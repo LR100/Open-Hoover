@@ -70,9 +70,9 @@ public:
 		Vec2	dir;
 		Vec2	end;
 		// Intersection Part
-		float			t;
+		float			t = 0;
 		Vec2			point;
-		Node::Index*	index;
+		Node::Index*	index = NULL;
 		// Buffers
 		float			ts[2];
 		Vec2			points[2];
@@ -82,7 +82,7 @@ public:
 		Vec2			positionMove;
 		Vec2			positionMoveOld;
 		Vec2			microMove;
-		const Node*		node;
+		const Node*		node = NULL;
 	};
 
 public:

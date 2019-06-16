@@ -354,24 +354,24 @@ private:
 
 #include <RobovacDefines.h>
 
-class MovementControler
+class MovementController
 {
 public:
 #define MOVEMENTCONTROLLER_NBMOVE 5
 
-	MovementControler() : _motorLeft(MOTOR_LEFT_P, MOTOR_LEFT_M), _motorRight(MOTOR_RIGHT_P, MOTOR_RIGHT_M)
+	MovementController() : _motorLeft(MOTOR_LEFT_P, MOTOR_LEFT_M), _motorRight(MOTOR_RIGHT_P, MOTOR_RIGHT_M)
 	{
-		_moveIsFinished = false,
-			_movementType = MovementType::STOP;
+		_moveIsFinished = true;
+		_movementType = MovementType::STOP;
 		_speedLinear = 10.0f;
 		_speedAngular = 20.0f; // 20° per second
 		 // Movement is in 2D (The Ground) 
 		// No management of highness (For the robot everything is Flat !)
-		_initFunction[STOP] = &MovementControler::Stop;
-		_initFunction[FORWARD] = &MovementControler::Forward;
-		_initFunction[BACKWARD] = &MovementControler::Backward;
-		_initFunction[ROTATE_LEFT] = &MovementControler::RotateLeft;
-		_initFunction[ROTATE_RIGHT] = &MovementControler::RotateRight;
+		_initFunction[STOP] = &MovementController::Stop;
+		_initFunction[FORWARD] = &MovementController::Forward;
+		_initFunction[BACKWARD] = &MovementController::Backward;
+		_initFunction[ROTATE_LEFT] = &MovementController::RotateLeft;
+		_initFunction[ROTATE_RIGHT] = &MovementController::RotateRight;
 	}
 
 	void  SetSpeedLinear(const float& speedLinear) { _speedLinear = speedLinear; };
@@ -386,8 +386,8 @@ public:
       Serial << "Movement Controller Move\n";
 			_moveIsFinished = false;
 			_movementType = movementType;
-			_timePassedForCurrentMove = 0;
-			_timeForCurrentMove = 0;
+			_timeMoved = 0;
+			_timeToMove = 0;
 			(this->*_initFunction[_movementType])(unit);
 		}
 	}
@@ -397,18 +397,33 @@ public:
     Move(movementType, unit, true);
     while (!_moveIsFinished)
     {
-      delay(10);
-      Update(10);
+      delay(5);
+      Update(5);
     }
   }
 
+  void        MoveNowDuring(MovementType movementType, uint16_t timeMs)
+  {
+     Move(movementType, 1000, true);
+     uint16_t timeMoved = 0;
+     
+      while (timeMoved < timeMs)
+      {
+        delay(5);
+        Update(5);
+        timeMoved += 5;
+      }
+      Move(MovementType::STOP, 100, true); 
+  }
+  
+
 	void        Update(const float& dtMs)
 	{
-		_timePassedForCurrentMove += dtMs;
-		if (_timePassedForCurrentMove >= _timeForCurrentMove)
+		_timeMoved += dtMs;
+		if (_timeMoved >= _timeToMove)
 		{
-			_timeForCurrentMove = 0;
-			_timePassedForCurrentMove = 0;
+			_timeToMove = 0;
+			_timeMoved = 0;
 			_movementType = STOP;
 			_moveIsFinished = true;
 			Stop(0); // Unlimited Stop
@@ -416,45 +431,56 @@ public:
 	}
 
 	const MovementType&   GetMovementType() const { return (_movementType); };
-	const float&    GetSpeedLinear() const { return (_speedLinear); };
-	const float&    GetSpeedAngular() const { return (_speedAngular); };
-	const bool&     IsMoveFinished() const { return (_moveIsFinished); };
+	const float&          GetSpeedLinear() const { return (_speedLinear); };
+	const float&          GetSpeedAngular() const { return (_speedAngular); };
+	const bool&           IsMoveFinished() const { return (_moveIsFinished); };
 
 private:
 
 	void        Forward(uint16_t unit)
 	{
-		_timeForCurrentMove = ((float)unit / _speedLinear) * 1000.f; // to MS
+		_timeToMove = ((float)unit / _speedLinear) * 1000.f; // to MS
 		_motorLeft.Forward();
 		_motorRight.Forward();
 	}
 	void        Backward(uint16_t unit)
 	{
-		_timeForCurrentMove = ((float)unit / _speedLinear) * 1000.f; // to MS
+		_timeToMove = ((float)unit / _speedLinear) * 1000.f; // to MS
 		_motorLeft.Backward();
 		_motorRight.Backward();
 	}
 	void        RotateLeft(uint16_t unit)
 	{
-		_timeForCurrentMove = ((float)unit / _speedAngular) * 1000.f; // to MS
+		SetRotateUnitTime(unit);
 		_motorLeft.Forward();
 		_motorRight.Backward();
 	}
 	void        RotateRight(uint16_t unit)
 	{
-		_timeForCurrentMove = ((float)unit / _speedAngular) * 1000.f; // to MS
+		SetRotateUnitTime(unit);
 		_motorLeft.Backward();
 		_motorRight.Forward();
 	}
 
 	void        Stop(uint16_t unit)
 	{
-		_timeForCurrentMove = (float)unit;
+		_timeToMove = (float)unit;
 		_motorLeft.Stop();
 		_motorRight.Stop();
+    _moveIsFinished = true; // Stop -> Doing Nothing
 	}
 
-	typedef void (MovementControler::*MoveFunction)(uint16_t);
+  // Correct Time with inertia if small movement
+  void SetRotateUnitTime(uint16_t unit) 
+  {
+    float modSpeedAngular = _speedAngular; // More unit is low -> Slower it is
+    if (unit < 45) {
+       modSpeedAngular = (modSpeedAngular / (70.0f / (25.0f + (float)unit))); // From 3Times slower speed to -> 1 (from 0 to 10degree Rotation)
+    }
+    _timeToMove = ((float)unit / modSpeedAngular) * 1000.f; // to MS
+  }
+
+	typedef void (MovementController::*MoveFunction)(uint16_t);
 	MoveFunction    _initFunction[MOVEMENTCONTROLLER_NBMOVE];
 
 	bool        _moveIsFinished;
@@ -463,15 +489,16 @@ private:
 	float       _speedLinear; // in cm/s Calculated from CALIBRATION
 	// Precision max is in cm so could use an in to get better performance
 
-	unsigned int    _timeForCurrentMove; // in Ms
-	unsigned int    _timePassedForCurrentMove; // also In Ms
+	unsigned int    _timeToMove; // in Ms
+	unsigned int    _timeMoved; // also In Ms
 
 	Vec2        _pos;
 	Vec2        _dir;
 
-	Motor       _motorLeft;
-	Motor       _motorRight;
+	Motor             _motorLeft;
+	Motor             _motorRight;
 	MovementType      _movementType;
+  
 };
 
 
@@ -487,6 +514,7 @@ private:
 
 #define RF24_PIN_CE 7
 #define RF24_PIN_CS 8
+
 
 // !!!!!!!!!! ALL distance are in cm
 class Robovac : public RobovacSC
@@ -504,7 +532,8 @@ public:
 
 	Robovac() : RobovacSC(RF24_PIN_CE, RF24_PIN_CS)
 	{
-    _movementController.SetSpeedAngular(246.0f); // Value Is Known from precedent Calibrate Call 
+    _movementController.SetSpeedAngular(240.0f); // Value Is Known from precedent Calibrate Call 
+    _movementController.SetSpeedLinear(100.0f); // Value Is Known from precedent Calibrate Call 
 		//_movementController.Move(MovementType::FORWARD, 20);
     _dtMsVerification = 0;
     _robotState = REST;
@@ -537,12 +566,14 @@ public:
 
 private:
 
+#define DISTANCE_TOO_CLOSE 10
+
   void UpdateFromState()
   {
     if (_robotState == CALIBRATE){
       _robotState = REST; // At End OF Calibrate -> Robot Is Resting
       _dtMs = 0; // Was calibrating _dtMs is reset
-      Demo();
+      // Demo();
     } else if (_robotState == MAP) {
       
     } else {
@@ -552,13 +583,24 @@ private:
     if (_dtMsVerification > 200)
     {
       _frontDistanceSensor->SetDistance();
-      if (_frontDistanceSensor->GetDistance() < 6) // TOO Close !! -> STOP
+      if (_frontDistanceSensor->GetDistance() < DISTANCE_TOO_CLOSE) // TOO Close !! -> STOP
       {
-          _movementController.Move(MovementType::STOP, 10, true);
-          
+          ActionTooClose();
       } 
       _frontDistanceLast = _frontDistanceSensor->GetDistance();
     }
+  }
+
+  void ActionTooClose()
+  {
+    _movementController.Move(MovementType::STOP, 10, true); // Instantly Stop
+    _movementController.Move(MovementType::BACKWARD, 5, true); // A Few Backward
+    FindNavigation();
+  }
+
+  void FindNavigation()
+  { 
+      
   }
 
   void Demo()
@@ -612,32 +654,37 @@ private:
   { // Negative Angle -> Rotate Left (anticlockwise) -- Positive Angle -> Rotate Right (clockwise)
     
      // Position Start
-     const uint8_t fovToGo = 90;
+     const uint8_t fovToGo = 80;
      const uint8_t steps = 10;
      const uint8_t angleRotate = (fovToGo / steps);
      
      _movementController.MoveNow(MovementType::ROTATE_LEFT, (uint16_t)(fovToGo / 2));
+     delay(200);
      uint8_t distOkCount = 0;
      const uint8_t maxSteps = (360 / steps);
      uint16_t distance;
      
      for (uint8_t s = 0; s < maxSteps; s+= 1)
      {
+        delay(50);
         _frontDistanceSensor->SetDistance();
         distance = _frontDistanceSensor->GetDistance(); // Get Distance from Sensor
+        SendMsg("FreeDist:"+String(distance));
         if (distance > minDist && distance < maxDist)
-        {
-          distOkCount = 0;
-          _movementController.MoveNow(MovementType::ROTATE_RIGHT, 20);
-        }
-        else 
         {
           _movementController.MoveNow(MovementType::ROTATE_RIGHT, angleRotate);
           distOkCount += 1;
         }
+        else 
+        {
+          distOkCount = 0;
+          _movementController.MoveNow(MovementType::ROTATE_RIGHT, 15);
+        }
+        
         if (distOkCount == (steps - 1))
         {
-           _movementController.MoveNow(MovementType::ROTATE_LEFT, (uint16_t)(fovToGo / 2));
+          SendMsg("I GO");
+           _movementController.MoveNow(MovementType::ROTATE_LEFT, (uint16_t)((float)fovToGo / (float)1.7f));
            return (true);
         }
      }
@@ -646,13 +693,12 @@ private:
 
 	void Calibrate()
 	{
-    Demo();
+    // Demo();
 		// CalibrateAngularSpeed();
     // Find Free Path
-    if (FindFreePath(100, (ULTRASONIC_MAX_DISTANCE - 40)))
-    {
-        CalibrateLinearSpeed(100);
-    }
+    
+    CalibrateLinearSpeed(35);
+    
 	}
 
 	bool markersAreEqual(uint16_t* markersA, uint16_t* markersB, uint8_t nbMarkers, float diffAccept = 0.05, float percentAccept = 0.80f)
@@ -672,8 +718,7 @@ private:
 		}
 
     //UpdateCommunication();
-    
-    SendMsg("D:"+String(markersB[nbMarkers - 1])+"MMC:" + String(markerMatchCount)+"MMT:"+String(markerMatchToMatch));
+    // SendMsg("D:"+String(markersB[nbMarkers - 1])+"MMC:" + String(markerMatchCount)+"MMT:"+String(markerMatchToMatch));
 
 		if (markerMatchCount < markerMatchToMatch)
 			return (false);
@@ -700,8 +745,7 @@ private:
     _movementController.Move(MovementType::ROTATE_RIGHT, 400, true);
     delay((int)(timeAverageToRotateDesired * 3000.0f)); // Prepare Motor
     _movementController.Move(MovementType::STOP, 10000, true);
-    SendMsg("Go Calibrate");
-
+    //SendMsg("Go Calibrate");
 
     int minGo = 10;
     int markerPosEnd = (markersCount + minGo);
@@ -757,7 +801,11 @@ private:
 		delete(markers);
 		delete(dist);
     SendMsg("BAD CALIB:"+String((((float)angularVelocityMax + (float)angularVelocityMin) / 2.0f)));
-		return (((float)angularVelocityMax + (float)angularVelocityMin) / 2.0f);
+    if (_movementController.GetSpeedAngular() > 0)
+    {
+        return (_movementController.GetSpeedAngular());
+    } // Else return Average of supposed AngularSpeed
+		return (((float)angularVelocityMax + (float)angularVelocityMin) / 4.0f);
 	}
 
 	void          CalibrateAngularSpeed()
@@ -768,6 +816,7 @@ private:
 		_movementController.SetSpeedAngular(angularSpeed);
 	}
 
+ 
 
  float         GetMeasureLinearSpeed(uint16_t timeMoveMs, bool forward)
  {
@@ -778,16 +827,10 @@ private:
 
     delay(100);
     if (forward) {
-      _movementController.Move(MovementType::FORWARD, 4000, true);
+      _movementController.MoveNowDuring(MovementType::FORWARD, timeMoveMs);
     } else {
-      _movementController.Move(MovementType::BACKWARD, 4000, true);
+      _movementController.MoveNowDuring(MovementType::BACKWARD, timeMoveMs);
     }
-    uint16_t waitedMove = 0;
-    while (waitedMove < timeMoveMs) {
-         delay(10);
-         waitedMove += 10;
-    }
-    _movementController.Move(MovementType::STOP, 1000, true);
     // Get New Distance
     _frontDistanceSensor->SetDistance();
      distance = _frontDistanceSensor->GetDistance();
@@ -799,13 +842,58 @@ private:
      return ((float)((float)distanceDiff / ((float)timeMoveMs / 1000.0f)));
  }
 
- void          CalibrateLinearSpeed(uint16_t freeDist)
+ bool   FindGoodCalibrateLinearSpeedPosition(uint16_t freeDist, uint8_t calledCount = 0)
  {
-    float linearSpeedA = GetMeasureLinearSpeed(500, true);
-    float linearSpeedB = GetMeasureLinearSpeed(500, false);
+    _frontDistanceSensor->SetDistance();
+    uint16_t distance = _frontDistanceSensor->GetDistance(); // Get Distance from Sensor
+    uint8_t tried = 0;
+    const uint8_t maxTry = 15;
 
-    float linearSpeed = ((linearSpeedA + linearSpeedB) * 0.5f);
-    SendMsg("Linear Speed:"+String(linearSpeed));
+    while (distance > freeDist && tried < maxTry)
+    {
+      _movementController.MoveNowDuring(MovementType::FORWARD, 200);
+      _frontDistanceSensor->SetDistance();  
+      distance = _frontDistanceSensor->GetDistance(); // Get Distance from Sensor
+      tried += 1;
+    }
+    if (tried == maxTry)
+    {
+        if (calledCount > 2)
+        {
+          return (false);
+        }
+        FindFreePath(freeDist, (ULTRASONIC_MAX_DISTANCE - 50));
+        if (FindGoodCalibrateLinearSpeedPosition(freeDist, calledCount + 1))
+        {
+            return (true);
+        }
+        else {
+            return (false);
+        }
+    }
+    return (true);
+ }
+
+ void   CalibrateLinearSpeed(uint16_t freeDist)
+ {
+    if (FindFreePath(freeDist, (ULTRASONIC_MAX_DISTANCE - 50)))
+    {
+      delay(3000);
+      _movementController.MoveNowDuring(MovementType::FORWARD, 800);
+    } else {
+      _movementController.MoveNowDuring(MovementType::BACKWARD, 800);
+    }
+
+    
+//    if (FindGoodCalibrateLinearSpeedPosition(freeDist, 0))
+//    {
+//  
+//      float linearSpeedA = GetMeasureLinearSpeed(500, true);
+//      float linearSpeedB = GetMeasureLinearSpeed(500, false);
+//
+//      float linearSpeed = ((linearSpeedA + linearSpeedB) * 0.5f);
+//      SendMsg("Linear Speed:"+String(linearSpeed));
+//    }
  }
 
   typedef struct RobotPosition {
@@ -825,7 +913,7 @@ private:
 	DistanceSensor*     _frontDistanceSensor;
   float               _frontDistanceLast;
  
-	MovementControler   _movementController;
+	MovementController   _movementController;
   float               _dtMsVerification;
 	float               _dtMs;
 

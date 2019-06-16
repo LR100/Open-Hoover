@@ -20,9 +20,10 @@ RobovacWorld::RobovacWorld(const std::string & pathMap)
 RobovacWorld::RobovacWorld()
 {
 	// GRAVITY IS Null For Robovac World (View From Top)
-	_pxWorld = new PX2World(Vec2(0.0f, 980.0f));
+	_pxWorld = new PX2World(Vec2(0.0f, 0.0f));
 
 	Import("robovacWorld.xml");
+	_pxWorld->SetGravity(Vec2(0.0f, 0.0f)); // In case World Set Other Gravity
 
 	_idLastRobovac = 0;
 }
@@ -112,9 +113,9 @@ void RobovacWorld::DrawBody(PX2Body * body, IDrawer2D * drawer)
 			drawer->DrawBorder(body->GetAABB().min.x, body->GetAABB().min.y, body->GetAABB().halfSize.x * 2.0f, body->GetAABB().halfSize.y * 2.0f, fillScale, colorWallExtraBorder, colorWallExtraBorder);
 			return;
 		}
-		else if (shape->GetType() == PX2Shape::TYPE::CIRCLE) // ROOMBAS
+		else if (shape->GetType() == PX2Shape::TYPE::CIRCLE) // ROBOVAC
 		{
-
+			body->GetID();
 			//drawer->DrawCircleFill(body->GetPosition().x, body->GetPosition().y, body->GetShape()->GetRadius() * 2.0f, colorCurrent);
 			drawer->SetSprite("roomba");
 			drawer->DrawSprite(body->GetAABB().min.x, body->GetAABB().min.y);
@@ -132,10 +133,19 @@ void RobovacWorld::DrawBody(PX2Body * body, IDrawer2D * drawer)
 			dir.x = (int)(body->GetDirNorm().x * body->GetShape()->GetRadius());
 			dir.y = (int)(body->GetDirNorm().y * body->GetShape()->GetRadius());
 
-			drawer->DrawLine(pos.x, pos.y, pos.x + dir.x, pos.y + dir.y, Color::RED());
-
-			return;
+			// drawer->DrawLine(pos.x, pos.y, pos.x + dir.x, pos.y + dir.y, Color::RED());
+			DrawRobovac(body, drawer);
+			
 		}
+	}
+}
+
+
+void RobovacWorld::DrawRobovac(PX2Body* body, IDrawer2D* drawer)
+{
+	if (_robovacs.count(body->GetID()))
+	{
+		_robovacs.at(body->GetID()).Draw(drawer);
 	}
 }
 
@@ -169,6 +179,19 @@ void RobovacWorld::DrawInfoRobovac(IDrawer2D * drawer)
 	}
 }
 
+void RobovacWorld::UpdateRobovacs(const float& dtMs)
+{
+	std::unordered_map<size_t, Robovac>::iterator it = _robovacs.begin();
+	std::unordered_map<size_t, Robovac>::iterator itEnd = _robovacs.end();
+
+	Robovac* robovac;
+	for (; it != itEnd; it++)
+	{
+		robovac = &it->second;
+		robovac->Update(dtMs);
+	}
+}
+
 void RobovacWorld::AddWall(const AABB2& wall)
 {
 	PX2Body::Properties prop;
@@ -183,20 +206,30 @@ void RobovacWorld::AddWall(const AABB2& wall)
 	_pxWorld->CreateBody(prop);
 }
 
-void RobovacWorld::AddRobovac(const Vec2 & pos)
+const Robovac* RobovacWorld::AddRobovac(const Vec2 & pos)
 {
 	PX2Body::Properties prop;
 
 	prop.type = PX2Body::TYPE::DYNAMIC;
 	prop.mass = 10.0f;
-	prop.restitution = 0.8f; // Robovac In real world  almost restitute nothing 
+	prop.restitution = 0.2f; // Robovac In real world  almost restitute nothing 
 	prop.position = pos;
 	prop.shape = _roombaBasics.shape;
 
 
 	PX2Body* roomba = _pxWorld->CreateBody(prop);
 	if (roomba)
+	{
 		_idLastRobovac = roomba->GetID();
+		
+		_robovacs.emplace(roomba->GetID(), Robovac());
+		Robovac* robovac = &_robovacs.at(roomba->GetID());
+
+		robovac->body = roomba;
+		robovac->SetRadius((uint8_t)prop.shape->GetRadius());
+		return (robovac);
+	}
+	return (NULL);
 }
 
 #include <iostream> // TMP
@@ -224,13 +257,19 @@ void RobovacWorld::RemoveObjectsAtPosition(const Vec2 & pos)
 	for (size_t i = 0; i < bodies.size(); i += 1)
 	{
 		std::cout << "- (" << bodies.at(i)->GetID() << ")" << std::endl;
+		if (_robovacs.count(bodies.at(i)->GetID())) // Erase From Robovacs List
+		{
+			_robovacs.erase(bodies.at(i)->GetID());
+		}
 		_pxWorld->DestroyBody(bodies.at(i));
+		
 	}
 }
 
-void RobovacWorld::Update(const float & dt)
+void RobovacWorld::Update(const float & dtS)
 {
-	_pxWorld->Simulate(dt);
+	UpdateRobovacs(dtS * 1000.0f); // Update Robovacs before simulation
+	_pxWorld->Simulate(dtS);
 }
 
 void RobovacWorld::Import(const std::string & pathMap)
@@ -288,28 +327,28 @@ void RobovacWorld::Crazy()
 	size_t NB_OBJ = 100;
 	for (size_t i = 0; i < NB_OBJ; i += 1)
 	{
-		Vec2 pos;
+		//Vec2 pos;
 
-		pos.x = (float)(rand() % 1000) + 100;
-		pos.y = (float)(rand() % 800) + 100;
+		//pos.x = (float)(rand() % 1000) + 100;
+		//pos.y = (float)(rand() % 800) + 100;
 
-		PX2Body::Properties prop;
+		//PX2Body::Properties prop;
 
-		prop.type = PX2Body::TYPE::DYNAMIC;
-		prop.mass = 10.0f;
-		prop.restitution = 1.0f; // Those are Crazy balls
-		prop.position = pos;
-		prop.shape = _roombaBasics.shape;
-		
+		//prop.type = PX2Body::TYPE::DYNAMIC;
+		//prop.mass = 10.0f;
+		//prop.restitution = 1.0f; // Those are Crazy balls
+		//prop.position = pos;
+		//prop.shape = _roombaBasics.shape;
+		//
 
-		pos.x = (float)(rand() % 2000) - 1000;
-		pos.y = (float)(rand() % 2000) - 1000;
+		//pos.x = (float)(rand() % 2000) - 1000;
+		//pos.y = (float)(rand() % 2000) - 1000;
 
-		prop.velocityLinear = pos;
+		//prop.velocityLinear = pos;
 
-		PX2Body* roomba = _pxWorld->CreateBody(prop);
-		if (roomba)
-			_idLastRobovac = roomba->GetID();
+		//PX2Body* roomba = _pxWorld->CreateBody(prop);
+		//if (roomba)
+		//	_idLastRobovac = roomba->GetID();
 	}
 }
 
@@ -321,13 +360,9 @@ RobovacWorld::RobovacBasics::RobovacBasics()
 	radius = 20.0f;
 	unsigned int diameter = (unsigned int)(radius * 2.0f);
 
-
 	IDrawer2D*	drawer = new Drawer2DSDL();
 	IImage*		image = drawer->CreateImage("roomba", diameter + 2, diameter + 2);
 	Vec2i		pos;
-
-
-
 
 	pos.x = (int)(radius);
 	pos.y = (int)(radius);
