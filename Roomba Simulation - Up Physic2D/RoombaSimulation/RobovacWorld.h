@@ -17,6 +17,8 @@ bool IsEqual(A a, A b, A diff) {
 	return (abs(a - b) < diff);
 }
 
+static IDrawer2D*	ROBOVACDRAWER = NULL;
+static IWindow*		ROBOVACWINDOW = NULL;
 
 class RobovacSimulation; // TMP
 
@@ -114,7 +116,6 @@ private:
 		_timeToMove = ((float)unit / modSpeedAngular) * 1000.f; // to MS
 	}
 
-
 	typedef void (MovementController::* MoveFunction)(uint16_t);
 	MoveFunction    _initFunction[MOVEMENTCONTROLLER_NBMOVE];
 
@@ -136,48 +137,82 @@ public:
 	public:
 		FindPathInfo()
 		{
-			_pathFound = false;
-			_pathFov = 90;
-			_steps = 15;
-			_distancesOkCount = 0;
-			_distancesOkToMatch = 15; // MUST NOT Be Superior To Steps
-			_stepsMax = (480 / _steps); // Maximum 1.2 round
-			_angleRotate = (_pathFov / _steps);
-			_distances = new uint16_t[_distancesOkToMatch];
-			_step = 0;
+			//					//  // This Number ! is the PRECISION
+			_angleRotate = (_pathFov / 20); // Must Have Value with no decimals
+			_stepsMax = (360 / _angleRotate); // Must Have Value with no decimals
+			_distances = new uint16_t[_stepsMax];
+			_maxDist = 40000; // 40 meters 
+			Reset();
 		}
 
 		~FindPathInfo()
 		{
 		}
 
-		void	Set(uint16_t minDist, uint16_t maxDist)
+		void	Reset()
 		{
+			_pathFov = 50;
 			_pathFound = false;
 			_step = 0;
-			_distancesOkCount = 0;
-			_minDist = minDist;
-			_maxDist = maxDist;
+			_pathAngle = 0;
 		}
 
-		// Return true if have enough distance OK in FOV
+		void	Set(uint16_t minDist)
+		{
+			Reset();
+			_minDist = minDist;
+		}
+
+		// Return false if have checked all distance and possibilities and no path can be found
 		bool	PushDistance(uint16_t distance)
 		{
 			_step += 1;
-			if (distance > _minDist && distance < _maxDist)
+			if (_step == _stepsMax)
 			{
-				_distances[_distancesOkCount] = distance;
-				_distancesOkCount += 1;
-				// std::cout << "Push Distance OK (" << (int)_distancesOkCount << ")" << std::endl;
-				if (_distancesOkCount == _distancesOkToMatch)
-				{
-					_pathFound = true;
+				if (SearchDesperatePath()) {
+					return (true);
 				}
-				return (true);
-			}
-			else {
-				_distancesOkCount = 0;
 				return (false);
+			}
+			_distances[_step] = distance;
+			SearchPath();
+			return (true);
+		}
+
+		bool	SearchDesperatePath()
+		{
+			_minDist = 50;
+			_pathFov = 80;
+			if (SearchPath())
+				return (true);
+			return (false);
+		}
+
+		bool		SearchPath()
+		{
+			uint8_t	stepsToValid = _pathFov / _angleRotate;
+			uint8_t	stepsValid = 0;
+			if (_step < stepsToValid) { // NO way to find a path with so few measures
+				return (false);
+			}
+			for (uint8_t s = 0; s < _step; s += 1) // Check All steps
+			{
+				if (_distances[s] > _minDist && _distances[s] < _maxDist) {
+					stepsValid += 1;
+					if (stepsValid == stepsToValid)
+					{
+						std::cout << "OK Steps To Valid (" << (int)stepsToValid << ")" << std::endl;
+						uint8_t stepsToComeBack = (_step - s) + (stepsToValid / 2);
+						std::cout << "Steps TO ComeBack" << (int)stepsToComeBack << std::endl;
+						_pathAngle = (uint16_t)((float)_angleRotate * (float)stepsToComeBack);
+						std::cout << "Path Angle:" << (int)_pathAngle << std::endl;
+						_pathFound = true;
+						return (true);
+					}
+				} else {
+					stepsValid = 0; // Unvalid Step - Restart from 0
+				}
+				
 			}
 		}
 
@@ -186,28 +221,31 @@ public:
 			return (_pathFound);
 		}
 
-		const uint8_t		GetDistancesOkCount() const { return (_distancesOkCount); };
+		// Return Angle from start in good path direction
+		uint16_t			GetAngleRotated() const {
+			return ((_step * _angleRotate) - _pathAngle);
+		}
+
 		const uint16_t*		GetDistances() const { return (_distances); };
-		const uint8_t&		GetAngleRotate() const { return (_angleRotate); };
+		const uint16_t&		GetMinDist() const { return (_minDist); };
+		const float&		GetAngleRotate() const { return (_angleRotate); };
 		const uint8_t&		GetStep() const { return (_step); };
 		const uint8_t&		GetStepsMax() const { return (_stepsMax); };
 		const uint8_t&		GetPathFov() const { return (_pathFov); };
+		const uint16_t&		GetPathAngle() const { return (_pathAngle); };
 
 	private:
-
 
 		bool		_pathFound;
 
 		uint16_t*   _distances;
-		uint8_t		_distancesOkCount;
-		uint8_t		_distancesOkToMatch;
 
 		uint16_t	_minDist;
 		uint16_t	_maxDist;
 
 		uint8_t		_pathFov = 80;
+		uint16_t	_pathAngle = 0;
 		uint8_t		_step = 0;
-		uint8_t		_steps = 10;
 
 		uint8_t		_stepsMax;
 		uint8_t		_angleRotate;
@@ -227,7 +265,7 @@ public:
 	Robovac()
 	{
 		_direction = Vec2(0.0f, 1.0f);
-		FindPath(30, 400000000);
+		FindPath(100);
 	}
 
 	void		DrawDir(IDrawer2D* drawer)
@@ -360,14 +398,14 @@ public:
 		else {
 			_movementController.Update(dt);
 		}
-		if (_goPathInfo.GetTimerSensor() > 400) // In Ms
+		if (_goPathInfo.GetTimerSensor() > 200) // In Ms
 		{
 			float distance = GetFrontDistanceSensor();
 			_goPathInfo.PushDistance((uint16_t)distance);
 			if (distance < _diameter || _goPathInfo.IsBlocked()) {
 				_movementController.Move(MovementType::STOP, true);
 				StopBody();
-				FindPath(30, 40000);
+				FindPath(50); // Search a valid Raisonable path 
 				return; // Stop And FindPath
 			}
 			_goPathInfo.ResetTimerSensor();
@@ -391,11 +429,11 @@ public:
 		_state = BLOCKED;
 	}
 
-	void		FindPath(uint16_t minDist, uint16_t maxDist)
+	void		FindPath(uint16_t minDist)
 	{
-		std::cout << "FindPath (" << minDist << ") (" << maxDist << ")";
+		std::cout << "FindPath (" << minDist << ")";
 		_state = FINDPATH;
-		_findPathInfo.Set(minDist, maxDist);
+		_findPathInfo.Set(minDist);
 		_movementController.Move(MovementType::STOP, 0);
 	}
 
@@ -410,11 +448,25 @@ public:
 		Vec2i	posFrontDraw;
 		Vec2i	posFrontDirDraw;
 
-		Vec2 test = Vec2(1.0, 0);
+		Vec2	test = Vec2(1.0, 0);
+		Color	color;
 
-		uint8_t j = (_findPathInfo.GetDistancesOkCount() - 1);
+		
+		if (_findPathInfo.IsPathFound())
+		{
+			// Position at end of step
+			VectorTransformer::Rotate(directionPath, (float)(_findPathInfo.GetPathAngle()));
+			VectorTransformer::Normalize(directionPath);
+		}
+		else {
+			// One step before
+			VectorTransformer::Rotate(directionPath, -(float)_findPathInfo.GetAngleRotate());
+			VectorTransformer::Normalize(directionPath);
+		}
 
-		for (uint8_t i = 0; i < _findPathInfo.GetDistancesOkCount(); i += 1)
+		uint8_t j = (_findPathInfo.GetStep() - 1);
+		// Overflow is controlled by loop
+		for (uint8_t i = 0; i < (_findPathInfo.GetStep() - 1); i += 1)
 		{
 			//std::cout << "Direction Path: " << directionPath.ToString() << std::endl;
 			VectorTransformer::Rotate(directionPath, -(float)_findPathInfo.GetAngleRotate());
@@ -428,11 +480,28 @@ public:
 
 			posFrontDirDraw.x = (int)posFront.x + (directionPath.x * (float)_findPathInfo.GetDistances()[j]);
 			posFrontDirDraw.y = (int)posFront.y + (directionPath.y * (float)_findPathInfo.GetDistances()[j]);
-			drawer->DrawLine(posFrontDraw.x, posFrontDraw.y, posFrontDirDraw.x, posFrontDirDraw.y, Color::GREEN());
+			if (_findPathInfo.GetDistances()[j] > _findPathInfo.GetMinDist())
+			{
+				color = Color::GREEN();
+			}
+			else {
+				color = Color::RED();
+			}
+
+
+			drawer->DrawLine(posFrontDraw.x, posFrontDraw.y, posFrontDirDraw.x, posFrontDirDraw.y, color);
 			j -= 1;
 		}
 	}
 
+
+	void		PlaceFindPath()
+	{
+		// Rotate 
+		_movementController.Move(MovementType::ROTATE_RIGHT, (_findPathInfo.GetPathAngle()));
+		VectorTransformer::Rotate(_direction, -(float)(_findPathInfo.GetPathAngle()));
+		VectorTransformer::Normalize(_direction);
+	}
 
 	void		UpdateFindPath(const float& dt)
 	{
@@ -443,23 +512,17 @@ public:
 			{
 				// std::cout << "Find Path Update - Move Finished" << std::endl;
 				float distance = GetFrontDistanceSensor();
-				if (_findPathInfo.PushDistance((uint16_t)distance)) {
-					_movementController.Move(MovementType::ROTATE_LEFT, _findPathInfo.GetAngleRotate());
-					VectorTransformer::Rotate(_direction, (float)_findPathInfo.GetAngleRotate());
-					VectorTransformer::Normalize(_direction);
-				}
-				else {
-					_movementController.Move(MovementType::ROTATE_LEFT, _findPathInfo.GetAngleRotate() * 2);
-					VectorTransformer::Rotate(_direction, (float)(_findPathInfo.GetAngleRotate() * 2));
-					VectorTransformer::Normalize(_direction);
-				}
-				if (_findPathInfo.IsPathFound()) {
-					// Rotate 
-					_movementController.Move(MovementType::ROTATE_RIGHT, (_findPathInfo.GetPathFov() / 2));
-					VectorTransformer::Rotate(_direction, -(float)(_findPathInfo.GetPathFov() / 2));
-					VectorTransformer::Normalize(_direction);
-				}
-				if (_findPathInfo.GetStep() > _findPathInfo.GetStepsMax()) {
+				if (_findPathInfo.PushDistance((uint16_t)distance))
+				{
+					if (_findPathInfo.IsPathFound()) {
+						PlaceFindPath();
+					} else {
+						_movementController.Move(MovementType::ROTATE_LEFT, _findPathInfo.GetAngleRotate()); // Constant Rotate
+						VectorTransformer::Rotate(_direction, (float)_findPathInfo.GetAngleRotate());
+						VectorTransformer::Normalize(_direction);
+					}
+
+				} else {
 					Blocked(); // BLOCKED
 				}
 			}

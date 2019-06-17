@@ -72,6 +72,9 @@ void RobovacSimulation::InitGraphic()
 
 	PX2Window = _window;
 	PX2Drawer = _drawer; // TMP (INIT PX2DRAWER !!!!!)
+	ROBOVACDRAWER = _drawer;
+	ROBOVACWINDOW = _window;
+
 
 	QuadtreeWindow = _window;
 	QuadtreeDrawer = _drawer; // TMP (INIT QuadTreeDRAWER !!!!!)

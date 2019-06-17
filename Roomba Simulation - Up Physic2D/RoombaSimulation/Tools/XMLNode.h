@@ -52,7 +52,7 @@ public:
 	}
 	const std::string&						GetValue(const std::string& name) const;
 
-
+	const bool								ValueExists(const std::string& name) const { return (_values.count(name)); };
 
 	void									Remove();
 

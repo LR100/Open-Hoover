@@ -69,7 +69,9 @@ void PX2WorldXML::ExportShape(PX2Shape * shape, XMLNode * nodeShapes)
 	XMLNode* nodeShape = new XMLNode();
 
 	nodeShape->SetName("Shape");
-	nodeShape->SetValue("type", shape->GetType());
+
+	int type = (int)shape->GetType(); // Avoid Type to be interpreted as a Char (in other terms to become a character)
+	nodeShape->SetValue("type", type);
 	size_t idShape = (size_t)shape;
 	nodeShape->SetValue("id", idShape);
 
@@ -118,7 +120,8 @@ void PX2WorldXML::ExportBody(PX2Body * body, XMLNode * nodeBodies)
 	// Basics
 	XMLNode* nodeBody = new XMLNode();
 	nodeBody->SetName("Body");
-	nodeBody->SetValue("type", body->GetType());
+	int type = (int)body->GetType(); // Same as shape - Avoid Type to be interpreted as a Char (in other terms to become a character)
+	nodeBody->SetValue("type", type);
 
 	// Shape
 	size_t shapeID = (size_t)body->GetShape();
@@ -171,8 +174,9 @@ void PX2WorldXML::ImportShapes(std::unordered_map<size_t, PX2Shape*>& shapes, XM
 
 PX2Shape * PX2WorldXML::ImportShape(XMLNode * nodeShape)
 {
-	uint16_t typeu;
+	int typeu;
 	nodeShape->GetValue("type", typeu);
+	std::cout << "After Get Value Type:" << typeu << std::endl;
 	PX2Shape::TYPE type = (PX2Shape::TYPE)typeu;
 
 	if (type == PX2Shape::TYPE::BOX)
