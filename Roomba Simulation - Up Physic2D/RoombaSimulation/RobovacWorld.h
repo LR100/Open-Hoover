@@ -12,13 +12,13 @@
 
 
 
-template <class A> 
+template <class A>
 bool IsEqual(A a, A b, A diff) {
 	return (abs(a - b) < diff);
 }
 
-static IDrawer2D*	ROBOVACDRAWER = NULL;
-static IWindow*		ROBOVACWINDOW = NULL;
+static IDrawer2D* ROBOVACDRAWER = NULL;
+static IWindow* ROBOVACWINDOW = NULL;
 
 class RobovacSimulation; // TMP
 
@@ -49,17 +49,16 @@ public:
 		_initFunction[ROTATE_RIGHT] = &MovementController::RotateRight;
 	}
 
-	const MovementType& GetMovementType() const { return (_movementType); };
-	const float& GetSpeedLinear() const { return (_speedLinear); };
-	const float& GetSpeedAngular() const { return (_speedAngular); };
-	const bool& IsMoveFinished() const { return (_moveIsFinished); };
+	const MovementType&	GetMovementType() const { return (_movementType); };
+	const float&		GetSpeedLinear() const { return (_speedLinear); };
+	const float&		GetSpeedAngular() const { return (_speedAngular); };
+	const bool&			IsMoveFinished() const { return (_moveIsFinished); };
 
 
 	void				  Move(MovementType movementType, float unit, bool force = true)
 	{
 		if (_moveIsFinished || force)
 		{
-
 			_moveIsFinished = false;
 			_movementType = movementType;
 			_timeMoved = 0;
@@ -182,7 +181,7 @@ public:
 
 		bool	SearchDesperatePath()
 		{
-			_minDist = 50;
+			_minDist = 30;
 			_pathFov = 80;
 			if (SearchPath())
 				return (true);
@@ -210,10 +209,11 @@ public:
 						_pathFound = true;
 						return (true);
 					}
-				} else {
+				}
+				else {
 					stepsValid = 0; // Unvalid Step - Restart from 0
 				}
-				
+
 			}
 		}
 
@@ -227,19 +227,19 @@ public:
 			return ((_step * _angleRotate) - _pathAngle);
 		}
 
-		const uint16_t*		GetDistances() const { return (_distances); };
-		const uint16_t&		GetMinDist() const { return (_minDist); };
-		const float&		GetAngleRotate() const { return (_angleRotate); };
-		const uint8_t&		GetStep() const { return (_step); };
-		const uint8_t&		GetStepsMax() const { return (_stepsMax); };
-		const uint8_t&		GetPathFov() const { return (_pathFov); };
-		const uint16_t&		GetPathAngle() const { return (_pathAngle); };
+		const uint16_t* GetDistances() const { return (_distances); };
+		const uint16_t& GetMinDist() const { return (_minDist); };
+		const float& GetAngleRotate() const { return (_angleRotate); };
+		const uint8_t& GetStep() const { return (_step); };
+		const uint8_t& GetStepsMax() const { return (_stepsMax); };
+		const uint8_t& GetPathFov() const { return (_pathFov); };
+		const uint16_t& GetPathAngle() const { return (_pathAngle); };
 
 	private:
 
 		bool		_pathFound;
 
-		uint16_t*   _distances;
+		uint16_t*	_distances;
 
 		uint16_t	_minDist;
 		uint16_t	_maxDist;
@@ -260,7 +260,7 @@ public:
 		GOPATH = 3,
 		BLOCKED,
 	};
-	
+
 
 
 	Robovac()
@@ -316,7 +316,7 @@ public:
 		_radius = radius;
 	}
 
-//private:
+	//private:
 
 	void		Stop()
 	{
@@ -350,6 +350,27 @@ public:
 		}
 
 		const uint16_t& GetTimerSensor() const { return (_timerSensor); };
+		const uint16_t& GetDistanceOld() const { return (_distanceOld); };
+
+
+		float GetSpeedEstimation(const uint16_t& dtMs, const uint16_t& distanceCurrent, bool goForward = true)
+		{
+			return (GetSpeedEstimation(dtMs, _distanceOld, distanceCurrent, goForward));
+		}
+
+		// Considering Robot is moving forward
+		static float	GetSpeedEstimation(const uint16_t& dtMs, const uint16_t& distanceOld, const uint16_t& distanceCurrent, bool goForward = true) {
+			float distanceTravelled;
+
+			if (goForward) { // Forward
+				distanceTravelled = ((float)distanceOld - (float)distanceCurrent);
+			}
+			else { // Backward
+				distanceTravelled = ((float)distanceCurrent - (float)distanceOld);
+			}
+			return ((distanceTravelled / (float)dtMs) * 1000.0f); // To convert in unit/s 
+		}
+
 		const void		PushDistance(uint16_t distance)
 		{
 			if (IsEqual<uint16_t>(distance, _distanceOld, 4))
@@ -364,7 +385,23 @@ public:
 
 		bool			IsBlocked()
 		{
-			return (_distanceSameCount > 2);
+			return (_distanceSameCount > 2 || (_distanceSameCount >= 2 && _linearSpeedWeirdCount >= 1));
+		}
+
+		const uint8_t& GetSameDistanceCount() const {
+			return (_distanceSameCount);
+		}
+
+		void	NotifyLinearSpeedWeird() {
+			_linearSpeedWeirdCount += 1;
+		}
+
+		void	ResetLinearSpeedWeirdCount() {
+			_linearSpeedWeirdCount = 0;
+		}
+
+		const uint8_t&	GetLinearSpeedWeirdCount() {
+			return (_linearSpeedWeirdCount);
 		}
 
 	private:
@@ -374,8 +411,10 @@ public:
 			_timerSensor = 0;
 			_distanceOld = 0;
 			_distanceSameCount = 0;
+			_linearSpeedWeirdCount = 0;
 		}
 
+		uint8_t			_linearSpeedWeirdCount;
 		uint8_t			_distanceSameCount;
 		uint16_t		_distanceOld;
 		uint16_t		_timerSensor;
@@ -386,7 +425,12 @@ public:
 	{
 		std::cout << "GoPath ";
 		_state = GOPATH;
-		_goPathInfo.Set(_findPathInfo.GetDistances());	
+		_goPathInfo.Set(_findPathInfo.GetDistances());
+	}
+
+	void		ReactToPbGoPath() {
+		StopBody();
+		FindPath(40); // Search a valid Raisonable path 
 	}
 
 	void		UpdateGoPath(const float& dt)
@@ -404,11 +448,23 @@ public:
 		if (_goPathInfo.GetTimerSensor() > 200) // In Ms
 		{
 			float distance = GetFrontDistanceSensor();
+			float estimatedSpeed = _goPathInfo.GetSpeedEstimation(_goPathInfo.GetTimerSensor(), (uint16_t)distance); // Forward
+			std::cout << "Speed Estimation (" << estimatedSpeed << ")" << std::endl;
+			if (estimatedSpeed < (float)_speedLinearWeird) {
+				_goPathInfo.NotifyLinearSpeedWeird();
+				if (_goPathInfo.GetLinearSpeedWeirdCount() >= 2) {
+					ReactToPbGoPath();
+					return; // Stop And FindPath	
+				}
+			}
+			else {
+				_goPathInfo.ResetLinearSpeedWeirdCount();
+			}
+
 			_goPathInfo.PushDistance((uint16_t)distance);
 			if (distance < _diameter || _goPathInfo.IsBlocked()) {
 				_movementController.Move(MovementType::STOP, true);
-				StopBody();
-				FindPath(50); // Search a valid Raisonable path 
+				ReactToPbGoPath();
 				return; // Stop And FindPath
 			}
 			_goPathInfo.ResetTimerSensor();
@@ -454,13 +510,14 @@ public:
 		Vec2	test = Vec2(1.0, 0);
 		Color	color;
 
-		
+
 		if (_findPathInfo.IsPathFound())
 		{
 			// Position at end of step
 			if (_rotateDir) {
 				VectorTransformer::Rotate(directionPath, (float)(_findPathInfo.GetPathAngle()));
-			} else {
+			}
+			else {
 				VectorTransformer::Rotate(directionPath, -(float)(_findPathInfo.GetPathAngle()));
 			}
 		}
@@ -468,10 +525,11 @@ public:
 			// One step before
 			if (_rotateDir) {
 				VectorTransformer::Rotate(directionPath, -(float)_findPathInfo.GetAngleRotate());
-			} else {
+			}
+			else {
 				VectorTransformer::Rotate(directionPath, (float)_findPathInfo.GetAngleRotate());
 			}
-			
+
 		}
 
 		VectorTransformer::Normalize(directionPath);
@@ -483,11 +541,12 @@ public:
 			//std::cout << "Direction Path: " << directionPath.ToString() << std::endl;
 			if (_rotateDir) {
 				VectorTransformer::Rotate(directionPath, -(float)_findPathInfo.GetAngleRotate());
-			} else {
+			}
+			else {
 				VectorTransformer::Rotate(directionPath, (float)_findPathInfo.GetAngleRotate());
 			}
 			VectorTransformer::Normalize(directionPath);
-			
+
 			// Draw Direction - and Maybe Distance
 			posFront = pos + (directionPath * (float)_radius);
 			posFrontDraw.x = (int)posFront.x;
@@ -498,7 +557,8 @@ public:
 			posFrontDirDraw.y = (int)posFront.y + (directionPath.y * (float)_findPathInfo.GetDistances()[j]);
 			if (_findPathInfo.GetDistances()[j] > _findPathInfo.GetMinDist()) {
 				color = Color::GREEN();
-			} else {
+			}
+			else {
 				color = Color::RED();
 			}
 
@@ -514,14 +574,15 @@ public:
 		if (_rotateDir) {
 			_movementController.Move(MovementType::ROTATE_RIGHT, (_findPathInfo.GetPathAngle()));
 			VectorTransformer::Rotate(_direction, -(float)(_findPathInfo.GetPathAngle())); // Right
-		} else {
+		}
+		else {
 			_movementController.Move(MovementType::ROTATE_LEFT, (_findPathInfo.GetPathAngle()));
 			VectorTransformer::Rotate(_direction, (float)(_findPathInfo.GetPathAngle())); // Left
 		}
 		VectorTransformer::Normalize(_direction);
 		// std::cout << "Angle Rotated from origin (" << _findPathInfo.GetAngleRotated() << ")";
 		_rotateAngle += _findPathInfo.GetAngleRotated();
-		if (_rotateAngle > 480) {
+		if (_rotateAngle > 495) {
 			_rotateAngle = 0;
 			_rotateDir = !_rotateDir;
 		}
@@ -540,20 +601,23 @@ public:
 				{
 					if (_findPathInfo.IsPathFound()) {
 						PlaceFindPath();
-					} else {
+					}
+					else {
 						// Constant Rotate
 						// 
 						if (_rotateDir) { // Rotate Left
-							_movementController.Move(MovementType::ROTATE_LEFT, _findPathInfo.GetAngleRotate());  
+							_movementController.Move(MovementType::ROTATE_LEFT, _findPathInfo.GetAngleRotate());
 							VectorTransformer::Rotate(_direction, (float)_findPathInfo.GetAngleRotate());
-						} else { // Rotate Right
-							_movementController.Move(MovementType::ROTATE_RIGHT, _findPathInfo.GetAngleRotate()); 
+						}
+						else { // Rotate Right
+							_movementController.Move(MovementType::ROTATE_RIGHT, _findPathInfo.GetAngleRotate());
 							VectorTransformer::Rotate(_direction, -(float)_findPathInfo.GetAngleRotate());
 						}
 						VectorTransformer::Normalize(_direction);
 					}
 
-				} else {
+				}
+				else {
 					Blocked(); // BLOCKED
 				}
 			}
@@ -589,15 +653,18 @@ public:
 		Vec2 linearSpeed = (_direction * (_movementController.GetSpeedLinear()));
 		if (forward) {
 			body->SetVelocityLinear(linearSpeed);
-		} else {
+		}
+		else {
 			body->SetVelocityLinear(-linearSpeed);
 		}
 	}
-	
-	PX2Body*			body;
+
+	PX2Body* body;
 
 private:
 
+
+	uint8_t				_speedLinearWeird = 60.0f;
 	uint16_t			_rotateAngle;
 	bool				_rotateDir;  // Rotate Left if True - else Rotate Right
 

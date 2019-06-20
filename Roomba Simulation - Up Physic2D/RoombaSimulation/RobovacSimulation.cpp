@@ -256,8 +256,8 @@ void RobovacSimulation::UpdatePhysic()
 void RobovacSimulation::AddRobovacRandomly()
 {
 	Vec2 pos;
-	pos.x = ((rand() % 800) + 100);
-	pos.y = ((rand() % 400) + 100);
+	pos.x = ((rand() % 700) + 200);
+	pos.y = ((rand() % 300) + 200);
 	
 	_roombaWorld->AddRobovac(pos);
 }
