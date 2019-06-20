@@ -128,7 +128,8 @@ void RobovacSimulation::SetEventsGeneric()
 
 
 	// TMP DEBUG
-	_eventHandler->AddHandlerToEvent(ControlKey::KEY_LCTRL, &RobovacWorld::AddRobovac, _roombaWorld, Vec2(300, 300));
+	_eventHandler->AddHandlerToEvent(ControlKey::KEY_LCTRL, &RobovacSimulation::AddRobovacRandomly, this);
+	//_eventHandler->AddHandlerToEvent(ControlKey::KEY_LCTRL, &RobovacWorld::AddRobovac, _roombaWorld, Vec2(300, 300));
 	_eventHandler->AddHandlerToEvent(ControlKey::KEY_T, ControlKeyState::RELEASED, &RobovacSimulation::SwitchTreeMode, this);
 	_eventHandler->AddHandlerToEvent(ControlKey::KEY_C, ControlKeyState::RELEASED, &RobovacSimulation::SwitchCalibrateMode, this);
 	// END TMP DEBUG
@@ -250,6 +251,15 @@ void RobovacSimulation::Draw()
 void RobovacSimulation::UpdatePhysic()
 {
 	_roombaWorld->Update(_timeCountToDraw);
+}
+
+void RobovacSimulation::AddRobovacRandomly()
+{
+	Vec2 pos;
+	pos.x = ((rand() % 800) + 100);
+	pos.y = ((rand() % 400) + 100);
+	
+	_roombaWorld->AddRobovac(pos);
 }
 
 void RobovacSimulation::SwitchMode()

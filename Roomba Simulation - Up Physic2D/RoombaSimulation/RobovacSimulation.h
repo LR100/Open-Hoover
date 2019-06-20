@@ -47,7 +47,7 @@ private:
 	void	UpdatePhysic();
 
 	// Edit
-	
+	void	AddRobovacRandomly();
 
 	// Others
 	void	SwitchMode();

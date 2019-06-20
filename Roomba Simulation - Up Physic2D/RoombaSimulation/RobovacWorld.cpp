@@ -145,7 +145,7 @@ void RobovacWorld::DrawRobovac(PX2Body* body, IDrawer2D* drawer)
 {
 	if (_robovacs.count(body->GetID()))
 	{
-		_robovacs.at(body->GetID()).Draw(drawer);
+		_robovacs.at(body->GetID())->Draw(drawer);
 	}
 }
 
@@ -161,9 +161,6 @@ void RobovacWorld::DrawInfoRobovac(IDrawer2D * drawer)
 		std::stringstream	ss;
 		Vec2i				pos(10, 30);
 		std::string			font = "pixel.ttf";
-
-
-
 
 		ss.str("");
 		ss << "-ROOMBA INFO- Objects in Simulation (" << _objectsCount << ")";
@@ -181,14 +178,15 @@ void RobovacWorld::DrawInfoRobovac(IDrawer2D * drawer)
 
 void RobovacWorld::UpdateRobovacs(const float& dtMs)
 {
-	std::unordered_map<size_t, Robovac>::iterator it = _robovacs.begin();
-	std::unordered_map<size_t, Robovac>::iterator itEnd = _robovacs.end();
+	std::unordered_map<size_t, Robovac*>::iterator it = _robovacs.begin();
+	std::unordered_map<size_t, Robovac*>::iterator itEnd = _robovacs.end();
 
 	Robovac* robovac;
 	for (; it != itEnd; it++)
 	{
-		robovac = &it->second;
-		robovac->Update(dtMs);
+		robovac = it->second;
+		if (robovac && robovac->body)
+			robovac->Update(dtMs);
 	}
 }
 
@@ -222,8 +220,8 @@ const Robovac* RobovacWorld::AddRobovac(const Vec2 & pos)
 	{
 		_idLastRobovac = roomba->GetID();
 		
-		_robovacs.emplace(roomba->GetID(), Robovac());
-		Robovac* robovac = &_robovacs.at(roomba->GetID());
+		Robovac* robovac = new Robovac();
+		_robovacs.emplace(roomba->GetID(), robovac);
 
 		robovac->body = roomba;
 		robovac->SetRadius((uint8_t)prop.shape->GetRadius());

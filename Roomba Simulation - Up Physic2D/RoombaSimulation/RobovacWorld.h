@@ -137,6 +137,7 @@ public:
 	public:
 		FindPathInfo()
 		{
+			_pathFov = 80;
 			//					//  // This Number ! is the PRECISION
 			_angleRotate = (_pathFov / 20); // Must Have Value with no decimals
 			_stepsMax = (360 / _angleRotate); // Must Have Value with no decimals
@@ -248,7 +249,7 @@ public:
 		uint8_t		_step = 0;
 
 		uint8_t		_stepsMax;
-		uint8_t		_angleRotate;
+		float		_angleRotate;
 	};
 
 	enum RobovacState
@@ -265,6 +266,8 @@ public:
 	Robovac()
 	{
 		_direction = Vec2(0.0f, 1.0f);
+		_rotateDir = true;
+		_rotateAngle = 0;
 		FindPath(100);
 	}
 
@@ -455,21 +458,34 @@ public:
 		if (_findPathInfo.IsPathFound())
 		{
 			// Position at end of step
-			VectorTransformer::Rotate(directionPath, (float)(_findPathInfo.GetPathAngle()));
-			VectorTransformer::Normalize(directionPath);
+			if (_rotateDir) {
+				VectorTransformer::Rotate(directionPath, (float)(_findPathInfo.GetPathAngle()));
+			} else {
+				VectorTransformer::Rotate(directionPath, -(float)(_findPathInfo.GetPathAngle()));
+			}
 		}
 		else {
 			// One step before
-			VectorTransformer::Rotate(directionPath, -(float)_findPathInfo.GetAngleRotate());
-			VectorTransformer::Normalize(directionPath);
+			if (_rotateDir) {
+				VectorTransformer::Rotate(directionPath, -(float)_findPathInfo.GetAngleRotate());
+			} else {
+				VectorTransformer::Rotate(directionPath, (float)_findPathInfo.GetAngleRotate());
+			}
+			
 		}
+
+		VectorTransformer::Normalize(directionPath);
 
 		uint8_t j = (_findPathInfo.GetStep() - 1);
 		// Overflow is controlled by loop
 		for (uint8_t i = 0; i < (_findPathInfo.GetStep() - 1); i += 1)
 		{
 			//std::cout << "Direction Path: " << directionPath.ToString() << std::endl;
-			VectorTransformer::Rotate(directionPath, -(float)_findPathInfo.GetAngleRotate());
+			if (_rotateDir) {
+				VectorTransformer::Rotate(directionPath, -(float)_findPathInfo.GetAngleRotate());
+			} else {
+				VectorTransformer::Rotate(directionPath, (float)_findPathInfo.GetAngleRotate());
+			}
 			VectorTransformer::Normalize(directionPath);
 			
 			// Draw Direction - and Maybe Distance
@@ -480,14 +496,11 @@ public:
 
 			posFrontDirDraw.x = (int)posFront.x + (directionPath.x * (float)_findPathInfo.GetDistances()[j]);
 			posFrontDirDraw.y = (int)posFront.y + (directionPath.y * (float)_findPathInfo.GetDistances()[j]);
-			if (_findPathInfo.GetDistances()[j] > _findPathInfo.GetMinDist())
-			{
+			if (_findPathInfo.GetDistances()[j] > _findPathInfo.GetMinDist()) {
 				color = Color::GREEN();
-			}
-			else {
+			} else {
 				color = Color::RED();
 			}
-
 
 			drawer->DrawLine(posFrontDraw.x, posFrontDraw.y, posFrontDirDraw.x, posFrontDirDraw.y, color);
 			j -= 1;
@@ -497,10 +510,21 @@ public:
 
 	void		PlaceFindPath()
 	{
-		// Rotate 
-		_movementController.Move(MovementType::ROTATE_RIGHT, (_findPathInfo.GetPathAngle()));
-		VectorTransformer::Rotate(_direction, -(float)(_findPathInfo.GetPathAngle()));
+		// Rotate Left for FindPath
+		if (_rotateDir) {
+			_movementController.Move(MovementType::ROTATE_RIGHT, (_findPathInfo.GetPathAngle()));
+			VectorTransformer::Rotate(_direction, -(float)(_findPathInfo.GetPathAngle())); // Right
+		} else {
+			_movementController.Move(MovementType::ROTATE_LEFT, (_findPathInfo.GetPathAngle()));
+			VectorTransformer::Rotate(_direction, (float)(_findPathInfo.GetPathAngle())); // Left
+		}
 		VectorTransformer::Normalize(_direction);
+		// std::cout << "Angle Rotated from origin (" << _findPathInfo.GetAngleRotated() << ")";
+		_rotateAngle += _findPathInfo.GetAngleRotated();
+		if (_rotateAngle > 480) {
+			_rotateAngle = 0;
+			_rotateDir = !_rotateDir;
+		}
 	}
 
 	void		UpdateFindPath(const float& dt)
@@ -517,8 +541,15 @@ public:
 					if (_findPathInfo.IsPathFound()) {
 						PlaceFindPath();
 					} else {
-						_movementController.Move(MovementType::ROTATE_LEFT, _findPathInfo.GetAngleRotate()); // Constant Rotate
-						VectorTransformer::Rotate(_direction, (float)_findPathInfo.GetAngleRotate());
+						// Constant Rotate
+						// 
+						if (_rotateDir) { // Rotate Left
+							_movementController.Move(MovementType::ROTATE_LEFT, _findPathInfo.GetAngleRotate());  
+							VectorTransformer::Rotate(_direction, (float)_findPathInfo.GetAngleRotate());
+						} else { // Rotate Right
+							_movementController.Move(MovementType::ROTATE_RIGHT, _findPathInfo.GetAngleRotate()); 
+							VectorTransformer::Rotate(_direction, -(float)_findPathInfo.GetAngleRotate());
+						}
 						VectorTransformer::Normalize(_direction);
 					}
 
@@ -567,11 +598,16 @@ public:
 
 private:
 
+	uint16_t			_rotateAngle;
+	bool				_rotateDir;  // Rotate Left if True - else Rotate Right
+
 	uint8_t				_diameter = 30;
 	uint8_t				_radius = 15;
 	Vec2				_direction;
+
 	FindPathInfo		_findPathInfo;
 	GoPathInfo			_goPathInfo;
+
 	RobovacState		_state;
 	MovementController	_movementController;
 };
@@ -644,9 +680,9 @@ private:
 	AABB2					_screen;
 
 
-	std::vector<size_t>					_objectsSelected;
-	std::vector<size_t>					_objectsSelectedToDraw;
-	std::unordered_map<size_t, Robovac>	_robovacs;
+	std::vector<size_t>						_objectsSelected;
+	std::vector<size_t>						_objectsSelectedToDraw;
+	std::unordered_map<size_t, Robovac*>	_robovacs;
 
 	size_t					_objectsCount;
 
