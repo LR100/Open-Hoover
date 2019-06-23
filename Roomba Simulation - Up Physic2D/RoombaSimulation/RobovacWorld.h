@@ -9,7 +9,43 @@
 #include "Graphic\IDrawer2D.h"
 #include "Events\IEventHandler.h"
 
+#define BIT_SET(a,pos) ((a) |= (1ULL<<(pos)))
+#define BIT_CLEAR(a,pos) ((a) &= ~(1ULL<<(pos)))
+#define BIT_FLIP(a,pos) ((a) ^= (1ULL<<(pos)))
+#define BIT_CHECK(a,pos) (!!((a) & (1ULL<<(pos)))) 
 
+class BoolArray 
+{
+public:
+
+	BoolArray(const uint8_t& width, const uint8_t& height) {
+		_width = width;
+		_height = height;
+		Allocate();
+	}
+
+	std::string	ToString() {
+		std::stringstream ss;
+		for (uint8_t h = 0; h < _height; h += 1) {
+			for (uint8_t w = w; w < _width; w += 1) {
+				
+			}
+		}
+
+	}
+private:
+	
+	void Allocate() {
+		uint16_t	size = (uint16_t)((uint16_t)_width * (uint16_t)_height);
+		float		fsize = (float)size / 8.0f;
+		std::cout << "FSIZE: (" << fsize << ")" << std::endl;
+		std::cout << "SIZE: (" << fsize << ")" << std::endl;
+	}
+
+	uint8_t*	_array;
+	uint8_t		_width;
+	uint8_t		_height;
+};
 
 
 template <class A>
@@ -49,10 +85,10 @@ public:
 		_initFunction[ROTATE_RIGHT] = &MovementController::RotateRight;
 	}
 
-	const MovementType&	GetMovementType() const { return (_movementType); };
-	const float&		GetSpeedLinear() const { return (_speedLinear); };
-	const float&		GetSpeedAngular() const { return (_speedAngular); };
-	const bool&			IsMoveFinished() const { return (_moveIsFinished); };
+	const MovementType& GetMovementType() const { return (_movementType); };
+	const float& GetSpeedLinear() const { return (_speedLinear); };
+	const float& GetSpeedAngular() const { return (_speedAngular); };
+	const bool& IsMoveFinished() const { return (_moveIsFinished); };
 
 
 	void				  Move(MovementType movementType, float unit, bool force = true)
@@ -213,7 +249,6 @@ public:
 				else {
 					stepsValid = 0; // Unvalid Step - Restart from 0
 				}
-
 			}
 		}
 
@@ -223,23 +258,23 @@ public:
 		}
 
 		// Return Angle from start in good path direction
-		uint16_t			GetAngleRotated() const {
+		uint16_t			GetPathAngleFromStart() const {
 			return ((_step * _angleRotate) - _pathAngle);
 		}
 
 		const uint16_t* GetDistances() const { return (_distances); };
 		const uint16_t& GetMinDist() const { return (_minDist); };
-		const float& GetAngleRotate() const { return (_angleRotate); };
-		const uint8_t& GetStep() const { return (_step); };
-		const uint8_t& GetStepsMax() const { return (_stepsMax); };
-		const uint8_t& GetPathFov() const { return (_pathFov); };
-		const uint16_t& GetPathAngle() const { return (_pathAngle); };
+		const float&	GetAngleRotate() const { return (_angleRotate); };
+		const uint8_t&	GetStep() const { return (_step); };
+		const uint8_t&	GetStepsMax() const { return (_stepsMax); };
+		const uint8_t&	GetPathFov() const { return (_pathFov); };
+		const uint16_t& GetPathAngleFromEnd() const { return (_pathAngle); };
 
 	private:
 
 		bool		_pathFound;
 
-		uint16_t*	_distances;
+		uint16_t* _distances;
 
 		uint16_t	_minDist;
 		uint16_t	_maxDist;
@@ -263,7 +298,7 @@ public:
 
 
 
-	Robovac()
+	Robovac() : _map(21, 42)
 	{
 		_direction = Vec2(0.0f, 1.0f);
 		_rotateDir = true;
@@ -400,7 +435,7 @@ public:
 			_linearSpeedWeirdCount = 0;
 		}
 
-		const uint8_t&	GetLinearSpeedWeirdCount() {
+		const uint8_t& GetLinearSpeedWeirdCount() {
 			return (_linearSpeedWeirdCount);
 		}
 
@@ -496,6 +531,24 @@ public:
 		_movementController.Move(MovementType::STOP, 0);
 	}
 
+
+	void		RotateFromDir(const float& angle) {
+		if (_rotateDir) {
+			_movementController.Move(MovementType::ROTATE_LEFT, angle);
+		} else {
+			_movementController.Move(MovementType::ROTATE_RIGHT, angle);
+		}
+	}
+
+	void		RotateFromDir(Vec2& path, const float& angle) {
+		if (_rotateDir) {
+			VectorTransformer::Rotate(path, angle); // Rotate Right
+		} else {
+			VectorTransformer::Rotate(path, -angle); // Rotate Left
+		}
+		VectorTransformer::Normalize(path);
+	}
+
 	void		DrawFindPath(IDrawer2D* drawer)
 	{
 		// Draw Good Distances
@@ -511,42 +564,21 @@ public:
 		Color	color;
 
 
-		if (_findPathInfo.IsPathFound())
-		{
+		if (_findPathInfo.IsPathFound()) {
 			// Position at end of step
-			if (_rotateDir) {
-				VectorTransformer::Rotate(directionPath, (float)(_findPathInfo.GetPathAngle()));
-			}
-			else {
-				VectorTransformer::Rotate(directionPath, -(float)(_findPathInfo.GetPathAngle()));
-			}
-		}
-		else {
+			RotateFromDir(directionPath, (float)_findPathInfo.GetPathAngleFromEnd()); // Rotate Right
+		} else {
 			// One step before
-			if (_rotateDir) {
-				VectorTransformer::Rotate(directionPath, -(float)_findPathInfo.GetAngleRotate());
-			}
-			else {
-				VectorTransformer::Rotate(directionPath, (float)_findPathInfo.GetAngleRotate());
-			}
-
+			RotateFromDir(directionPath, -(float)_findPathInfo.GetAngleRotate()); // Else Rotate Left
 		}
-
-		VectorTransformer::Normalize(directionPath);
 
 		uint8_t j = (_findPathInfo.GetStep() - 1);
 		// Overflow is controlled by loop
 		for (uint8_t i = 0; i < (_findPathInfo.GetStep() - 1); i += 1)
 		{
 			//std::cout << "Direction Path: " << directionPath.ToString() << std::endl;
-			if (_rotateDir) {
-				VectorTransformer::Rotate(directionPath, -(float)_findPathInfo.GetAngleRotate());
-			}
-			else {
-				VectorTransformer::Rotate(directionPath, (float)_findPathInfo.GetAngleRotate());
-			}
-			VectorTransformer::Normalize(directionPath);
-
+			RotateFromDir(directionPath, -(float)_findPathInfo.GetAngleRotate());
+		
 			// Draw Direction - and Maybe Distance
 			posFront = pos + (directionPath * (float)_radius);
 			posFrontDraw.x = (int)posFront.x;
@@ -557,11 +589,9 @@ public:
 			posFrontDirDraw.y = (int)posFront.y + (directionPath.y * (float)_findPathInfo.GetDistances()[j]);
 			if (_findPathInfo.GetDistances()[j] > _findPathInfo.GetMinDist()) {
 				color = Color::GREEN();
-			}
-			else {
+			} else {
 				color = Color::RED();
 			}
-
 			drawer->DrawLine(posFrontDraw.x, posFrontDraw.y, posFrontDirDraw.x, posFrontDirDraw.y, color);
 			j -= 1;
 		}
@@ -572,16 +602,16 @@ public:
 	{
 		// Rotate Left for FindPath
 		if (_rotateDir) {
-			_movementController.Move(MovementType::ROTATE_RIGHT, (_findPathInfo.GetPathAngle()));
-			VectorTransformer::Rotate(_direction, -(float)(_findPathInfo.GetPathAngle())); // Right
+			_movementController.Move(MovementType::ROTATE_RIGHT, (_findPathInfo.GetPathAngleFromEnd()));
+			VectorTransformer::Rotate(_direction, -(float)(_findPathInfo.GetPathAngleFromEnd())); // Right
 		}
 		else {
-			_movementController.Move(MovementType::ROTATE_LEFT, (_findPathInfo.GetPathAngle()));
-			VectorTransformer::Rotate(_direction, (float)(_findPathInfo.GetPathAngle())); // Left
+			_movementController.Move(MovementType::ROTATE_LEFT, (_findPathInfo.GetPathAngleFromEnd()));
+			VectorTransformer::Rotate(_direction, (float)(_findPathInfo.GetPathAngleFromEnd())); // Left
 		}
 		VectorTransformer::Normalize(_direction);
 		// std::cout << "Angle Rotated from origin (" << _findPathInfo.GetAngleRotated() << ")";
-		_rotateAngle += _findPathInfo.GetAngleRotated();
+		_rotateAngle += _findPathInfo.GetPathAngleFromStart();
 		if (_rotateAngle > 495) {
 			_rotateAngle = 0;
 			_rotateDir = !_rotateDir;
@@ -664,6 +694,7 @@ public:
 private:
 
 
+	BoolArray			_map;
 	uint8_t				_speedLinearWeird = 60.0f;
 	uint16_t			_rotateAngle;
 	bool				_rotateDir;  // Rotate Left if True - else Rotate Right
@@ -743,8 +774,8 @@ private:
 	};
 
 	// For Physics Managment
-	PX2World* _pxWorld;
-	AABB2					_screen;
+	PX2World*		_pxWorld;
+	AABB2			_screen;
 
 
 	std::vector<size_t>						_objectsSelected;
