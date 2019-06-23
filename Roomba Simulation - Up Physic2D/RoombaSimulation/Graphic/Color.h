@@ -19,12 +19,14 @@ public:
 
 	static const Color& WHITE() { static Color color(255, 255, 255); return (color); }
 	static const Color& BLACK() { static Color color(0, 0, 0); return (color); }
+	static const Color& GREY() { static Color color(120, 120, 120); return (color); }
 	static const Color& RED() { static Color color(255, 0, 0); return (color); }
 	static const Color& GREEN() { static Color color(0, 255, 0); return (color); }
 	static const Color& BLUE() { static Color color(0, 0, 255); return (color); }
 	static const Color& ORANGE() { static Color color(255, 165, 0); return (color); }
 	static const Color& YELLOW() { static Color color(255, 255, 0); return (color); }
 	static const Color& PURPLE() { static Color color(130, 0, 130); return (color); }
+
 
 
 	void				ComputeValue();

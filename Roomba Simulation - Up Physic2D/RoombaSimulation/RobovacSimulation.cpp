@@ -64,17 +64,27 @@ void RobovacSimulation::InitGraphic()
 {
 	_window = new WindowSDL(_eventHandler, 800, 800, "Robovac Simulation");
 	_drawer = new Drawer2DSDL(_window->GetBackBuffer()->GetFormat());
+
+	/*_windowMap = new WindowSDL(_eventHandler, 800, 800, "Robovac Simulation Mapping");
+	_drawerMap = new Drawer2DSDL(_windowMap->GetBackBuffer()->GetFormat());
+	_drawerMap->SetCurrentImage(_windowMap->GetBackBuffer());
+*/
+
 	std::cout << "DRAWER 2D ADDR (" << _drawer << ")" << std::endl;
 	std::cout << "DRAWER DEFAULT FORMAT (" << _drawer->GetDefaultFormatImage() << ")" << std::endl;
 	std::cout << "Set Window Back BUFFER" << std::endl;
-	_drawer->SetCurrentImage(_window->GetBackBuffer());
 
+	_drawer->SetCurrentImage(_window->GetBackBuffer());
+	
 
 	PX2Window = _window;
 	PX2Drawer = _drawer; // TMP (INIT PX2DRAWER !!!!!)
+
 	ROBOVACDRAWER = _drawer;
 	ROBOVACWINDOW = _window;
 
+	ROBOVACMAPDRAWER = _drawerMap;
+	ROBOVACMAPWINDOW = _windowMap;
 
 	QuadtreeWindow = _window;
 	QuadtreeDrawer = _drawer; // TMP (INIT QuadTreeDRAWER !!!!!)
@@ -256,8 +266,8 @@ void RobovacSimulation::UpdatePhysic()
 void RobovacSimulation::AddRobovacRandomly()
 {
 	Vec2 pos;
-	pos.x = ((rand() % 700) + 200);
-	pos.y = ((rand() % 300) + 200);
+	pos.x = ((rand() % 700) + 400);
+	pos.y = ((rand() % 300) + 300);
 	
 	_roombaWorld->AddRobovac(pos);
 }

@@ -97,6 +97,8 @@ private:
 	IEventHandler*	_eventHandler;
 	IDrawer2D*		_drawer;
 	IWindow*		_window;
+	IDrawer2D*		_drawerMap;
+	IWindow*		_windowMap;
 	FpsComputer		_fpsC;
 	
 	RobovacWorld*		_roombaWorld;

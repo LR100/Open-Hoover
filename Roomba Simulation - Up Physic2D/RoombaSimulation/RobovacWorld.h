@@ -9,40 +9,103 @@
 #include "Graphic\IDrawer2D.h"
 #include "Events\IEventHandler.h"
 
-#define BIT_SET(a,pos) ((a) |= (1ULL<<(pos)))
+
+#define BIT_SET(a, pos) ((a) |= (1ULL << (pos)))
 #define BIT_CLEAR(a,pos) ((a) &= ~(1ULL<<(pos)))
 #define BIT_FLIP(a,pos) ((a) ^= (1ULL<<(pos)))
 #define BIT_CHECK(a,pos) (!!((a) & (1ULL<<(pos)))) 
 
-class BoolArray 
+class BoolArray
 {
 public:
 
-	BoolArray(const uint8_t& width, const uint8_t& height) {
+	BoolArray(const uint8_t& width, const uint8_t& height, bool valueInit = false) {
 		_width = width;
 		_height = height;
 		Allocate();
+		Init(valueInit);
 	}
+#ifdef _WIN32
 
 	std::string	ToString() {
-		std::stringstream ss;
+		std::stringstream	ss;
+		bool				state;
 		for (uint8_t h = 0; h < _height; h += 1) {
-			for (uint8_t w = w; w < _width; w += 1) {
-				
+			for (uint8_t w = 0; w < _width; w += 1) {
+
+				state = Get(w, h);
+				if (state) {
+					ss << "1";
+				}
+				else {
+					ss << "0";
+				}
+				if (w < (_width - 1))
+					ss << " ";
+			}
+			ss << "\n";
+		}
+		return (ss.str());
+	}
+
+#endif // _WIN32
+
+	void	Set(const uint8_t& x, const uint8_t& y, bool state) {
+		if (!PosIsValid(x, y))
+			return;
+		float		posByteF = std::roundf(((float)((float)y * (float)_width) + (float)x));
+		uint16_t	posByte = (uint16_t)posByteF;
+		uint8_t		posBit = (uint8_t)(posByte % 8);
+		posByte = (uint16_t)(posByteF / 8.0f);
+		if (state)
+			BIT_SET(_array[posByte], posBit);
+		else
+			BIT_CLEAR(_array[posByte], posBit);
+	}
+
+	bool	Get(const uint8_t& x, const uint8_t& y) {
+		if (!PosIsValid(x, y))
+			return (false);
+		float		posByteF = std::roundf(((float)((float)y * (float)_width) + (float)x));
+		uint16_t	posByte = (uint16_t)posByteF;
+		uint8_t		posBit = (uint8_t)(posByte % 8);
+		posByte = (uint16_t)(posByteF / 8.0f);
+		return (BIT_CHECK(_array[posByte], posBit));
+	}
+
+	const uint8_t& GetWidth() const { return (_width); };
+	const uint8_t& GetHeight() const { return (_height); };
+
+	bool			PosIsValid(const uint8_t& x, const uint8_t& y)
+	{
+		if (x >= _width || y >= _height)
+			return (false);
+		return (true);
+	}
+
+	void			Set(bool value)
+	{
+		for (uint8_t h = 0; h < _height; h += 1) {
+			for (uint8_t w = 0; w < _width; w += 1) {
+				Set(w, h, value);
 			}
 		}
-
 	}
+
 private:
-	
-	void Allocate() {
+
+	void	Allocate() {
 		uint16_t	size = (uint16_t)((uint16_t)_width * (uint16_t)_height);
-		float		fsize = (float)size / 8.0f;
-		std::cout << "FSIZE: (" << fsize << ")" << std::endl;
-		std::cout << "SIZE: (" << fsize << ")" << std::endl;
+		float		fsize = std::ceilf((float)size / 8.0f); // To be replaced on Arduino (std::ceilf)
+		size = (uint16_t)fsize;
+		_array = new uint8_t[size];
 	}
 
-	uint8_t*	_array;
+	void	Init(const bool& valueInit) {
+		Set(valueInit);
+	}
+
+	uint8_t* _array;
 	uint8_t		_width;
 	uint8_t		_height;
 };
@@ -55,6 +118,9 @@ bool IsEqual(A a, A b, A diff) {
 
 static IDrawer2D* ROBOVACDRAWER = NULL;
 static IWindow* ROBOVACWINDOW = NULL;
+
+static IDrawer2D* ROBOVACMAPDRAWER = NULL;
+static IWindow* ROBOVACMAPWINDOW = NULL;
 
 class RobovacSimulation; // TMP
 
@@ -264,10 +330,10 @@ public:
 
 		const uint16_t* GetDistances() const { return (_distances); };
 		const uint16_t& GetMinDist() const { return (_minDist); };
-		const float&	GetAngleRotate() const { return (_angleRotate); };
-		const uint8_t&	GetStep() const { return (_step); };
-		const uint8_t&	GetStepsMax() const { return (_stepsMax); };
-		const uint8_t&	GetPathFov() const { return (_pathFov); };
+		const float& GetAngleRotate() const { return (_angleRotate); };
+		const uint8_t& GetStep() const { return (_step); };
+		const uint8_t& GetStepsMax() const { return (_stepsMax); };
+		const uint8_t& GetPathFov() const { return (_pathFov); };
 		const uint16_t& GetPathAngleFromEnd() const { return (_pathAngle); };
 
 	private:
@@ -287,78 +353,6 @@ public:
 		float		_angleRotate;
 	};
 
-	enum RobovacState
-	{
-		REST = 0,
-		CALIBRATE = 1,
-		FINDPATH = 2,
-		GOPATH = 3,
-		BLOCKED,
-	};
-
-
-
-	Robovac() : _map(21, 42)
-	{
-		_direction = Vec2(0.0f, 1.0f);
-		_rotateDir = true;
-		_rotateAngle = 0;
-		FindPath(100);
-	}
-
-	void		DrawDir(IDrawer2D* drawer)
-	{
-		Vec2 pos = body->GetPosition();
-		Vec2i	posDraw;
-		Vec2i	posDirDraw;
-
-		posDraw.x = (int)pos.x;
-		posDraw.y = (int)pos.y;
-		posDirDraw.x = (int)(pos.x + (_direction.x * (float)_radius));
-		posDirDraw.y = (int)(pos.y + (_direction.y * (float)_radius));
-		// std::cout << "Draw From: " << posDraw.ToString() << " To:" << posDirDraw.ToString() << std::endl;
-		drawer->DrawLine(posDraw.x, posDraw.y, posDirDraw.x, posDirDraw.y, Color::RED());
-	}
-
-	void		Draw(IDrawer2D* drawer)
-	{
-		//std::cout << "Draw Robovac" << std::endl;
-		if (_state == FINDPATH) {
-			DrawFindPath(drawer);
-		}
-		else if (_state == GOPATH) {
-			// DrawGoPath(drawer);
-		}
-		else if (_state == BLOCKED) {
-			DrawBlocked(drawer);
-		}
-		DrawDir(drawer);
-	}
-
-	void		Update(const float& dt)
-	{
-		//std::cout << "Update Robovac (" << body->GetID() << ")" << std::endl;
-		if (_state == FINDPATH) {
-			UpdateFindPath(dt);
-		}
-		else if (_state == GOPATH) {
-			UpdateGoPath(dt);
-		}
-	}
-
-	void		SetRadius(uint8_t radius)
-	{
-		_radius = radius;
-	}
-
-	//private:
-
-	void		Stop()
-	{
-		_movementController.Move(MovementType::STOP, 0);
-		body->SetVelocityLinear(Vec2(0, 0));
-	}
-
 	class GoPathInfo
 	{
 	public:
@@ -367,7 +361,6 @@ public:
 		{
 			Reset();
 		}
-
 
 		void	Set(const uint16_t* distances)
 		{
@@ -456,6 +449,140 @@ public:
 		const uint16_t* _distances; // Only a pointer - Depend of another Object - Not in charge to free it
 	};
 
+	enum RobovacState
+	{
+		REST = 0,
+		CALIBRATE = 1,
+		FINDPATH = 2,
+		GOPATH = 3,
+		BLOCKED,
+	};
+
+
+	Robovac() : _map(30, 30, false), _mapClean(30, 30, false) // 30 * (ex diameter: 30) = 900 -> 9m dist of area
+	{
+		_diameter = 30; // MUST be Set manually by user
+		_radius = (_diameter / 2.0);
+		_direction = Vec2(0.0f, 1.0f);
+		_rotateDir = true;
+		_rotateAngle = 0;
+		ResetMap();
+		std::cout << "Approximate Size of a Robovac: (" << sizeof(Robovac) << ")" << std::endl;
+	}
+
+	void		Start()
+	{
+		FindPath(100);
+	}
+
+	void		DrawDir(IDrawer2D* drawer)
+	{
+		Vec2 pos = _body->GetPosition();
+		Vec2i	posDraw;
+		Vec2i	posDirDraw;
+
+		posDraw.x = (int)pos.x;
+		posDraw.y = (int)pos.y;
+		posDirDraw.x = (int)(pos.x + (_direction.x * (float)_radius));
+		posDirDraw.y = (int)(pos.y + (_direction.y * (float)_radius));
+		// std::cout << "Draw From: " << posDraw.ToString() << " To:" << posDirDraw.ToString() << std::endl;
+		drawer->DrawLine(posDraw.x, posDraw.y, posDirDraw.x, posDirDraw.y, Color::RED());
+	}
+
+	void		Draw(IDrawer2D* drawer, bool drawMap = true)
+	{
+		//std::cout << "Draw Robovac" << std::endl;
+		if (_state == FINDPATH) {
+			DrawFindPath(drawer);
+		}
+		else if (_state == GOPATH) {
+			// DrawGoPath(drawer);
+		}
+		else if (_state == BLOCKED) {
+			DrawBlocked(drawer);
+		}
+		DrawDir(drawer);
+		if (drawMap) {
+			DrawMap(drawer);
+		}
+	}
+
+	void		Update(const float& dt)
+	{
+		//std::cout << "Update Robovac (" << body->GetID() << ")" << std::endl;
+		if (_state == FINDPATH) {
+			UpdateFindPath(dt);
+		}
+		else if (_state == GOPATH) {
+			UpdateGoPath(dt);
+		}
+	}
+
+	void		SetRadius(uint8_t radius)
+	{
+		_radius = radius;
+	}
+
+	void		Stop()
+	{
+		_movementController.Move(MovementType::STOP, 0);
+		_body->SetVelocityLinear(Vec2(0, 0));
+	}
+
+	void		DrawBox(const uint8_t boxX, const uint8_t boxY, IDrawer2D* drawer) {
+
+		Color	color;
+
+		color = Color::WHITE();
+
+		Vec2i	posScaled;
+		unsigned int w = _diameter;
+		unsigned int h = _diameter;
+
+		int xToMid = (int)(((float)_map.GetWidth() / 2.0f) - (float)boxX);
+		int yToMid = (int)(((float)_map.GetHeight() / 2.0f) - (float)boxY);
+
+		// Path MAP
+		posScaled.x = _centerMap.x - (xToMid * (int)_diameter);
+		posScaled.y = _centerMap.y - (yToMid * (int)_diameter);; // Middle Map
+		
+		if (!_map.Get(boxX, boxY))
+		{
+			drawer->DrawRectFill(posScaled.x, posScaled.y, w, h, 0.5f, Color::GREY());
+			drawer->DrawRectFill(posScaled.x, posScaled.y, w, h, 0.2f, color);
+	
+		}
+		// CLEAN Map
+		if (_mapClean.Get(boxX, boxY))
+			color = Color::GREEN();
+		else
+			color = Color::RED();
+
+		posScaled.x = (_centerMap.x - (xToMid * (int)_diameter)) + 1;
+		posScaled.y = (_centerMap.y - (yToMid * (int)_diameter)) + 1; // Middle Map
+
+		w -= 1;
+		h -= 1;
+		drawer->DrawBorder(posScaled.x, posScaled.y, w, h, color, color);
+	}
+
+	void		DrawMap(IDrawer2D* drawer)
+	{
+		for (uint8_t y = 0; y < _map.GetHeight(); y += 1)
+		{
+			for (uint8_t x = 0; x < _map.GetWidth(); x += 1)
+			{
+				DrawBox(x, y, drawer);
+			}
+		}
+		// Draw POs Hoover
+		Vec2i posHS;
+
+		posHS.x = (_posHoover.x + _posOffset.x);
+		posHS.y = (_posHoover.y + _posOffset.y);
+		drawer->DrawCircleFill(posHS.x, posHS.y, 6, Color::ORANGE());
+	}
+
 	void		GoPath()
 	{
 		std::cout << "GoPath ";
@@ -464,30 +591,60 @@ public:
 	}
 
 	void		ReactToPbGoPath() {
+		_movementController.Move(MovementType::STOP, true);
 		StopBody();
 		FindPath(40); // Search a valid Raisonable path 
 	}
 
+	void		SetPosHooverInMap()
+	{
+		_posMap.x = ((_posHoover.x + _radius) / (float)_diameter);
+		_posMap.y = ((_posHoover.y + _radius) / (float)_diameter);
+	}
+
+	void		SetCleanFromPosHoover()
+	{
+		std::cout << "Map Clean Set: X(" << (int)_posMap.x << ") Y(" << (int)_posMap.y << ")" << std::endl;
+		_mapClean.Set(_posMap.x, _posMap.y, true);
+		_map.Set(_posMap.x, _posMap.y, true); // If part map is clean -> Path is available also
+	}
+
+	void		SetPosHooverForward(float unit)
+	{
+		_posHoover.x = (_posHoover.x + (unit * _direction.x));
+		_posHoover.y = (_posHoover.y + (unit * _direction.y));
+		SetPosHooverInMap();
+	}
+
 	void		UpdateGoPath(const float& dt)
 	{
+		Vec2	correctMove;
+		float	dtS = (dt / 1000.0f);
 		_goPathInfo.Update((uint16_t)dt);
+
 		if (_movementController.IsMoveFinished())
 		{
-			std::cout << "Move Forward" << std::endl;
+			//std::cout << "Move Forward" << std::endl;
 			_movementController.Move(MovementType::FORWARD, 10);
+			SetCleanFromPosHoover();
 			MoveBody();
 		}
 		else {
 			_movementController.Update(dt);
+			MoveBody();
+			SetPosHooverForward(dtS * _movementController.GetSpeedLinear());
+			//std::cout << "Pos Hoover: " << _posHoover.ToString() << std::endl;
 		}
 		if (_goPathInfo.GetTimerSensor() > 200) // In Ms
 		{
 			float distance = GetFrontDistanceSensor();
 			float estimatedSpeed = _goPathInfo.GetSpeedEstimation(_goPathInfo.GetTimerSensor(), (uint16_t)distance); // Forward
-			std::cout << "Speed Estimation (" << estimatedSpeed << ")" << std::endl;
+			//std::cout << "Speed Estimation (" << estimatedSpeed << ")" << std::endl;
+
 			if (estimatedSpeed < (float)_speedLinearWeird) {
 				_goPathInfo.NotifyLinearSpeedWeird();
 				if (_goPathInfo.GetLinearSpeedWeirdCount() >= 2) {
+					// SetPosHooverForward(-10); // Has Not Moved
 					ReactToPbGoPath();
 					return; // Stop And FindPath	
 				}
@@ -495,20 +652,23 @@ public:
 			else {
 				_goPathInfo.ResetLinearSpeedWeirdCount();
 			}
-
 			_goPathInfo.PushDistance((uint16_t)distance);
+
 			if (distance < _diameter || _goPathInfo.IsBlocked()) {
-				_movementController.Move(MovementType::STOP, true);
+				// Should remap if blocked
+				if (_goPathInfo.IsBlocked())
+					SetPosHooverForward(-10); // Has Not Moved
 				ReactToPbGoPath();
 				return; // Stop And FindPath
 			}
 			_goPathInfo.ResetTimerSensor();
 		}
+
 	}
 
 	void		DrawBlocked(IDrawer2D* drawer)
 	{
-		Vec2 pos = body->GetPosition();
+		Vec2 pos = _body->GetPosition();
 		Vec2i	posDraw;
 
 		posDraw.x = (int)pos.x;
@@ -535,7 +695,8 @@ public:
 	void		RotateFromDir(const float& angle) {
 		if (_rotateDir) {
 			_movementController.Move(MovementType::ROTATE_LEFT, angle);
-		} else {
+		}
+		else {
 			_movementController.Move(MovementType::ROTATE_RIGHT, angle);
 		}
 	}
@@ -543,7 +704,8 @@ public:
 	void		RotateFromDir(Vec2& path, const float& angle) {
 		if (_rotateDir) {
 			VectorTransformer::Rotate(path, angle); // Rotate Right
-		} else {
+		}
+		else {
 			VectorTransformer::Rotate(path, -angle); // Rotate Left
 		}
 		VectorTransformer::Normalize(path);
@@ -555,7 +717,7 @@ public:
 		float	angleOff = 0;
 		Vec2	directionPath = _direction;
 
-		Vec2	pos = body->GetPosition();
+		Vec2	pos = _body->GetPosition();
 		Vec2	posFront;
 		Vec2i	posFrontDraw;
 		Vec2i	posFrontDirDraw;
@@ -567,7 +729,8 @@ public:
 		if (_findPathInfo.IsPathFound()) {
 			// Position at end of step
 			RotateFromDir(directionPath, (float)_findPathInfo.GetPathAngleFromEnd()); // Rotate Right
-		} else {
+		}
+		else {
 			// One step before
 			RotateFromDir(directionPath, -(float)_findPathInfo.GetAngleRotate()); // Else Rotate Left
 		}
@@ -578,7 +741,7 @@ public:
 		{
 			//std::cout << "Direction Path: " << directionPath.ToString() << std::endl;
 			RotateFromDir(directionPath, -(float)_findPathInfo.GetAngleRotate());
-		
+
 			// Draw Direction - and Maybe Distance
 			posFront = pos + (directionPath * (float)_radius);
 			posFrontDraw.x = (int)posFront.x;
@@ -589,7 +752,8 @@ public:
 			posFrontDirDraw.y = (int)posFront.y + (directionPath.y * (float)_findPathInfo.GetDistances()[j]);
 			if (_findPathInfo.GetDistances()[j] > _findPathInfo.GetMinDist()) {
 				color = Color::GREEN();
-			} else {
+			}
+			else {
 				color = Color::RED();
 			}
 			drawer->DrawLine(posFrontDraw.x, posFrontDraw.y, posFrontDirDraw.x, posFrontDirDraw.y, color);
@@ -618,6 +782,99 @@ public:
 		}
 	}
 
+	void		SetFreePathInMap(int x, int y, int xE, int yE)
+	{
+		int		deltaX, deltaY;
+		int		incX, incY;
+		int		i;
+		int		sum;
+		int		xi, yi;
+		uint8_t xiU;
+		uint8_t yiU;
+
+		i = 1;
+
+		xi = x;
+		yi = y;
+
+		deltaX = (xE - xi);
+		deltaY = (yE - yi);
+
+		if (deltaX < 0)
+			incX = -1;
+		else
+			incX = 1;
+
+		if (deltaY < 0)
+			incY = -1;
+		else
+			incY = 1;
+
+		deltaX = abs(deltaX);
+		deltaY = abs(deltaY);
+
+		if (deltaX > deltaY)
+		{
+			// Little Endian Optimization
+			sum = (deltaX >> 1);
+			while (i <= deltaX)
+			{
+				xi += incX;
+				sum += deltaY;
+				if (sum >= deltaX)
+				{
+					sum -= deltaX;
+					yi += incY;
+				}
+
+				xiU = (uint8_t)xi;
+				yiU = (uint8_t)yi;
+				_map.Set(xiU, yiU, true);
+				i += 1;
+			}
+		}
+		else
+		{
+			// Little Endian Optimization
+			sum = (deltaY >> 1);
+			while (i <= deltaY)
+			{
+				yi += incY;
+				sum += deltaX;
+				if (sum >= deltaY)
+				{
+					sum -= deltaY;
+					xi += incX;
+				}
+
+				xiU = (uint8_t)xi;
+				yiU = (uint8_t)yi;
+				_map.Set(xiU, yiU, true);
+				i += 1;
+			}
+		}
+	}
+
+	void		SetFreePathFromDistance(const float& distance)
+	{
+		int x, y;
+		int xE, yE;
+		float distanceScaled = (distance / (float)_diameter);
+
+		x = (int)_posMap.x;
+		y = (int)_posMap.y;
+		xE = (int)((float)_posMap.x + (_direction.x * distanceScaled));
+		yE = (int)((float)_posMap.y + (_direction.y * distanceScaled));
+		SetFreePathInMap(x, y, xE, yE);
+		if (ROBOVACDRAWER && ROBOVACWINDOW)
+		{
+			ROBOVACDRAWER->DrawCircleFill(x, y, 6, Color::BLUE());
+			ROBOVACDRAWER->DrawCircleFill(xE, yE, 6, Color::YELLOW());
+			ROBOVACWINDOW->Refresh();
+		}
+		std::cout << "Set Free Path in Map from: ("<< x <<") ("<< y <<") to ("<< xE <<") ("<< yE <<")" << std::endl;
+	}
+
 	void		UpdateFindPath(const float& dt)
 	{
 		// std::cout << "Find Path Update" << std::endl;
@@ -627,6 +884,7 @@ public:
 			{
 				// std::cout << "Find Path Update - Move Finished" << std::endl;
 				float distance = GetFrontDistanceSensor();
+				SetFreePathFromDistance(distance);
 				if (_findPathInfo.PushDistance((uint16_t)distance))
 				{
 					if (_findPathInfo.IsPathFound()) {
@@ -663,9 +921,9 @@ public:
 
 	float		GetFrontDistanceSensor()
 	{
-		const Vec2& position = (body->GetPosition() + (_direction * (float)_radius));
+		const Vec2& position = (_body->GetPosition() + (_direction * (float)_radius));
 		Vec2		inter;
-		body->GetWorld()->GetBodyManager()->GetTreeCollision()->GetFirstIndexInRay(position, _direction, inter);
+		_body->GetWorld()->GetBodyManager()->GetTreeCollision()->GetFirstIndexInRay(position, _direction, inter);
 		float distance = 0;
 		distance = VectorTransformer::Distance(inter, position);
 		//std::cout << "Get Distance: (" << distance << ")" << std::endl;
@@ -674,7 +932,7 @@ public:
 
 	void				StopBody()
 	{
-		body->SetVelocityLinear(Vec2(0.0f, 0.0f));
+		_body->SetVelocityLinear(Vec2(0.0f, 0.0f));
 	}
 
 	void				MoveBody(bool forward = true)
@@ -682,19 +940,54 @@ public:
 		//																	
 		Vec2 linearSpeed = (_direction * (_movementController.GetSpeedLinear()));
 		if (forward) {
-			body->SetVelocityLinear(linearSpeed);
+			_body->SetVelocityLinear(linearSpeed);
 		}
 		else {
-			body->SetVelocityLinear(-linearSpeed);
+			_body->SetVelocityLinear(-linearSpeed);
 		}
 	}
 
-	PX2Body* body;
+	void		SetBody(PX2Body* body)
+	{
+		_body = body;
+		SetInfoBodyMap();
+	}
 
+	
 private:
 
+	void		SetInfoBodyMap()
+	{
+		if (_body)
+		{
+			_centerMap = _body->GetPosition();
+			_posOffset.x = _centerMap.x - _posHoover.x;
+			_posOffset.y = _centerMap.y - _posHoover.y;
+		}
+	}
+
+	void		ResetMap()
+	{
+		_posMap.x = _map.GetWidth() / 2.0;
+		_posMap.y = _map.GetHeight() / 2.0;
+		_posHoover.x = (_posMap.x * _diameter) - _radius;
+		_posHoover.y = (_posMap.y * _diameter) - _radius;
+		_map.Set(false);
+		_mapClean.Set(false);
+	}
+
+
+	PX2Body* _body;
+
+
+	Vec2				_centerMap; // For DEBUG Draw ONLY
+	Vec2				_posOffset; // For DEBUG Draw ONLY
+
+	Vec2				_posHoover; // Estimated
+	Vec2ui8				_posMap; // Estimated from pos Hoover
 
 	BoolArray			_map;
+	BoolArray			_mapClean;
 	uint8_t				_speedLinearWeird = 60.0f;
 	uint16_t			_rotateAngle;
 	bool				_rotateDir;  // Rotate Left if True - else Rotate Right
@@ -743,7 +1036,8 @@ private:
 	//// Draw Part ////
 	// Body
 	void	DrawBody(PX2Body* body, IDrawer2D* drawer);
-	void	DrawRobovac(PX2Body* body, IDrawer2D* drawer);
+	void	DrawRobovacs(IDrawer2D* drawer);
+	void	DrawRobovac(IDrawer2D* drawer, Robovac* robovac);
 	// Last Robovac Created Info
 	void	DrawInfoRobovac(IDrawer2D* drawer);
 
@@ -774,7 +1068,7 @@ private:
 	};
 
 	// For Physics Managment
-	PX2World*		_pxWorld;
+	PX2World* _pxWorld;
 	AABB2			_screen;
 
 

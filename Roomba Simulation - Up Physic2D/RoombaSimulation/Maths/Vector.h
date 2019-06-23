@@ -136,6 +136,10 @@ typedef Vec2T<float> Vec2;
 template class Vec2T<int>;
 typedef Vec2T<int> Vec2i;
 
+// UInt8
+template class Vec2T<uint8_t>;
+typedef Vec2T<uint8_t> Vec2ui8;
+
 
 #pragma pack(1)
 template <typename T>

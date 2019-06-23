@@ -52,6 +52,19 @@ void RobovacWorld::InitDrawer(IDrawer2D * drawer)
 	drawer->AddSprite("roomba", _roombaBasics.sprite);
 }
 
+void RobovacWorld::DrawRobovacs(IDrawer2D* drawer)
+{
+	std::unordered_map<size_t, Robovac*>::iterator it = _robovacs.begin();
+	std::unordered_map<size_t, Robovac*>::iterator itEnd = _robovacs.end();
+
+	Robovac* robovac;
+	for (; it != itEnd; it++)
+	{
+		robovac = it->second;
+		robovac->Draw(drawer);
+	}
+}
+
 void RobovacWorld::Draw(IDrawer2D * drawer)
 {
 	std::vector<PX2Body*>	bodies = _pxWorld->GetBodies();
@@ -59,6 +72,7 @@ void RobovacWorld::Draw(IDrawer2D * drawer)
 	_objectsSelectedToDraw = _objectsSelected;
 	_objectsCount = bodies.size();
 
+	DrawRobovacs(drawer); // Draw Robovacs First
 	for (size_t i = 0; i < bodies.size(); i += 1) // for the moment iterate over all bodies
 	{
 		DrawBody(bodies.at(i), drawer);
@@ -134,19 +148,16 @@ void RobovacWorld::DrawBody(PX2Body * body, IDrawer2D * drawer)
 			dir.y = (int)(body->GetDirNorm().y * body->GetShape()->GetRadius());
 
 			// drawer->DrawLine(pos.x, pos.y, pos.x + dir.x, pos.y + dir.y, Color::RED());
-			DrawRobovac(body, drawer);
+			
 			
 		}
 	}
 }
 
 
-void RobovacWorld::DrawRobovac(PX2Body* body, IDrawer2D* drawer)
+void RobovacWorld::DrawRobovac(IDrawer2D* drawer, Robovac* robovac)
 {
-	if (_robovacs.count(body->GetID()))
-	{
-		_robovacs.at(body->GetID())->Draw(drawer);
-	}
+	robovac->Draw(drawer);
 }
 
 #include <sstream>
@@ -185,7 +196,7 @@ void RobovacWorld::UpdateRobovacs(const float& dtMs)
 	for (; it != itEnd; it++)
 	{
 		robovac = it->second;
-		if (robovac && robovac->body)
+		if (robovac)
 			robovac->Update(dtMs);
 	}
 }
@@ -223,8 +234,9 @@ const Robovac* RobovacWorld::AddRobovac(const Vec2 & pos)
 		Robovac* robovac = new Robovac();
 		_robovacs.emplace(roomba->GetID(), robovac);
 
-		robovac->body = roomba;
+		robovac->SetBody(roomba);
 		robovac->SetRadius((uint8_t)prop.shape->GetRadius());
+		robovac->Start();
 		return (robovac);
 	}
 	return (NULL);
@@ -266,8 +278,8 @@ void RobovacWorld::RemoveObjectsAtPosition(const Vec2 & pos)
 
 void RobovacWorld::Update(const float & dtS)
 {
-	UpdateRobovacs(dtS * 1000.0f); // Update Robovacs before simulation
 	_pxWorld->Simulate(dtS);
+	UpdateRobovacs(dtS * 1000.0f); // Update Robovacs after simulation
 }
 
 void RobovacWorld::Import(const std::string & pathMap)
@@ -355,7 +367,7 @@ void RobovacWorld::Crazy()
 
 RobovacWorld::RobovacBasics::RobovacBasics()
 {
-	radius = 20.0f;
+	radius = 15.0f;
 	unsigned int diameter = (unsigned int)(radius * 2.0f);
 
 	IDrawer2D*	drawer = new Drawer2DSDL();
