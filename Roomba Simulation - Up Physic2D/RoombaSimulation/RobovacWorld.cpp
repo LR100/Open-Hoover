@@ -72,11 +72,12 @@ void RobovacWorld::Draw(IDrawer2D * drawer)
 	_objectsSelectedToDraw = _objectsSelected;
 	_objectsCount = bodies.size();
 
-	DrawRobovacs(drawer); // Draw Robovacs First
+	
 	for (size_t i = 0; i < bodies.size(); i += 1) // for the moment iterate over all bodies
 	{
 		DrawBody(bodies.at(i), drawer);
 	}
+	DrawRobovacs(drawer); // Draw Robovacs First
 	DrawInfoRobovac(drawer);
 }
 

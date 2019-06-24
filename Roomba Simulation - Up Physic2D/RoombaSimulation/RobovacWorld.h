@@ -256,6 +256,7 @@ public:
 			_pathFov = 50;
 			_pathFound = false;
 			_step = 0;
+			_stepMiddle = 0;
 			_pathAngle = 0;
 		}
 
@@ -303,11 +304,13 @@ public:
 					stepsValid += 1;
 					if (stepsValid == stepsToValid)
 					{
-						std::cout << "OK Steps To Valid (" << (int)stepsToValid << ")" << std::endl;
+						
+						//std::cout << "OK Steps To Valid (" << (int)stepsToValid << ")" << std::endl;
 						uint8_t stepsToComeBack = (_step - s) + (stepsToValid / 2);
-						std::cout << "Steps TO ComeBack" << (int)stepsToComeBack << std::endl;
+						_stepMiddle = (_step - stepsToComeBack);
+						//std::cout << "Steps TO ComeBack" << (int)stepsToComeBack << std::endl;
 						_pathAngle = (uint16_t)((float)_angleRotate * (float)stepsToComeBack);
-						std::cout << "Path Angle:" << (int)_pathAngle << std::endl;
+						//std::cout << "Path Angle:" << (int)_pathAngle << std::endl;
 						_pathFound = true;
 						return (true);
 					}
@@ -326,6 +329,23 @@ public:
 		// Return Angle from start in good path direction
 		uint16_t			GetPathAngleFromStart() const {
 			return ((_step * _angleRotate) - _pathAngle);
+		}
+
+		uint16_t			GetShortestDistanceInFov(const uint8_t& radius)
+		{
+			uint8_t	stepsToValidHalf = _pathFov / _angleRotate;
+			uint8_t	stepsEnd = (_stepMiddle + stepsToValidHalf);
+			uint16_t distanceMin = 0;
+
+			for (uint8_t s = (_stepMiddle - stepsToValidHalf); s < stepsEnd; s += 1)
+			{
+				if (_distances[s] < distanceMin)
+				{
+					distanceMin = _distances[s];
+				}
+			}
+			std::cout << "Distance MIn: (" << distanceMin << ")" <<std::endl;
+			return (distanceMin);
 		}
 
 		const uint16_t* GetDistances() const { return (_distances); };
@@ -348,6 +368,7 @@ public:
 		uint8_t		_pathFov = 80;
 		uint16_t	_pathAngle = 0;
 		uint8_t		_step = 0;
+		uint8_t		_stepMiddle = 0;
 
 		uint8_t		_stepsMax;
 		float		_angleRotate;
@@ -362,9 +383,10 @@ public:
 			Reset();
 		}
 
-		void	Set(const uint16_t* distances)
+		void	Set(const uint16_t* distances, uint16_t distanceMin)
 		{
 			_distances = distances;
+			_distanceMin = distanceMin;
 			Reset();
 		}
 
@@ -432,6 +454,10 @@ public:
 			return (_linearSpeedWeirdCount);
 		}
 
+		const uint16_t& GetDistanceMin() {
+			return (_distanceMin);
+		}
+
 	private:
 
 		void	Reset()
@@ -440,6 +466,7 @@ public:
 			_distanceOld = 0;
 			_distanceSameCount = 0;
 			_linearSpeedWeirdCount = 0;
+			_distanceMin = 10;
 		}
 
 		uint8_t			_linearSpeedWeirdCount;
@@ -447,6 +474,7 @@ public:
 		uint16_t		_distanceOld;
 		uint16_t		_timerSensor;
 		const uint16_t* _distances; // Only a pointer - Depend of another Object - Not in charge to free it
+		uint16_t		_distanceMin;
 	};
 
 	enum RobovacState
@@ -459,12 +487,14 @@ public:
 	};
 
 
-	Robovac() : _map(30, 30, false), _mapClean(30, 30, false) // 30 * (ex diameter: 30) = 900 -> 9m dist of area
+	Robovac() : _map(70, 70, false), _mapClean(70, 70, false) // 30 * (ex diameter: 30) = 900 -> 9m dist of area
 	{
 		_diameter = 30; // MUST be Set manually by user
 		_radius = (_diameter / 2.0);
 		_direction = Vec2(0.0f, 1.0f);
-		_rotateDir = true;
+		std::cout << "Rotate Dir Val:" << (int)(this) << std::endl;
+		_rotateDir = ((int)(this) % 3);
+		std::cout << "Rotate Dir:" << _rotateDir << std::endl;
 		_rotateAngle = 0;
 		ResetMap();
 		std::cout << "Approximate Size of a Robovac: (" << sizeof(Robovac) << ")" << std::endl;
@@ -489,7 +519,7 @@ public:
 		drawer->DrawLine(posDraw.x, posDraw.y, posDirDraw.x, posDirDraw.y, Color::RED());
 	}
 
-	void		Draw(IDrawer2D* drawer, bool drawMap = true)
+	void		Draw(IDrawer2D* drawer, bool drawMap = false)
 	{
 		//std::cout << "Draw Robovac" << std::endl;
 		if (_state == FINDPATH) {
@@ -548,9 +578,8 @@ public:
 		
 		if (!_map.Get(boxX, boxY))
 		{
-			drawer->DrawRectFill(posScaled.x, posScaled.y, w, h, 0.5f, Color::GREY());
-			drawer->DrawRectFill(posScaled.x, posScaled.y, w, h, 0.2f, color);
-	
+			drawer->DrawRect(posScaled.x, posScaled.y, w, h, Color::GREY());
+			//drawer->DrawRectFill(posScaled.x, posScaled.y, w, h, 0.2f, color);
 		}
 		// CLEAN Map
 		if (_mapClean.Get(boxX, boxY))
@@ -587,7 +616,7 @@ public:
 	{
 		std::cout << "GoPath ";
 		_state = GOPATH;
-		_goPathInfo.Set(_findPathInfo.GetDistances());
+		_goPathInfo.Set(_findPathInfo.GetDistances(), _findPathInfo.GetShortestDistanceInFov(_radius));
 	}
 
 	void		ReactToPbGoPath() {
@@ -604,7 +633,7 @@ public:
 
 	void		SetCleanFromPosHoover()
 	{
-		std::cout << "Map Clean Set: X(" << (int)_posMap.x << ") Y(" << (int)_posMap.y << ")" << std::endl;
+		//std::cout << "Map Clean Set: X(" << (int)_posMap.x << ") Y(" << (int)_posMap.y << ")" << std::endl;
 		_mapClean.Set(_posMap.x, _posMap.y, true);
 		_map.Set(_posMap.x, _posMap.y, true); // If part map is clean -> Path is available also
 	}
@@ -624,15 +653,18 @@ public:
 
 		if (_movementController.IsMoveFinished())
 		{
-			//std::cout << "Move Forward" << std::endl;
-			_movementController.Move(MovementType::FORWARD, 10);
+			std::cout << "Move Finished GO Forward" << std::endl;
+			
+			_movementController.Move(MovementType::FORWARD, _goPathInfo.GetDistanceMin());
 			SetCleanFromPosHoover();
 			MoveBody();
 		}
 		else {
 			_movementController.Update(dt);
 			MoveBody();
-			SetPosHooverForward(dtS * _movementController.GetSpeedLinear());
+			_posHoover = (_body->GetPosition() - _posOffset);
+			SetPosHooverInMap();
+			//SetPosHooverForward(dtS * _movementController.GetSpeedLinear());
 			//std::cout << "Pos Hoover: " << _posHoover.ToString() << std::endl;
 		}
 		if (_goPathInfo.GetTimerSensor() > 200) // In Ms
@@ -656,8 +688,8 @@ public:
 
 			if (distance < _diameter || _goPathInfo.IsBlocked()) {
 				// Should remap if blocked
-				if (_goPathInfo.IsBlocked())
-					SetPosHooverForward(-10); // Has Not Moved
+				//if (_goPathInfo.IsBlocked())
+				//SetPosHooverForward(-10); // Has Not Moved
 				ReactToPbGoPath();
 				return; // Stop And FindPath
 			}
@@ -665,7 +697,7 @@ public:
 		}
 
 	}
-
+#ifdef _WIN32
 	void		DrawBlocked(IDrawer2D* drawer)
 	{
 		Vec2 pos = _body->GetPosition();
@@ -677,6 +709,7 @@ public:
 		drawer->DrawCircleFill(posDraw.x, posDraw.y, _radius, Color::ORANGE());
 		drawer->DrawCircleFill(posDraw.x, posDraw.y, (_radius - 3), Color::RED());
 	}
+#endif // _WIN32
 
 	void		Blocked()
 	{
@@ -685,7 +718,7 @@ public:
 
 	void		FindPath(uint16_t minDist)
 	{
-		std::cout << "FindPath (" << minDist << ")";
+		//std::cout << "FindPath (" << minDist << ")";
 		_state = FINDPATH;
 		_findPathInfo.Set(minDist);
 		_movementController.Move(MovementType::STOP, 0);
@@ -711,6 +744,7 @@ public:
 		VectorTransformer::Normalize(path);
 	}
 
+#ifdef _WIN32
 	void		DrawFindPath(IDrawer2D* drawer)
 	{
 		// Draw Good Distances
@@ -760,6 +794,7 @@ public:
 			j -= 1;
 		}
 	}
+#endif
 
 
 	void		PlaceFindPath()
@@ -872,7 +907,7 @@ public:
 			ROBOVACDRAWER->DrawCircleFill(xE, yE, 6, Color::YELLOW());
 			ROBOVACWINDOW->Refresh();
 		}
-		std::cout << "Set Free Path in Map from: ("<< x <<") ("<< y <<") to ("<< xE <<") ("<< yE <<")" << std::endl;
+		//::cout << "Set Free Path in Map from: ("<< x <<") ("<< y <<") to ("<< xE <<") ("<< yE <<")" << std::endl;
 	}
 
 	void		UpdateFindPath(const float& dt)

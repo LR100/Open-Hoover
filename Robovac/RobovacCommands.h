@@ -4,7 +4,7 @@
 
 #endif
 
-//#include <RF24SC/RF24SCClient.h>
+
 #include <RobovacDefines.h>
 #include <RF24SC.h>
 
@@ -21,6 +21,7 @@ typedef enum RobovacRF24DataType : uint16_t
 {
 	COMMAND = RF24DataType::RF24USER_DATA_TYPE,
 	CALIBRATE_INFO,
+	BLOCKED_INFO
 } RobovacRF24DataType;
 
 

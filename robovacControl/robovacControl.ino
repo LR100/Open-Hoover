@@ -619,17 +619,13 @@ private:
       delay(2000);
   }
 
-  void MapAngle(uint16_t angleStart, uint16_t angleEnd, uint8_t angleStep) // ex: angleStart: 80° angleEnd: 
-  {
-    
-  }
-
 	virtual void	OnReadCommandCalibrate(RobovacCommand* command) override
 	{
     if (_robotState != CALIBRATE) // Already Calibrating
     {
-      _robotState = CALIBRATE;
-		  Calibrate();
+      //_robotState = CALIBRATE;
+		  //Calibrate();
+		Demo();
     }
 	}
 

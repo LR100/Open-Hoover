@@ -113,28 +113,28 @@ class RobovacController : public RobovacControllerSC
       }
     }  
     
-    if (cmdJoy != 0)
-    {
-        timeSinceLastCmd = 0;
-        lastCmdJoy = cmdJoy;
-        
-    } else {
-      
-        if (lastCmdJoy != 0)
-        {
-            timeSinceLastCmd += _dtMs;
-            
-              if (timeSinceLastCmd > maxTimeCountCmd) {
-                  // Execute
-                
-                  lastCmdJoy = 0; // Remove last Cmd  
-              }
-        }
-    }
-    
+//    if (cmdJoy != 0)
+//    {
+//        timeSinceLastCmd = 0;
+//        lastCmdJoy = cmdJoy;
+//        
+//    } else {
+//      
+//        if (lastCmdJoy != 0)
+//        {
+//            timeSinceLastCmd += _dtMs;
+//            
+//              if (timeSinceLastCmd > maxTimeCountCmd) {
+//                  // Execute
+//                
+//                  lastCmdJoy = 0; // Remove last Cmd  
+//              }
+//        }
+//    }
+    doCommand(cmdJoy, 1, x, y);
   }
 
-  void doCommand(int cmd, int count) {
+  void doCommand(int cmd, int count, float x, float y) {
     if (cmd == 1) {
       if (count == 1) {// Double Click SW -> Calibrate
         SendCommandCalibrate();

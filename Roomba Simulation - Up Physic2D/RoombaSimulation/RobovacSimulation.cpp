@@ -266,7 +266,7 @@ void RobovacSimulation::UpdatePhysic()
 void RobovacSimulation::AddRobovacRandomly()
 {
 	Vec2 pos;
-	pos.x = ((rand() % 700) + 400);
+	pos.x = ((rand() % 850) + 400);
 	pos.y = ((rand() % 300) + 300);
 	
 	_roombaWorld->AddRobovac(pos);
@@ -546,7 +546,8 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 			}
 
 		}
-		//std::this_thread::sleep_for(std::chrono::milliseconds((int)(timeAverageToRotateDesired * 1000.0f)));
+
+		std::this_thread::sleep_for(std::chrono::milliseconds((int)(timeAverageToRotateDesired * 10000.0f)));
 #if DRAW_CALIBRATE
 		_window->Refresh();
 #endif
