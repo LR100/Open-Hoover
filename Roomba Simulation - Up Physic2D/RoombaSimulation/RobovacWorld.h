@@ -331,14 +331,16 @@ public:
 			return ((_step * _angleRotate) - _pathAngle);
 		}
 
+
 		uint16_t			GetShortestDistanceInFov(const uint8_t& radius)
 		{
-			uint8_t	stepsToValidHalf = _pathFov / _angleRotate;
+			uint8_t	stepsToValidHalf = (uint8_t)(((float)(_pathFov / 2) / _angleRotate) / 2.0f);
 			uint8_t	stepsEnd = (_stepMiddle + stepsToValidHalf);
-			uint16_t distanceMin = 0;
+			uint16_t distanceMin = UINT16_MAX;
 
 			for (uint8_t s = (_stepMiddle - stepsToValidHalf); s < stepsEnd; s += 1)
 			{
+				std::cout << "_distances[" << (int)s << "]=" << _distances[s] << std::endl;
 				if (_distances[s] < distanceMin)
 				{
 					distanceMin = _distances[s];
@@ -352,6 +354,7 @@ public:
 		const uint16_t& GetMinDist() const { return (_minDist); };
 		const float& GetAngleRotate() const { return (_angleRotate); };
 		const uint8_t& GetStep() const { return (_step); };
+		const uint8_t& GetStepMiddle() const { return (_stepMiddle); };
 		const uint8_t& GetStepsMax() const { return (_stepsMax); };
 		const uint8_t& GetPathFov() const { return (_pathFov); };
 		const uint16_t& GetPathAngleFromEnd() const { return (_pathAngle); };
@@ -519,7 +522,7 @@ public:
 		drawer->DrawLine(posDraw.x, posDraw.y, posDirDraw.x, posDirDraw.y, Color::RED());
 	}
 
-	void		Draw(IDrawer2D* drawer, bool drawMap = false)
+	void		Draw(IDrawer2D* drawer, bool drawMap = true)
 	{
 		//std::cout << "Draw Robovac" << std::endl;
 		if (_state == FINDPATH) {

@@ -1,86 +1,81 @@
 <World>
-  <Vec2 id="gravity" x="0" y="9999"/>
+  <Vec2 id="gravity" x="0" y="0"/>
   <Bodies>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340716320" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164459296" type="0">
       <Vec2 id="position" x="1157.5" y="389.5"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340716320" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164459296" type="0">
       <Vec2 id="position" x="1157.5" y="89.5"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340716320" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164459296" type="0">
       <Vec2 id="position" x="557.5" y="389.5"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340716320" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164459296" type="0">
       <Vec2 id="position" x="557.5" y="89.5"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340716880" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164464224" type="0">
       <Vec2 id="position" x="280.5" y="159.5"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340715088" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164461984" type="0">
       <Vec2 id="position" x="1825" y="532"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340713856" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164464112" type="0">
       <Vec2 id="position" x="950" y="40"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340714640" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164460192" type="0">
       <Vec2 id="position" x="940" y="1020"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340714976" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164462544" type="0">
       <Vec2 id="position" x="40" y="530"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340716768" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164459184" type="0">
       <Vec2 id="position" x="99.5" y="960"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340716768" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164459184" type="0">
       <Vec2 id="position" x="99.5" y="400"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340716768" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164459184" type="0">
       <Vec2 id="position" x="399.5" y="960"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340716768" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164459184" type="0">
       <Vec2 id="position" x="399.5" y="400"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340716992" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164460528" type="0">
       <Vec2 id="position" x="955.5" y="243"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340715312" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164458960" type="0">
       <Vec2 id="position" x="734" y="890"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.8" shape="2517340715984" type="0">
+    <Body friction="0.5" mass="10" restitution="0.8" shape="1980164462096" type="0">
       <Vec2 id="position" x="1723" y="609"/>
       <Vec2 id="velocityLinear" x="0" y="0"/>
     </Body>
-    <Body friction="0.5" mass="10" restitution="0.9" shape="2517308744592" type="1">
-      <Vec2 id="position" x="891.196" y="489.14"/>
-      <Vec2 id="velocityLinear" x="41.6043" y="19.4644"/>
-    </Body>
   </Bodies>
   <Shapes>
-    <Shape height="25" id="2517340716320" type="1" width="40"/>
-    <Shape height="240" id="2517340716992" type="1" width="89"/>
-    <Shape height="1010" id="2517340714976" type="1" width="25"/>
-    <Shape height="171" id="2517340716880" type="1" width="400"/>
-    <Shape height="1010" id="2517340715088" type="1" width="25"/>
-    <Shape height="25" id="2517340713856" type="1" width="1800"/>
-    <Shape height="40" id="2517340716768" type="1" width="40"/>
-    <Shape height="25" id="2517340714640" type="1" width="1800"/>
-    <Shape height="166" id="2517340715312" type="1" width="552"/>
-    <Shape height="482" id="2517340715984" type="1" width="146"/>
-    <Shape id="2517308744592" radius="40" type="0"/>
+    <Shape height="25" id="1980164459296" type="1" width="40"/>
+    <Shape height="25" id="1980164460192" type="1" width="1800"/>
+    <Shape height="171" id="1980164464224" type="1" width="400"/>
+    <Shape height="25" id="1980164464112" type="1" width="1800"/>
+    <Shape height="1010" id="1980164461984" type="1" width="25"/>
+    <Shape height="240" id="1980164460528" type="1" width="89"/>
+    <Shape height="1010" id="1980164462544" type="1" width="25"/>
+    <Shape height="40" id="1980164459184" type="1" width="40"/>
+    <Shape height="166" id="1980164458960" type="1" width="552"/>
+    <Shape height="482" id="1980164462096" type="1" width="146"/>
   </Shapes>
 </World>

@@ -1,0 +1,234 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="MyMathRandom.cpp">
+      <Filter>Fichiers sources\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="MyMathVecTransformation.cpp">
+      <Filter>Fichiers sources\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GenericLexer.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="FPSComputer.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="MyTimer.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="StrTools.cpp">
+      <Filter>Fichiers sources\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="ValueTools.cpp">
+      <Filter>Fichiers sources\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolDrawer2DGraphBar.cpp">
+      <Filter>Fichiers sources\Graphic\ToolDrawer</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolDrawer2DLinkGraph.cpp">
+      <Filter>Fichiers sources\Graphic\ToolDrawer</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorsTools.cpp">
+      <Filter>Fichiers sources\Graphic\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Drawer2DSDL.cpp">
+      <Filter>Fichiers sources\Graphic\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="EventHandler.cpp">
+      <Filter>Fichiers sources\Graphic\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic2DSDL.cpp">
+      <Filter>Fichiers sources\Graphic\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="IImage.cpp">
+      <Filter>Fichiers sources\Graphic\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageSDL.cpp">
+      <Filter>Fichiers sources\Graphic\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageRaw.cpp">
+      <Filter>Fichiers sources\Graphic\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseTools.cpp">
+      <Filter>Fichiers sources\Graphic\Others</Filter>
+    </ClCompile>
+    <ClCompile Include="RelativePostion.cpp">
+      <Filter>Fichiers sources\Graphic\Others</Filter>
+    </ClCompile>
+    <ClCompile Include="GUIManager.cpp">
+      <Filter>Fichiers sources\Graphic\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadPool.cpp">
+      <Filter>Fichiers sources\Tools\Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="MyGaussPivot.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="PipeComputer.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolDrawer2DCurve.cpp">
+      <Filter>Fichiers sources\Graphic\ToolDrawer</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MyMathRandom.h">
+      <Filter>Fichier d%27en-tête\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="MyMathVecTransformation.h">
+      <Filter>Fichier d%27en-tête\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="MyMathTable.h">
+      <Filter>Fichier d%27en-tête\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="MyMathVec.h">
+      <Filter>Fichier d%27en-tête\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="ValueTools.h">
+      <Filter>Fichier d%27en-tête\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSComputer.h">
+      <Filter>Fichier d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="MyTimer.h">
+      <Filter>Fichier d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="MySorting.h">
+      <Filter>Fichier d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="StrTools.h">
+      <Filter>Fichier d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="GenericLexer.h">
+      <Filter>Fichier d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="PathFinding.h">
+      <Filter>Fichier d%27en-tête\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolDrawer2DGraphBar.h">
+      <Filter>Fichier d%27en-tête\Graphic\ToolDrawer</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolDrawer2DLinkGraph.h">
+      <Filter>Fichier d%27en-tête\Graphic\ToolDrawer</Filter>
+    </ClInclude>
+    <ClInclude Include="MyMathMatrix.h">
+      <Filter>Fichier d%27en-tête\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="NTree.h">
+      <Filter>Fichier d%27en-tête\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Colors.h">
+      <Filter>Fichier d%27en-tête\Graphic\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorsTools.h">
+      <Filter>Fichier d%27en-tête\Graphic\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawer2DSDL.h">
+      <Filter>Fichier d%27en-tête\Graphic\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="EventHandler.h">
+      <Filter>Fichier d%27en-tête\Graphic\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic2DSDL.h">
+      <Filter>Fichier d%27en-tête\Graphic\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="IDrawer2D.h">
+      <Filter>Fichier d%27en-tête\Graphic\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="IGraphic2D.h">
+      <Filter>Fichier d%27en-tête\Graphic\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="IImage.h">
+      <Filter>Fichier d%27en-tête\Graphic\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageRaw.h">
+      <Filter>Fichier d%27en-tête\Graphic\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageSDL.h">
+      <Filter>Fichier d%27en-tête\Graphic\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseTools.h">
+      <Filter>Fichier d%27en-tête\Graphic\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="RelativePostion.h">
+      <Filter>Fichier d%27en-tête\Graphic\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="GUIManager.h">
+      <Filter>Fichier d%27en-tête\Graphic\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="IGUIManager.h">
+      <Filter>Fichier d%27en-tête\Graphic\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="SingleTon.h">
+      <Filter>Fichier d%27en-tête\Pattern</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadPool.h">
+      <Filter>Fichier d%27en-tête\Tools\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="MyGaussPivot.h">
+      <Filter>Fichier d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="PipeComputer.h">
+      <Filter>Fichier d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolDrawer2DCurve.h">
+      <Filter>Fichier d%27en-tête\Graphic\ToolDrawer</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Fichier d%27en-tête">
+      <UniqueIdentifier>{0473b16c-d281-4fdf-9fbc-29ffe85e0096}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources">
+      <UniqueIdentifier>{77c12124-775c-47a0-8e19-11cf96c0d948}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichier d%27en-tête\Graphic">
+      <UniqueIdentifier>{d69ef860-ecfe-406c-8d70-4c44f80c9748}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Graphic">
+      <UniqueIdentifier>{95b03426-6562-4b92-ab35-82e56a601510}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichier d%27en-tête\Tools">
+      <UniqueIdentifier>{470d8dfa-58d0-4f76-b581-21f9d05f2775}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Tools">
+      <UniqueIdentifier>{9bee257d-7ec2-4977-8f4d-55e0f7a9cfda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Math">
+      <UniqueIdentifier>{1d518100-8adf-4ece-a082-ec519d460474}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichier d%27en-tête\Math">
+      <UniqueIdentifier>{d9bca232-db64-49ea-b2b3-cc7904ceeb0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Graphic\ToolDrawer">
+      <UniqueIdentifier>{f948ab94-4551-4387-91bb-336369956f45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichier d%27en-tête\Graphic\ToolDrawer">
+      <UniqueIdentifier>{97a7725b-8d0a-47fb-87cb-7d86a35f944e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichier d%27en-tête\Graphic\Main">
+      <UniqueIdentifier>{7fdf6f26-fe7e-4f51-881e-bfac16f917dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichier d%27en-tête\Graphic\Others">
+      <UniqueIdentifier>{e113b0af-ef53-4198-8b4a-adff7026f7ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Graphic\Main">
+      <UniqueIdentifier>{a158f4b8-685d-45f4-af82-e5ee176e75f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Graphic\Others">
+      <UniqueIdentifier>{05e5a210-436a-438a-abdd-40a0ff93f969}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichier d%27en-tête\Pattern">
+      <UniqueIdentifier>{ea95afdf-9261-4a19-a28d-5bb9061f137b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichier d%27en-tête\Tools\Thread">
+      <UniqueIdentifier>{389de582-f3b1-4e5f-8226-40d3efc97ec1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Tools\Thread">
+      <UniqueIdentifier>{654d9872-1e08-41db-a141-7bf9e431c811}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

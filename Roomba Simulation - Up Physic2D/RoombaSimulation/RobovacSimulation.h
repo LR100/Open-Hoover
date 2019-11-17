@@ -6,8 +6,9 @@
 #include "Graphic\Tools\FPSComputer.h"
 #include "Tools\MyTimer.h"
 
+
 #include "RobovacWorld.h"
-#include "RobovacWorldEditor.h"
+//#include "RobovacWorldEditor.h"
 
 
 
@@ -94,13 +95,14 @@ private:
 	float			_timeCountToTick;
 
 
+	RobovacWorld*	 _robovacWorld;
+
 	IEventHandler*	_eventHandler;
 	IDrawer2D*		_drawer;
 	IWindow*		_window;
 	IDrawer2D*		_drawerMap;
 	IWindow*		_windowMap;
 	FpsComputer		_fpsC;
-	
-	RobovacWorld*		_roombaWorld;
-	RobovacWorldEditor*	_roombaWorldEditor;
+
+	//RobovacWorldEditor*	_roombaWorldEditor;
 };

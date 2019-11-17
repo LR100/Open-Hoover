@@ -6,30 +6,45 @@
 
 #include <time.h>
 #include <string>
+#include <chrono>
 #include <iostream>
 #include <bitset> // For Binary Display
-
+#include "RF24Fake.h"
 
 #define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop) )
 #define String std::string
-#define Serial std::cout 
+// #define Serial std::cout 
 
 #else
 
-#include <RF24.h>
-#include <nRF24L01.h>
 #include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+#include <printf.h>
+
+
 
 #define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))
-template<class E> inline Print &operator <<(Print &obj, E arg) { obj.print(arg); return obj; } // For Chainable Print
+template<class E> inline Print& operator <<(Print& obj, E arg) { obj.print(arg); return obj; } // For Chainable Print
 
 #endif
 
+///////////////////////
+//// DEBUG 
+//
+
 #define DEBUGRF24_READ 0
 #define DEBUGRF24_READ_REQUEST 0
+#define DEBUGRF24_READ_PACKET 0
 #define DEBUGRF24_SEND 0
 #define DEBUGRF24_SEND_CALL 0
 #define DEBUGRF24_MEMORY 0
+#define DEBUGRF24_STATE 1
+#define DEBUGRF24_SEND_TIMEOUT 0
+#define DEBUGRF24_SEND_ATTEMPT 0
+
+
+
 
 /*
  Name:		RF24SC.h
@@ -39,17 +54,8 @@ template<class E> inline Print &operator <<(Print &obj, E arg) { obj.print(arg);
 
 #include "Queue.h"
 
-void	DumpObject(char* object, uint8_t sizeObject)
-{
-	for (uint8_t i = 0; i < sizeObject; i += 1)
-	{
-#ifdef _WIN32
-		std::cout << std::bitset<8>(object[i]) << std::endl;
-#else
-		Serial.println(object[i], BIN);
-#endif // _WIN32
-	}
-}
+void	DumpObject(char* object, uint8_t sizeObject);
+
 
 ////////////////////////
 ////////////////////////
@@ -203,7 +209,7 @@ public:
 		uint16_t	_checksum = 0;
 		uint16_t	tmp;
 		uint8_t sizeObject = ((sizeof(*this)) - 2); // Checksum is not added
-		char* object = (char*)&(*this);
+		char* object = (char*) & (*this);
 
 
 		for (uint8_t i = 0; i < sizeObject; i += 1)
@@ -216,11 +222,11 @@ public:
 		return (_checksum);
 	}
 
-	char*		GetData()
+	char* GetData()
 	{
 		char* data = ((char*)this);
 		data = &data[sizeof(*this)];
-		//Serial << "Size of this (" << sizeof(*this) << ")\n";
+		//Serial << "(" << _deviceID << ")" <<  "Size of this (" << sizeof(*this) << ")\n";
 		return (data);
 	}
 
@@ -305,7 +311,7 @@ PACK(typedef struct
 
 	// Pack 
 	RF24DataSpecification	spec;
-	char*					data = NULL;
+	char* data = NULL;
 
 }) RF24DataBuffer;
 
@@ -317,7 +323,8 @@ PACK(typedef struct
 
 class RF24Communicator
 {
-protected:
+public:
+
 	typedef enum RF24State : uint8_t
 	{
 		NONE = 0,
@@ -326,68 +333,23 @@ protected:
 		READ_CALL = 3
 	} RF24State;
 
-public:
 
-	RF24Communicator(uint8_t pinCE, uint8_t pinCS) :
-#ifndef _WIN32
-		_radio(pinCE, pinCS),
-#endif // !_WIN32
-		_ackValueCertification(RF24_ACK_VALUE)
-	{
-		Serial << "Constructor\n";
-		_memoryBufferUsed = sizeof(*this) + RF24_DATA_FAT_MAX_SIZE; // Size of all essential buffers 
-		_memoryBufferMax = 1024; // 1024 octets
-		_lastChecksum = 0;
-		_deviceID = 0;
-		_deviceIDReceiver = RF24ALL_ID;
-		_state = RF24State::SEND_CALL; // Server Prior Mode is Send Call
-	};
+#if DEBUGRF24_STATE
+	String RF24StateToString(RF24Communicator::RF24State state);
+#endif
 
-	virtual ~RF24Communicator()
-	{
-		if (_lastChecksum != 0) // Had been initialized
-		{
-			delete (_requestFcts);
-			_dataFatBuffer.Release();
-		}
-	}
+	RF24Communicator(uint8_t pinCE, uint8_t pinCS);
+	virtual ~RF24Communicator();
 
 #if DEBUGRF24_MEMORY
 	void	DisplayMemoryUsed()
 	{
-		Serial << "Memory Used (" << _memoryBufferUsed << ") on (" << _memoryBufferMax << ") Available\n";
+		Serial << "(" << _deviceID << ")" <<  "Memory used (" << _memoryBufferUsed << ") on (" << _memoryBufferMax << ") available\n";
 	}
 #endif
 
 	// Init Basics and then overridable Extended
-	bool	InitCommunication()
-	{
-		Serial << "Init\n";
-		if (_lastChecksum == 0)
-		{
-			const uint64_t pipeServerWrite = 0xE8E8F0F0A1LL;
-			const uint64_t pipeServerRead = 0xE8E8F0F0A2LL;
-
-			if (!InitBasics())
-			{
-				return (false);
-			}
-			if (!InitExtended(pipeServerWrite, pipeServerRead))
-			{
-				return (false);
-			}
-			_lastChecksum = 1; // Last Check Sum is used as marker of Initialization
-			// It's set only from Valid Packet and value could never be 0 or 1
-#if DEBUGRF24_MEMORY
-			DisplayMemoryUsed();
-#endif
-			return (true);
-		}
-		else
-		{
-			Serial << "Already Init\n";
-		}
-	}
+	bool	InitCommunication();
 
 	///////////////////
 	///// UPDATE //////
@@ -396,54 +358,35 @@ private:
 	uint16_t debugLifeTimeCounter = 0;
 public:
 
-	void	UpdateCommunication()
-	{
-		if (_lastChecksum == 0)
-			return;
-
-		UpdateTime();
-		debugLifeTimeCounter += _timeDtMs;
-		if (debugLifeTimeCounter >= 1000)
-		{
-			Serial << "RF24Communicator is living\n";
-			debugLifeTimeCounter = 0;
-		}
-
-		//Serial << "dtMs (" << dtMs << ")\n";
-		UpdateState(_timeDtMs);
-	}
+	void	UpdateCommunication();
 
 	// It Return the packet to send and NULL if call is over
-	typedef bool (RF24Communicator::*UpdateByStateFct)(); // Previous packet in Parameter and the state of its sending
+	typedef bool (RF24Communicator::* UpdateByStateFct)(); // Previous packet in Parameter and the state of its sending
 
-	void	SetDeviceID(uint8_t deviceID)
-	{
-		_deviceID = deviceID;
-	}
-
-	void	SetDeviceIDReceiver(uint8_t deviceID)
-	{
-		_deviceIDReceiver = deviceID;
-	}
-
-	bool	SendBufferIsEmpty()
-	{
-		return (_callQueue.Size() == 0 && _callCurrent.call == NULL);
-	}
+	void	SetDeviceID(uint8_t deviceID) { _deviceID = deviceID; }
+	void	SetDeviceIDReceiver(uint8_t deviceID) { _deviceIDReceiver = deviceID; }
+	bool	SendBufferIsEmpty() { return (_callQueue.Size() == 0 && _callCurrent.call == NULL); }
 
 	// Value are basic types implemented by RF24DataType
 
 	///////////////////
 	//// RF24 CALL ////
 	///////////////////
+
+	uint16_t		attemptTime = 0; // Time passed on call
 	PACK(typedef struct
 	{
 		RF24DataBuffer	data;
-		RF24RequestType	requestNext;
-		uint8_t			flag; // Can be used for option (also used to pad struct)
+		RF24RequestType	requestNext = RF24RequestType::RF24NOREQUEST;
+		uint8_t			flag = 0; // Can be used for option (also used to pad struct)
+		uint16_t		attemptTime = 0; // Time passed on call
 		uint16_t		Size() const { return ((sizeof(*this) + data.spec.size)); };
 	}) RF24Call; // Bufferized Call
 
+
+	//////////////////////////
+	//// RF24 CALL Packet ////
+	//////////////////////////
 	PACK(typedef struct
 	{
 		void			Reset()
@@ -467,7 +410,7 @@ public:
 
 
 	// It Return the packet to send and NULL if call is over
-	typedef RF24Packet* (RF24Communicator::*RequestFct)(RF24CallPacket*, bool success); // Previous packet in Parameter and the state of its sending
+	typedef RF24Packet* (RF24Communicator::* RequestFct)(RF24CallPacket*, bool success); // Previous packet in Parameter and the state of its sending
 	// The function is called when the RF24Call is going to be send and each time the previous packet has been sent
 	// ex: RequestFct		nextFct;
 
@@ -477,10 +420,10 @@ public:
 	{
 		RF24Call* call = new RF24Call();
 		call->data.spec.SetFromData(value);
-		return (PrepareCallSend(call, (char*)&value));
+		return (PrepareCallSend(call, (char*)& value));
 	}
 
-	bool	SendMsg(const char * msg, uint16_t size)
+	bool	SendMsg(const char* msg, uint16_t size)
 	{
 		return (SendData((char*)msg, size, (uint8_t)RF24DataType::RF24STRING));
 	}
@@ -509,9 +452,9 @@ protected:
 	virtual void OnReadPacket(RF24Packet* packet) {	};
 	virtual void OnReadData(char* data, uint16_t dataSize, uint8_t type)
 	{
-		Serial << "(" << type << ") Say: (";
+		Serial << "(" << _deviceID << ")" <<  "(" << (int)type << ") Say: (";
 		if (type == RF24DataType::RF24INT)
-			Serial << ((int*)data)[0];
+			Serial <<  ((int*)data)[0];
 		else if (type == RF24DataType::RF24STRING)
 		{
 			data[dataSize] = 0;
@@ -524,6 +467,10 @@ protected:
 
 	virtual void HandlePacket(RF24Packet* packet)
 	{
+
+#if DEBUGRF24_READ_PACKET
+		Serial << "(" << _deviceID << ")" << "Handle Packet - type (" << packet->header.requestType << ")\n";
+#endif
 		OnReadPacket(packet);
 
 		// If Packet is !Reply -> 
@@ -540,7 +487,7 @@ protected:
 			HandleRequestAuthWrite(packet);
 		else
 		{
-			Serial << "RF24Server: Unkonwn Request\n";
+			Serial << "(" << _deviceID << ")" <<  "RF24Server: Unkonwn Request\n";
 			packet->Display();
 		}
 
@@ -552,22 +499,64 @@ protected:
 	//// END OVERRIDABLE ////
 	/////////////////////////
 
+
+
 		// Return dtMs (Delta Time in MilliSeconds since last call)
 	void	UpdateTime()
 	{
 
 		unsigned long timeLast = _time;
 #ifndef _WIN32
-		_time = millis();;
+		
+		_time = millis();
 #else
-		_time = time(NULL);
+		_time = clock();
 #endif // !1
-		//Serial << "Update Time TimeLast(" << timeLast << ") Time ("<< _time << ")\n";
+		//Serial << "(" << _deviceID << ")" <<  "Update Time TimeLast(" << timeLast << ") Time ("<< _time << ")\n";
 		unsigned long dtMs = (_time - timeLast);
 		if (dtMs > UINT16_MAX)
+		{
 			_timeDtMs = UINT16_MAX;
+			// Last Call IS Completly time out
+
+#if DEBUGRF24_SEND_TIMEOUT
+			Serial << "(" << _deviceID << ")" << "Call is timeout (" << UINT16_MAX <<")ms\n";
+#endif
+			//PopCallNextFct(false); // Signal to the Call function that previous packet failed to be send
+		}
 		else
 			_timeDtMs = (uint16_t)dtMs;
+		
+	}
+
+	void UpdateTimeCall()
+	{
+		if (_callCurrent.call != NULL)
+		{
+			_callCurrent.call->attemptTime += _timeDtMs;
+#if DEBUGRF24_SEND_ATTEMPT
+			Serial << "(" << _deviceID << ")" << "Call attempt time (" << _callCurrent.call->attemptTime << ")\n";
+#endif
+			if (_callCurrent.call->attemptTime > (_callCurrent.call->data.spec.size + 125)) // in ms
+			{
+#if DEBUGRF24_SEND_TIMEOUT
+				Serial << "(" << _deviceID << ")" << "Call is timeout (" << (_callCurrent.call->data.spec.size + 125)  << ")ms\n";
+#endif
+				//PopCallNextFct(false); // Signal to the Call function that previous packet failed to be send
+			}
+		}
+	}
+
+	bool MemoryIsAvailable(uint16_t memoryWanted)
+	{
+		if ((memoryWanted + _memoryBufferUsed) > (_memoryBufferMax - 50)) // To be sure we dont override Memory let Nbits of margin for temporary Mem Manip
+		{
+#if DEBUGRF24_MEMORY
+			Serial << "(" << _deviceID << ")" << "Memory Get ERROR (" << memoryWanted << " + " << _memoryBufferUsed << ") > (" << (_memoryBufferMax - 50) << ")\n";
+#endif
+			return (false);
+		}
+		return (true);
 	}
 
 	bool MemoryGet(uint16_t memoryWanted)
@@ -575,13 +564,13 @@ protected:
 		if ((memoryWanted + _memoryBufferUsed) > (_memoryBufferMax - 50)) // To be sure we dont override Memory let Nbits of margin for temporary Mem Manip
 		{
 #if DEBUGRF24_MEMORY
-			Serial << "Memory Get ERROR (" << memoryWanted << " + " << _memoryBufferUsed <<") > (" << (_memoryBufferMax - 50) << ")\n";
+			Serial << "(" << _deviceID << ")" <<  "Memory Get ERROR (" << memoryWanted << " + " << _memoryBufferUsed << ") > (" << (_memoryBufferMax - 50) << ")\n";
 #endif
 			return (false);
 		}
 		_memoryBufferUsed += memoryWanted;
 #if DEBUGRF24_MEMORY
-		Serial << "Memory Get (" << memoryWanted << ")\n";
+		Serial << "(" << _deviceID << ")" <<  "Memory Get (" << memoryWanted << ")\n";
 #endif
 		return (true);
 	}
@@ -589,7 +578,7 @@ protected:
 	void MemoryRelease(uint16_t memoryRelease)
 	{
 #if DEBUGRF24_MEMORY
-		Serial << "Memory Release (" << memoryRelease << ")\n";
+		Serial << "(" << _deviceID << ")" <<  "Memory Release (" << memoryRelease << ")\n";
 #endif
 		_memoryBufferUsed -= memoryRelease;
 
@@ -597,11 +586,16 @@ protected:
 
 	bool ReadCall()
 	{
-		RF24Packet*	packet;
+#if DEBUGRF24_READ_PACKET
+		Serial << "(" << _deviceID << ")" << "Read Call\n";
+#endif
+		RF24Packet* packet;
 
 		if ((packet = ReadAvailable()))
 		{
-			//Serial << "Available on Check Received\n";
+#if DEBUGRF24_READ_PACKET
+			Serial << "(" << _deviceID << ")" <<  "Available on Check Received\n";
+#endif
 			// MSG is for everyone
 			if (packet->header.receiverDeviceID == RF24ALL_ID \
 				|| packet->header.receiverDeviceID == _deviceID) // MSG is for this Communicator
@@ -640,12 +634,12 @@ protected:
 #if DEBUGRF24_SEND_CALL
 		if (SendPacketPP(packet))
 		{
-			Serial << "Send Auth Write OK\n";
+			Serial << "(" << _deviceID << ")" <<  "Send Auth Write OK\n";
 			return (true);
 		}
 		else
 		{
-			Serial << "Send Auth Write FAILED\n";
+			Serial << "(" << _deviceID << ")" <<  "Send Auth Write FAILED\n";
 			return (false);
 		}
 #else
@@ -654,17 +648,17 @@ protected:
 
 	}
 
-	RF24Packet*			GetPacketReceivedBuffer() const
+	RF24Packet* GetPacketReceivedBuffer() const
 	{
-		memset((void*)&_packetReceivedBufffer, 0, RF24_PACKET_SIZE_MAX);
-		RF24Packet*		packet = (RF24Packet*)&_packetReceivedBufffer;
+		memset((void*)& _packetReceivedBufffer, 0, RF24_PACKET_SIZE_MAX);
+		RF24Packet* packet = (RF24Packet*)& _packetReceivedBufffer;
 		return (packet);
 	}
 
-	RF24Packet*			GetPacketSendBuffer() const
+	RF24Packet* GetPacketSendBuffer() const
 	{
-		memset((void*)&_packetSendBufffer, 0, RF24_PACKET_SIZE_MAX);
-		RF24Packet*		packet = (RF24Packet*)&_packetSendBufffer;
+		memset((void*)& _packetSendBufffer, 0, RF24_PACKET_SIZE_MAX);
+		RF24Packet* packet = (RF24Packet*)& _packetSendBufffer;
 
 		packet->header.receiverDeviceID = _deviceIDReceiver;
 		packet->header.senderDeviceID = _deviceID;
@@ -677,10 +671,10 @@ protected:
 		return (packet);
 	}
 
-	RF24Packet*			GetPacketSendCallBuffer(RF24Call* call) const
+	RF24Packet* GetPacketSendCallBuffer(RF24Call* call) const
 	{
-		memset((void*)&_packetSendBufffer, 0, RF24_PACKET_SIZE_MAX);
-		RF24Packet*		packet = (RF24Packet*)&_packetSendCallBufffer;
+		memset((void*)& _packetSendBufffer, 0, RF24_PACKET_SIZE_MAX);
+		RF24Packet* packet = (RF24Packet*)& _packetSendCallBufffer;
 
 		packet->header.receiverDeviceID = _deviceIDReceiver;
 		packet->header.senderDeviceID = _deviceID;
@@ -691,37 +685,53 @@ protected:
 		packet->time = (uint16_t)_time;
 
 		return (packet);
+	}
+
+#define RF24_PACKET_CHAIN_COUNT_MAX 3
+
+	bool	SendCallCommunicative()
+	{
+		uint8_t s = 0;
+		while (SendCall() && s < RF24_PACKET_CHAIN_COUNT_MAX) { s += 1; }
+		return (s == RF24_PACKET_CHAIN_COUNT_MAX);
+	}
+
+	bool ReadCallReceptive()
+	{
+		uint8_t s = 0;
+		while (ReadCall() && s < RF24_PACKET_CHAIN_COUNT_MAX) { s += 1; }
+		return (s == RF24_PACKET_CHAIN_COUNT_MAX);
 	}
 
 	void				Listen(bool state)
 	{
 		if (_isListening != state) // Do Something
 		{
-#ifndef _WIN32
+
 			if (state)
 			{
-				//Serial << "Start Listening\n";
+				//Serial << "(" << _deviceID << ")" <<  "Start Listening\n";
 				_radio.startListening();
 			}
 			else
 			{
-				//Serial << "Stop Listening\n";
+				//Serial << "(" << _deviceID << ")" <<  "Stop Listening\n";
 				_radio.stopListening();
 			}
-#endif
+
 			_isListening = state;
 		}
 	}
 
 
-#ifndef _WIN32
+
 	RF24				_radio;  // nRF24L01 (CE,CSN)
-#endif // 
+
 
 	//////////////////////////////
 	// ATTRIBUTES PROTECTED //////
 	RF24State			_state;
-	uint8_t				_requestCount = 5; // If Modified must be set in Constructor
+	uint8_t				_requestCount = 6; // If Modified must be set in Constructor
 	uint8_t				_deviceID;
 	uint8_t				_deviceIDReceiver; // ID of whom the message is send
 	const int			_ackValueCertification;
@@ -732,11 +742,23 @@ protected:
 	////////////////////////////////// PRIVATE /////
 private:
 
-	bool	PrepareCallSend(RF24Call* call, const char *data)
+	bool	PrepareCallSend(RF24Call* call, const char* data)
 	{
+#if DEBUGRF24_SEND_CALL
+		Serial << "(" << _deviceID << ")" << "Prepare Call Send\n";
+#endif
+
+		if (!MemoryGet(call->Size()))
+		{
+			if (call->data.data)
+				call->data.Release();
+			delete (call);
+			return (false);
+		}
+
 		if (call->data.spec.size == 0)
 		{
-			Serial << "ERROR: RF24Communicator Cannot Send Empty Data \n";
+			Serial << "(" << _deviceID << ")" <<  "ERROR: RF24Communicator Cannot Send Empty Data \n";
 			return (false);
 		}
 
@@ -744,7 +766,7 @@ private:
 		{
 			if (call->data.spec.size > RF24_DATA_FAT_MAX_SIZE)
 			{
-				Serial << "ERROR: RF24Communicator Cannot Send Data Fat (Too Fat (" << call->data.spec.size << ") > (" << RF24_DATA_FAT_MAX_SIZE << "))\n";
+				Serial << "(" << _deviceID << ")" <<  "ERROR: RF24Communicator Cannot Send Data Fat (Too Fat (" << call->data.spec.size << ") > (" << RF24_DATA_FAT_MAX_SIZE << "))\n";
 				return (false);
 			}
 			call->requestNext = RF24RequestType::RF24DATA_FAT_BEGIN;
@@ -754,13 +776,14 @@ private:
 			call->requestNext = RF24RequestType::RF24DATA;
 		}
 
-		if (!MemoryGet(call->Size() + sizeof(Queue<RF24Call*>::Node)))
+		if (!MemoryGet(sizeof(Queue<RF24Call*>::Node)))
 		{
 #if DEBUGRF24_MEMORY
-			Serial << "Prepare Call Send ERROR: Cannot Allocate more memory \n";
+			Serial << "(" << _deviceID << ")" <<  "Prepare Call Send ERROR: Cannot Allocate more memory \n";
 			DisplayMemoryUsed();
 #endif
-			// IF force Try to find Memory 
+			// force Try to find Memory 
+
 			// Else Stop 
 			return (false);
 		}
@@ -780,10 +803,11 @@ private:
 		UpdateCommunication(); // Take Opportunity of having time with communicator to update Read/Write
 	}
 
+
 	// 
-	RF24Packet*	OnSendCallData(RF24CallPacket* callPacket, bool state)
+	RF24Packet* OnSendCallData(RF24CallPacket* callPacket, bool state)
 	{
-		//Serial << "OnCallSend\n";
+		//Serial << "(" << _deviceID << ")" <<  "OnCallSend\n";
 		RF24Packet* packet = GetPacketSendCallBuffer(callPacket->call);
 
 
@@ -794,32 +818,32 @@ private:
 		return (packet);
 	}
 
-	RF24Packet*	OnSendCallDataFatEnd(RF24CallPacket* callPacket, bool state)
+	RF24Packet* OnSendCallDataFatEnd(RF24CallPacket* callPacket, bool state)
 	{
-		//Serial << "OnCallSendFatEnd\n";
+		//Serial << "(" << _deviceID << ")" <<  "OnCallSendFatEnd\n";
 		callPacket->call->requestNext = RF24RequestType::RF24NOREQUEST;
 		return (NULL);
 	}
 
-	RF24Packet*	OnSendCallDataFatPacket(RF24CallPacket* callPacket, bool state)
+	RF24Packet* OnSendCallDataFatPacket(RF24CallPacket* callPacket, bool state)
 	{
 		if (!state)
 		{
-			//Serial << "OnCallSendFat FAILED\n";
+			//Serial << "(" << _deviceID << ")" <<  "OnCallSendFat FAILED\n";
 			return (NULL);
 		}
-		//Serial << "OnCallSendFatPack";
+		//Serial << "(" << _deviceID << ")" <<  "OnCallSendFatPack";
 
 		if (callPacket->packet->header.requestType == RF24RequestType::RF24DATA_FAT_PACKET)
 		{
 			callPacket->dataSent += callPacket->packet->header.dataSpec.size;
 		}
-		//Serial << " Data Sent (" << callPacket->dataSent << ")\n";
+		//Serial << "(" << _deviceID << ")" <<  " Data Sent (" << callPacket->dataSent << ")\n";
 
 
 		uint16_t dataLeftToSend = (callPacket->call->data.spec.size - callPacket->dataSent);
 
-		//Serial << "OnCallSendFatPack Data Left To Send(" << dataLeftToSend << ")\n";
+		//Serial << "(" << _deviceID << ")" <<  "OnCallSendFatPack Data Left To Send(" << dataLeftToSend << ")\n";
 
 		RF24Packet* packet = GetPacketSendCallBuffer(callPacket->call);
 
@@ -846,9 +870,9 @@ private:
 		return (packet);
 	}
 
-	RF24Packet*	OnSendCallDataFatBegin(RF24CallPacket* callPacket, bool state)
+	RF24Packet* OnSendCallDataFatBegin(RF24CallPacket* callPacket, bool state)
 	{
-		//Serial << "OnCallSendFatBegin Type(" << callPacket->call->data.spec.type << ") Size(" << callPacket->call->data.spec.size << ")\n";
+		//Serial << "(" << _deviceID << ")" <<  "OnCallSendFatBegin Type(" << callPacket->call->data.spec.type << ") Size(" << callPacket->call->data.spec.size << ")\n";
 		RF24Packet* packet = GetPacketSendCallBuffer(callPacket->call);
 
 		RF24DataSpecification	dataSpec;
@@ -859,34 +883,40 @@ private:
 		packet->header.requestType = RF24RequestType::RF24DATA_FAT_BEGIN;
 		callPacket->call->requestNext = RF24RequestType::RF24DATA_FAT_PACKET;
 
-		packet->SetData((char*)&callPacket->call->data.spec, dataSpec);
+		packet->SetData((char*)& callPacket->call->data.spec, dataSpec);
 		return (packet);
 	}
 
 	bool		InitBasics()
 	{
 		// INFO On Everyting
-		Serial << "RF24Packet Size (" << sizeof(RF24Packet) << ")\n";
-		Serial << "RF24DataBuffer Size (" << sizeof(RF24DataBuffer) << ")\n";
-		Serial << "RF24DataSpecification Size (" << sizeof(RF24DataSpecification) << ")\n";
-		Serial << "RF24CallPacket Size (" << sizeof(RF24CallPacket) << ")\n";
-		Serial << "RF24Call Size (" << sizeof(RF24Call) << ")\n";
+		Serial << "(" << _deviceID << ")" <<  "RF24Packet Size (" << sizeof(RF24Packet) << ")\n";
+		Serial << "(" << _deviceID << ")" <<  "RF24DataBuffer Size (" << sizeof(RF24DataBuffer) << ")\n";
+		Serial << "(" << _deviceID << ")" <<  "RF24DataSpecification Size (" << sizeof(RF24DataSpecification) << ")\n";
+		Serial << "(" << _deviceID << ")" <<  "RF24CallPacket Size (" << sizeof(RF24CallPacket) << ")\n";
+		Serial << "(" << _deviceID << ")" <<  "RF24Call Size (" << sizeof(RF24Call) << ")\n";
 		InitRequestFcts();
 
-#ifndef _WIN32
 		_radio.begin();
-		delay(500);
+		//delay(500);
 
-		_radio.setPALevel(RF24_PA_MIN);
+		//_radio.setPALevel(RF24_PA_MIN);
 		//_radio.setPALevel(RF24_PA_MAX);
-		//_radio.setDataRate(RF24_2MBPS);
-		_radio.setRetries(0, 0);
+		
+		_radio.setRetries(1, 8);
+#ifndef _WIN32
+		
+		//_radio.setPALevel(RF24_PA_MIN); // RF24_PA_MIN, RF24_PA_LOW, RF24_PA_HIGH, RF24_PA_MAX
+		//_radio.setDataRate(RF24_250KBPS);
+
+#endif // !_WIN32
+
 		//_radio.setAutoAck(true);
 		//_radio.enableAckPayload();
 		_radio.enableDynamicPayloads();
 		_radio.powerDown();
 		_radio.powerUp();
-#endif // _WIN32
+
 		return (true);
 	}
 
@@ -899,22 +929,22 @@ private:
 	{
 		uint8_t		pipe_num;
 		RF24Packet* packet = GetPacketReceivedBuffer();
-#ifndef _WIN32
+
 
 		if (_radio.available(&pipe_num))
 		{
 #if DEBUGRF24_READ
-			Serial << "Read on Pipe (" << pipe_num << ") OK\n";
+			Serial << "(" << _deviceID << ")" <<  "Read on Pipe (" << pipe_num << ") OK\n";
 #endif
 
 			uint8_t payloadSize = _radio.getDynamicPayloadSize();
-			_radio.read((char*)&packet[0], payloadSize);
+			_radio.read((char*)& packet[0], payloadSize);
 
 			Listen(false);
 			if (payloadSize >= sizeof(RF24Packet)) // Packet too
 			{
 #if DEBUGRF24_READ
-				Serial << "Read Packet\n";
+				Serial << "(" << _deviceID << ")" <<  "Read Packet\n";
 #endif
 				//packet->Display();
 				//Du1mpObject((char*)&packet[0], packet->GetSize());
@@ -924,14 +954,14 @@ private:
 					if (packet->checksum != packet->ChecksumCompute() || packet->checksum == 0)
 					{
 #if DEBUGRF24_READ
-						Serial << "Read Packet ERROR with bad Checksum (" << packet->checksum << ") != (" << packet->ChecksumCompute() << ")\n";
+						Serial << "(" << _deviceID << ")" <<  "Read Packet ERROR with bad Checksum (" << packet->checksum << ") != (" << packet->ChecksumCompute() << ")\n";
 #endif
 						return (NULL);
 					}
 					if (packet->checksum == _lastChecksum)
 					{
 #if DEBUGRF24_READ
-						Serial << "Read Packet ERROR same Packet then last one Received (" << packet->checksum << ") == (" << _lastChecksum << ")\n";
+						Serial << "(" << _deviceID << ")" <<  "Read Packet ERROR same Packet then last one Received (" << packet->checksum << ") == (" << _lastChecksum << ")\n";
 #endif
 						//packet->Display();
 						return (NULL);
@@ -942,27 +972,31 @@ private:
 						//Serial.println(" Valid");
 						//DumpObject((char*)&packet[0], packet->GetSize());
 #if DEBUGRF24_READ
-						Serial << "Read Packet with Checksum (" << packet->checksum << ") OK\n";
+						Serial << "(" << _deviceID << ")" <<  "Read Packet with Checksum (" << packet->checksum << ") OK\n";
 #endif
 						return (packet);
 					}
 				}
 				else
 				{
-					//Serial.println(" With bad Header");
-					//DumpObject((char*)&packet[0], payloadSize);
+#if DEBUGRF24_READ
+					Serial << "(" << _deviceID << ")" << "Read Packet ERROR: With Bad Header\n";
+					packet->Display();
+#endif
+					
 					return (NULL);
 				}
 			}
 			else
 			{
-				//Serial.print("Data Unknown of Size ("); Serial.print(payloadSize); Serial.println(")");
+#if DEBUGRF24_READ
+				Serial << "(" << _deviceID << ")" << "Read Packet ERROR: Data Unknown of Size (" << payloadSize << ")\n";
+#endif
 				return (NULL);
 			}
 
 		}
 		//Serial.println("Unavailable");
-#endif
 		return (NULL);
 	}
 
@@ -979,14 +1013,9 @@ private:
 	// Considering that you are listening on the good port
 	bool SendPacketPP(RF24Packet* packetToSend)
 	{
-#ifndef _WIN32
+
 		Listen(false);
-#else
-		if (rand() % 4 == 0) // Fake success of sending packet or not
-			return (true);
-		else
-			return (false);
-#endif
+
 
 		//uint8_t			pipe_num;
 		//uint8_t			ppRequestTypeExpected = _ppRequestTypeExpected;
@@ -1000,17 +1029,18 @@ private:
 		//DumpObject((char*)&packetToSend[0], packetToSend->GetSize());
 
 
-#ifndef _WIN32
+
 
 #if DEBUGRF24_SEND
-		Serial << "Send PacketPP CS(" << packetToSend->checksum << ")\n";
+		Serial << "(" << _deviceID << ")" <<  "Send PacketPP CS(" << packetToSend->checksum << ") PACKET:\n";
+		packetToSend->Display();
 #endif
 		if (_radio.write(packetToSend, packetToSend->GetSize()))
 		{
 #if DEBUGRF24_SEND
-			Serial << "Send PacketPP WRITE OK \n";
+			Serial << "(" << _deviceID << ")" <<  "Send PacketPP WRITE OK \n";
 #endif
-			//Serial << "Sent Packet\n";
+			//Serial << "(" << _deviceID << ")" <<  "Sent Packet\n";
 			//packetToSend->Display();
 			//DumpObject((char*)&packetToSend[0], packetToSend->GetSize());
 //
@@ -1027,22 +1057,22 @@ private:
 //				_radio.read(&ackValue, sizeof(ackValue));
 //			
 //#if DEBUGRF24_SEND
-//				Serial << "Send PacketPP ACK OK \n";
+//				Serial << "(" << _deviceID << ")" <<  "Send PacketPP ACK OK \n";
 //#endif
 //				Listen(true);
 //				return (true);
 //			}
 			Listen(true);
 			return (true);
-			//Serial << "SUCCES\n";
+			//Serial << "(" << _deviceID << ")" <<  "SUCCES\n";
 
 		}
 #if DEBUGRF24_SEND
-		Serial << "Send PacketPP  FAILED \n";
+		Serial << "(" << _deviceID << ")" <<  "Send PacketPP  FAILED \n";
 #endif
 
 		Listen(true);
-#endif
+
 		return (false);
 	}
 
@@ -1052,15 +1082,17 @@ private:
 
 	//////////
 	// CALL //
+	const uint16_t	packetMaxAttemptTime = 100; // in Ms
 
 	void CloseCall(bool withSuccess)
 	{
 		if (_callCurrent.call)
 		{
 #if DEBUGRF24_SEND_CALL
-			Serial << "Close Call (" << _callCurrent.call->requestNext << ") Success (" << withSuccess << ")\n";
+			Serial << "(" << _deviceID << ")" <<  "Close Call (" << _callCurrent.call->requestNext << ") Success (" << withSuccess << ")\n";
 #endif
-			
+			if (!withSuccess)
+				Serial << "(" << _deviceID << ")" << " CALL FAILED\n----------------------------------\n";
 			MemoryRelease(_callCurrent.call->Size() + sizeof(Queue<RF24Call*>::Node));
 #if DEBUGRF24_MEMORY
 			DisplayMemoryUsed();
@@ -1077,7 +1109,9 @@ private:
 	{
 		if (!_callQueue.Size())
 			return (false);
-		//Serial << "Pop Call\n";
+#if DEBUGRF24_SEND_CALL
+		Serial << "(" << _deviceID << ")" << "Pop Call\n";
+#endif
 		_callCurrent.call = _callQueue.Front();
 		_callQueue.PopFront();
 		return (true);
@@ -1085,7 +1119,9 @@ private:
 
 	bool PopCallNextFct(bool successPrev)
 	{
-		//Serial << "Pop Call Packet\n";
+#if DEBUGRF24_SEND_CALL
+		Serial << "(" << _deviceID << ")" <<  "Pop Call Packet\n";
+#endif
 		_callCurrent.packetAttemptCount = 0;
 		_callCurrent.packetAttemptTime = 0;
 		if (_callCurrent.call->requestNext == RF24RequestType::RF24NOREQUEST)
@@ -1103,26 +1139,33 @@ private:
 		if (!successPrev) // Succes Failed Close Packet
 			CloseCall(false);
 		_callCurrent.packet->ChecksumSet();
-		//Serial << "Going to send packet with checksum (" << _callCurrent.packet->checksum << ")\n";
+		//Serial << "(" << _deviceID << ")" <<  "Going to send packet with checksum (" << _callCurrent.packet->checksum << ")\n";
 		return (true);
 	}
 
 	bool SendCallPacketCurrent()
 	{
+#if DEBUGRF24_SEND_CALL
+		Serial << "(" << _deviceID << ")" << "SendCallPacketCurrent()\n";
+#endif
 		if (!_callCurrent.packet || !_callCurrent.call)
 			return (false);
 		if (_callCurrent.packetAttemptCount) // Not first time
 		{
 #if DEBUGRF24_SEND_CALL
-			Serial << "Send Call (" << _callCurrent.call->requestNext << ") Time Packet (" << _callCurrent.packetAttemptTime << ")\n";
+			Serial << "(" << _deviceID << ")" <<  "Send Call (" << _callCurrent.call->requestNext << ") Time Packet (" << _callCurrent.packetAttemptTime << ")\n";
 #endif
-			_callCurrent.packetAttemptTime += _timeDtMs;
-			const uint16_t	maxAttemptTime = 100; // in Ms
-			if (_callCurrent.packetAttemptTime > maxAttemptTime)
+			const uint16_t packetAttemptTimeMax = 100; // in Ms
+
+			if (_callCurrent.packetAttemptTime > packetAttemptTimeMax)
 			{
+#if DEBUGRF24_SEND_TIMEOUT
+				Serial << "(" << _deviceID << ")" << " PACKET TIMEOUT\n----------------------------------\n";
+#endif
 				PopCallNextFct(false); // Signal to the Call function that previous packet failed to be send
 				return (false);
 			}
+			_callCurrent.packetAttemptTime += _timeDtMs; // Try at least one time to send packet
 		}
 
 
@@ -1133,15 +1176,15 @@ private:
 		if (SendPacketPP(_callCurrent.packet))
 		{
 #if DEBUGRF24_SEND_CALL
-			Serial << "Send Call (" << _callCurrent.call->requestNext << ") OK\n";
-#endif
+			Serial << "(" << _deviceID << ")" <<  "Send Call (" << _callCurrent.call->requestNext << ") OK\n";
+#endif	
 			PopCallNextFct(true);
 			return (true);
 		}
 		else
 		{
 #if DEBUGRF24_SEND_CALL
-			Serial << "Send Call (" << _callCurrent.call->requestNext << ") FAILED Try (" << _callCurrent.packetAttemptCount << ")\n";
+			Serial << "(" << _deviceID << ")" <<  "Send Call (" << _callCurrent.call->requestNext << ") FAILED Try (" << _callCurrent.packetAttemptCount << ")\n";
 #endif
 			_callCurrent.packetAttemptCount += 1;
 		}
@@ -1194,10 +1237,10 @@ private:
 
 		bool	IsValid() const { return (_dataStep == (_data.spec.size - 1)); }; /// handle the case where size == 0 With overflow of (0 - 1)
 
-		char*			Data() const { return (_data.data); };
-		const uint16_t&	DataStep() const { return (_dataStep); };
-		const uint16_t&	Size() const { return (_data.spec.size); };
-		const uint8_t&	Type() const { return (_data.spec.type); };
+		char* Data() const { return (_data.data); };
+		const uint16_t& DataStep() const { return (_dataStep); };
+		const uint16_t& Size() const { return (_data.spec.size); };
+		const uint8_t& Type() const { return (_data.spec.type); };
 
 	private:
 
@@ -1212,11 +1255,11 @@ private:
 
 	void				HandleRequestDataFatBegin(RF24Packet* packet)
 	{
-		RF24DataSpecification*	dataFatSpec = (RF24DataSpecification*)&packet->GetData()[0];
+		RF24DataSpecification* dataFatSpec = (RF24DataSpecification*)& packet->GetData()[0];
 		if (!_dataFatBuffer.Init(dataFatSpec->size, dataFatSpec->type))
 		{
 #if DEBUGRF24_READ_REQUEST
-			Serial << "Read Data Fat Begin ERROR: Cannot Allocate Memory Or Received Bad Data Fat Spec : Size (" << dataFatSpec->size << ") Type(" << dataFatSpec->type << ")\n";
+			Serial << "(" << _deviceID << ")" <<  "Read Data Fat Begin ERROR: Cannot Allocate Memory Or Received Bad Data Fat Spec : Size (" << dataFatSpec->size << ") Type(" << dataFatSpec->type << ")\n";
 #endif
 			return;
 		}
@@ -1226,7 +1269,7 @@ private:
 #endif
 
 #if DEBUGRF24_READ_REQUEST
-		Serial << "Read Data Fat Begin : Size (" << dataFatSpec->size << ") Type(" << dataFatSpec->type << ") OK\n";
+		Serial << "(" << _deviceID << ")" <<  "Read Data Fat Begin : Size (" << dataFatSpec->size << ") Type(" << dataFatSpec->type << ") OK\n";
 #endif
 	}
 
@@ -1235,12 +1278,12 @@ private:
 		if (!_dataFatBuffer.Concat(packet->GetData(), packet->header.dataSpec.size))
 		{
 #if DEBUGRF24_READ_REQUEST
-			Serial << "Read Data Fat Packet ERROR: Bad Data Packet Size : Data is probably Corrupted \n";
+			Serial << "(" << _deviceID << ")" <<  "Read Data Fat Packet ERROR: Bad Data Packet Size : Data is probably Corrupted \n";
 #endif
 			return;
 		}
 #if DEBUGRF24_READ_REQUEST
-		Serial << "Read Data Fat Packet OK\n";
+		Serial << "(" << _deviceID << ")" <<  "Read Data Fat Packet OK\n";
 #endif
 	}
 
@@ -1249,48 +1292,53 @@ private:
 		if (!_dataFatBuffer.IsValid())
 		{
 #if DEBUGRF24_READ_REQUEST
-			Serial << "Read Data Fat End ERROR: Incorrect Data Size (" << _dataFatBuffer.Size() << ") != (" << _dataFatBuffer.DataStep() << ") : Data is probably Corrupted \n";
+			Serial << "(" << _deviceID << ")" <<  "Read Data Fat End ERROR: Incorrect Data Size (" << _dataFatBuffer.Size() << ") != (" << _dataFatBuffer.DataStep() << ") : Data is probably Corrupted \n";
 #endif
 			return;
 		}
 #if DEBUGRF24_READ_REQUEST
-		Serial << "Read Data Fat End OK\n";
+		Serial << "(" << _deviceID << ")" <<  "Read Data Fat End OK\n";
 #endif
 		OnReadData(_dataFatBuffer.Data(), _dataFatBuffer.Size(), _dataFatBuffer.Type());
 #if DEBUGRF24_MEMORY
 		DisplayMemoryUsed();
 #endif
-		
+
 	}
+
+
 
 	void				HandleRequestAuthWrite(RF24Packet* packet)
 	{
 #if DEBUGRF24_READ_REQUEST
-		Serial << "Read Auth Write OK\n";
+		Serial << "(" << _deviceID << ")" <<  "Read Auth Write OK\n";
 #endif
-		SendCall();
+		SendCallCommunicative();
 		// If multi clients is implemented // Here it would be possible to now from packet who want to write
 	}
+
 
 	bool	InitRequestFcts()
 	{
 		if (MemoryGet(sizeof(RequestFct) * _requestCount))
 		{
-			_requestFcts = new RequestFct[_requestCount];
+			_requestFcts = new RequestFct[_requestCount];// malloc(sizeof(RequestFct) * _requestCount);
+			Serial << "(" << _deviceID << ")" <<  "Size of RequestFCT: (" << sizeof(RequestFct) << ")\n";
 			if (!_requestFcts)
 			{
-				Serial << "Init Request Fcts ERROR: Cannot Allocate request Fcts\n";
+				Serial << "(" << _deviceID << ")" <<  "Init Request Fcts ERROR: Cannot Allocate request Fcts\n";
 				return (false);
+			} else {
+				_requestFcts[RF24RequestType::RF24DATA] = &RF24Communicator::OnSendCallData;
+				_requestFcts[RF24RequestType::RF24DATA_FAT_BEGIN] = &RF24Communicator::OnSendCallDataFatBegin;
+				_requestFcts[RF24RequestType::RF24DATA_FAT_PACKET] = &RF24Communicator::OnSendCallDataFatPacket;
+				_requestFcts[RF24RequestType::RF24DATA_FAT_END] = &RF24Communicator::OnSendCallDataFatEnd;
 			}
-			_requestFcts[RF24RequestType::RF24DATA] = &RF24Communicator::OnSendCallData;
-			_requestFcts[RF24RequestType::RF24DATA_FAT_BEGIN] = &RF24Communicator::OnSendCallDataFatBegin;
-			_requestFcts[RF24RequestType::RF24DATA_FAT_PACKET] = &RF24Communicator::OnSendCallDataFatPacket;
-			_requestFcts[RF24RequestType::RF24DATA_FAT_END] = &RF24Communicator::OnSendCallDataFatEnd;
 			return (true);
 		}
 		else
 		{
-			Serial << "Init Request Fcts ERROR: Cannot Allocate request Fcts\n";
+			Serial << "(" << _deviceID << ")" <<  "Init Request Fcts ERROR: Cannot Allocate request Fcts\n";
 			return (false);
 		}
 	}
@@ -1319,5 +1367,8 @@ private:
 	uint16_t			_memoryBufferUsed; // Size Of Datas + Size Of Calls + Size Of Nodes + Size Of ItSelf + Size of Data Buffer
 	uint16_t			_memoryBufferMax;
 };
+
+
+
 
 #endif // __RF24SC_H__
