@@ -17,15 +17,18 @@ class Physic2DBodyB2D : public Physic2DBody
 public:
 	Physic2DBodyB2D(Physic2DWorld* world, Physic2DBodyProperties& properties) : Physic2DBody(world, properties) 
 	{
+		_id = 0;
+		_properties = properties;
 		if (properties.type == properties.DYNAMIC) {
 			std::cout << "Dynamic Object" << std::endl;
 			_b2BodyDef.type = b2_dynamicBody; //this will be a dynamic body
-			_b2BodyDef.allowSleep = false;
+			properties.allowSleep = false;
 		}
 		else {
 			_b2BodyDef.type = b2_staticBody; //this will be a static body
 		}
-
+		_b2BodyDef.linearDamping = properties.linearDamping;
+		_b2BodyDef.allowSleep = properties.allowSleep;
 		_b2BodyDef.position.Set(properties.position.x, properties.position.y); //set the starting position
 		_b2BodyDef.angle = properties.angle;
 		_b2Body = NULL;
@@ -42,7 +45,7 @@ public:
 	
 
 	//virtual void				ResetPosition(const Vec2& position) = 0;
-	//virtual void				SetPosition(const Vec2& position) = 0;
+	virtual void				SetPosition(const Vec2& position) override;
 	virtual Vec2				GetPosition() const override;
 	//virtual const Vec2&			GetPositionOld() const;
 
@@ -57,8 +60,8 @@ public:
 	//virtual void				ApplyImpulseLinear(const Vec2& impulse) = 0;
 
 	// Inherited via Physic2DBody
-	virtual void SetVelocityLinear(const Vec2& velocity) override;
-	//virtual const Vec2&			GetVelocityLinear() const;
+	virtual void		SetVelocityLinear(const Vec2& velocity) override;
+	virtual Vec2		GetVelocityLinear() const override;
 	////const Vec2&		GetVelocityLinearOld() const;
 
 
@@ -72,7 +75,8 @@ public:
 	//virtual const AABB2&		GetSweptVolume() const;
 
 	//virtual const AABB2&		GetAABB() const;
-	//virtual const TYPE&			GetType() const;
+	virtual const Physic2DBodyProperties::TYPE& GetType() const override;
+	virtual const Physic2DBodyProperties&		GetProperties() const override;
 	//virtual const size_t&		GetID() const;
 
 	//virtual void				SetRestitution(const float& restitution) = 0;
@@ -114,9 +118,10 @@ protected:
 
 private:
 	
-	Physic2DWorldB2D* _world;
+	Physic2DWorldB2D*				_world;
 	std::vector<Physic2DFixture*>	_fixtures;
 
+	Physic2DBodyProperties			_properties;
 	b2Body*							_b2Body;
 	b2BodyDef						_b2BodyDef;
 	size_t							_id;

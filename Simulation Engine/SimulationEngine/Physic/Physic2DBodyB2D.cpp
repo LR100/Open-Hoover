@@ -44,6 +44,12 @@ const size_t& Physic2DBodyB2D::GetID() const
 	return (_id);
 }
 
+void Physic2DBodyB2D::SetPosition(const Vec2& position)
+{
+	b2Vec2 v(position.x, position.y);
+	_b2Body->SetTransform(v, _b2Body->GetAngle());
+}
+
 Vec2 Physic2DBodyB2D::GetPosition() const
 {
 	return (Vec2(_b2Body->GetPosition().x, _b2Body->GetPosition().y));
@@ -53,5 +59,20 @@ void Physic2DBodyB2D::SetVelocityLinear(const Vec2& velocity)
 {
 	std::cout << "Set VL: " << velocity.ToString() << std::endl;
 	_b2Body->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
+}
+
+Vec2 Physic2DBodyB2D::GetVelocityLinear() const
+{
+	return (Vec2(_b2Body->GetLinearVelocity().x, _b2Body->GetLinearVelocity().y));
+}
+
+const Physic2DBodyProperties::TYPE& Physic2DBodyB2D::GetType() const
+{
+	return (_properties.type);
+}
+
+const Physic2DBodyProperties& Physic2DBodyB2D::GetProperties() const
+{
+	return (_properties);
 }
 

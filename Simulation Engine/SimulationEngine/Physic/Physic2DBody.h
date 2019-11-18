@@ -26,6 +26,8 @@ struct Physic2DBodyProperties
 		position.x = 0;
 		position.y = 0;
 		angle = 0;
+		allowSleep = true;
+		linearDamping = 0;
 	}
 
 	enum TYPE : uint8_t
@@ -40,6 +42,8 @@ struct Physic2DBodyProperties
 	Vec2		position;
 	Vec2		velocityLinear;
 	float		angle;
+	bool		allowSleep;
+	float		linearDamping;
 	//Physic2DShape*	shape;
 };
 // By default bodies have no shapes
@@ -59,11 +63,11 @@ public:
 
 	//void				SetShape(Physic2DShape* shape);
 	//const Physic2DShape*		GetShape() const;
-	virtual Physic2DFixture* CreateFixture(const Physic2DFixtureProperties& properties) = 0;
+	virtual Physic2DFixture*	CreateFixture(const Physic2DFixtureProperties& properties) = 0;
 
 	//virtual void				ResetPosition(const Vec2& position) = 0;
-	//virtual void				SetPosition(const Vec2& position) = 0;
-	virtual Vec2			 GetPosition() const = 0;
+	virtual void				SetPosition(const Vec2& position) = 0;
+	virtual Vec2				GetPosition() const = 0;
 	//virtual const Vec2&		GetPositionOld() const;
 
 	//virtual const Vec2&			GetDir() const;
@@ -78,7 +82,7 @@ public:
 
 	
 	virtual void					SetVelocityLinear(const Vec2& velocity) = 0;
-	//virtual const Vec2&			GetVelocityLinear() const;
+	virtual Vec2					GetVelocityLinear() const = 0;
 	////const Vec2&		GetVelocityLinearOld() const;
 
 
@@ -92,7 +96,8 @@ public:
 	//virtual const AABB2&		GetSweptVolume() const;
 
 	//virtual const AABB2&		GetAABB() const;
-	//virtual const TYPE&			GetType() const;
+	virtual const Physic2DBodyProperties::TYPE&			GetType() const = 0;
+	virtual const Physic2DBodyProperties&				GetProperties() const = 0;
 	//virtual const size_t&		GetID() const;
 
 	//virtual void				SetRestitution(const float& restitution) = 0;

@@ -1,8 +1,18 @@
 #include "Physic2DFixtureB2D.h"
 
+void* Physic2DFixtureB2D::GetUserData() const
+{
+	return (_properties.userdata);
+}
+
 const Physic2DShape* Physic2DFixtureB2D::GetShape() const
 {
-	return (_shape);
+	return (_properties.shape);
+}
+
+const Physic2DFixtureProperties Physic2DFixtureB2D::GetProperties() const
+{
+	return (_properties);
 }
 
 void Physic2DFixtureB2D::SetFixtureDefB2D(const b2FixtureDef& fixtureDef)

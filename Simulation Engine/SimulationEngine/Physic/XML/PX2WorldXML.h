@@ -8,9 +8,9 @@
 class PX2WorldXML
 {
 public:
-	
+
 	static void		Import(PX2World* world, XMLNode* nodeWorld);
-	static XMLNode*	Export(PX2World* world);
+	static XMLNode* Export(PX2World* world);
 
 private:
 
@@ -28,10 +28,10 @@ private:
 	/// IMPORT ///
 	// Shapes
 	static void			ImportShapes(std::unordered_map<size_t, PX2Shape*>& shapes, XMLNode* nodeWorld);
-	static PX2Shape*	ImportShape(XMLNode* nodeShape);
+	static PX2Shape* ImportShape(XMLNode* nodeShape);
 
-	static PX2Shape*	ImportShapeBox(XMLNode* nodeShape);
-	static PX2Shape*	ImportShapeCircle(XMLNode* nodeShape);
+	static PX2Shape* ImportShapeBox(XMLNode* nodeShape);
+	static PX2Shape* ImportShapeCircle(XMLNode* nodeShape);
 	// Bodies
 	static void			ImportBodies(PX2World* world, XMLNode* nodeWorld, std::unordered_map<size_t, PX2Shape*>& shapes);
 	static bool			ImportBody(XMLNode* nodeBody, std::unordered_map<size_t, PX2Shape*>& shapes, PX2Body::Properties& prop);

@@ -97,6 +97,12 @@
     <Filter Include="Fichiers sources\Physic\B2D">
       <UniqueIdentifier>{79c0b3b6-c019-4b4d-a362-4789cc41d20f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers d%27en-tête\Physic\XML">
+      <UniqueIdentifier>{8508a43d-cf6a-4ea0-95bf-8b51feb7461b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Physic\XML">
+      <UniqueIdentifier>{79e840ef-89ca-482c-b087-6f6e9da68136}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphic\IDrawer2D.h">
@@ -324,6 +330,9 @@
     <ClInclude Include="RobovacWorldEditor.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Physic\XML\Physic2DWorldXML.h">
+      <Filter>Fichiers d%27en-tête\Physic\XML</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graphic\IImage.cpp">
@@ -447,9 +456,6 @@
     <ClCompile Include="Maths\Matrix.cpp">
       <Filter>Fichiers sources\Maths</Filter>
     </ClCompile>
-    <ClCompile Include="Physic\XML\PX2WorldXML.cpp">
-      <Filter>Fichiers sources\Physic\PX2</Filter>
-    </ClCompile>
     <ClCompile Include="Physic\PX2Body.cpp">
       <Filter>Fichiers sources\Physic\PX2</Filter>
     </ClCompile>
@@ -497,6 +503,12 @@
     </ClCompile>
     <ClCompile Include="RobovacWorldEditor.cpp">
       <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\XML\PX2WorldXML.cpp">
+      <Filter>Fichiers sources\Physic\PX2\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\XML\Physic2DWorldXML.cpp">
+      <Filter>Fichiers sources\Physic\XML</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

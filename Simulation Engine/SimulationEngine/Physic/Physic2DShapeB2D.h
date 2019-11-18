@@ -24,9 +24,6 @@ public:
 	virtual const float&	GetRadius() const;
 	virtual void*			GetShape() override;
 
-
-
-
 private:
 	b2CircleShape	_circleShape;
 };

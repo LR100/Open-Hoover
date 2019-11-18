@@ -307,10 +307,8 @@ void RobovacSimulation::ReloadWorld()
 
 void RobovacSimulation::SaveWorld()
 {
-	//XMLNode* world = PX2WorldXML::Export(//_roombaWorld->_pxWorld);
-	
-	//world->Export("robovacWorld.xml");
-
+	XMLNode* world = Physic2DWorldXML::Export(_robovacWorld->_p2dWorld);
+	world->Export("robovacWorld.xml");
 }
 
 //#include "Physic/PX2CollisionQuadTree.h"

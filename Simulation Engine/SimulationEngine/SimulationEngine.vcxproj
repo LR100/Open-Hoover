@@ -67,6 +67,7 @@
     <ClInclude Include="Physic\PX2ManifoldList.h" />
     <ClInclude Include="Physic\PX2Shapes.h" />
     <ClInclude Include="Physic\PX2World.h" />
+    <ClInclude Include="Physic\XML\Physic2DWorldXML.h" />
     <ClInclude Include="Physic\XML\PX2WorldXML.h" />
     <ClInclude Include="QuadTree.hpp" />
     <ClInclude Include="Robovac.h" />
@@ -136,6 +137,7 @@
     <ClCompile Include="Physic\PX2ManifoldList.cpp" />
     <ClCompile Include="Physic\PX2Shapes.cpp" />
     <ClCompile Include="Physic\PX2World.cpp" />
+    <ClCompile Include="Physic\XML\Physic2DWorldXML.cpp" />
     <ClCompile Include="Physic\XML\PX2WorldXML.cpp" />
     <ClCompile Include="Robovac.cpp" />
     <ClCompile Include="RobovacSimulation.cpp" />

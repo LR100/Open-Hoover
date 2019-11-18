@@ -25,10 +25,10 @@ RobovacWorld::RobovacWorld()
 	_p2dWorld = new Physic2DWorldB2D(Vec2(0.0f, 0.0f));
 	
 	Import("robovacWorld.xml");
-	_p2dWorld->SetGravity(Vec2(0.0f, 0.0f)); // In case World Set Other Gravity
+	_p2dWorld->SetGravity(Vec2(0.0f, 48.0f)); // In case World Set Other Gravity
 	_roombaBasics = new RobovacBasics(_p2dWorld);
 	_idLastRobovac = 0;
-	AddRobovac(Vec2(200, 200));
+	//AddRobovac(Vec2(200, 200));
 	//AddRobovac(Vec2(400, 400));
 }
 
@@ -47,7 +47,6 @@ void RobovacWorld::SetEvents(IEventHandler * eventHandler)
 	eventHandler->AddHandlerToEvent(ControlKey::KEY_DOWN, &RobovacWorld::MoveLastRobovac, this, Vec2(0, 1));
 
 	eventHandler->AddHandlerToEvent(ControlKey::KEY_RETURN, &RobovacWorld::Crazy, this);
-
 }
 
 // Init Sprites and everything need in drawer
@@ -123,13 +122,15 @@ void RobovacWorld::DrawBody(Physic2DBody * body, IDrawer2D * drawer)
 			Vec2 pos = body->GetPosition();
 			Physic2DShapeBox* boxShape = (Physic2DShapeBox*)shape;
 
-			int x, y, w, h;
+			int x, y, w, h, wh, hh;
 
 
 			x = pos.x - (boxShape->GetWidth() / 2);
 			y = pos.y - (boxShape->GetHeight() / 2);
 			w = boxShape->GetWidth();
+			wh = (int)((float)w / 2.0f);
 			h = boxShape->GetHeight();
+			hh = (int)((float)h / 2.0f);
 
 			drawer->DrawRect(x, y, w, h, colorWall);
 
@@ -138,17 +139,18 @@ void RobovacWorld::DrawBody(Physic2DBody * body, IDrawer2D * drawer)
 
 
 			sizeBorder = 5;
-			//fillScale = sizeBorder / std::min(body->GetAABB().halfSize.x, body->GetAABB().halfSize.y);
+			fillScale = sizeBorder / std::min(wh, hh);
 
 			if (selected)
 			{
-				//drawer->DrawBorder(body->GetAABB().min.x - 1, body->GetAABB().min.y - 1, body->GetAABB().halfSize.x * 2.0f + 2, body->GetAABB().halfSize.y * 2.0f + 2, 0.2f, colorCurrent, colorCurrent);
+				drawer->DrawBorder(x - 1, y - 1, w + 2, h + 2, 0.2f, colorCurrent, colorCurrent);
 			}
-			//drawer->DrawBorder(body->GetAABB().min.x, body->GetAABB().min.y, body->GetAABB().halfSize.x * 2.0f, body->GetAABB().halfSize.y * 2.0f, fillScale, colorWallBorder, colorWallBorder);
+			drawer->DrawBorder(x, y, w, h, fillScale, colorWallBorder, colorWallBorder);
 
 			sizeBorder = 2;
-			//fillScale = sizeBorder / std::min(body->GetAABB().halfSize.x, body->GetAABB().halfSize.y);
-			//drawer->DrawBorder(body->GetAABB().min.x, body->GetAABB().min.y, body->GetAABB().halfSize.x * 2.0f, body->GetAABB().halfSize.y * 2.0f, fillScale, colorWallExtraBorder, colorWallExtraBorder);
+
+			fillScale = sizeBorder / std::min(wh, hh);
+			drawer->DrawBorder(x, y, w, h, fillScale, colorWallExtraBorder, colorWallExtraBorder);
 			return;
 		}
 		else if (shape->GetType() == Physic2DShape::TYPE::CIRCLE) // ROBOVAC
@@ -250,7 +252,7 @@ void RobovacWorld::AddWall(const AABB2& wall)
 	box->SetSize(wall.halfSize.x * 2, wall.halfSize.y * 2);
 	propFixture.shape = box;
 	propFixture.density = 1.0f;
-	propFixture.friction = 0.94f;
+	propFixture.friction = 1.0f;
 
 	Physic2DBody* body = _p2dWorld->CreateBody(propBody);
 	body->CreateFixture(propFixture);
@@ -264,12 +266,15 @@ const Robovac* RobovacWorld::AddRobovac(const Vec2 & pos)
 
 	propBody.type = Physic2DBodyProperties::TYPE::DYNAMIC;
 	propBody.position = pos;
+	propBody.linearDamping = 0.5f;
 
 
 	//propFixture.mass = 10.0f;
+	b2BodyDef def;
+	
 	propFixture.density = 1.0f;
-	propFixture.friction = 0.98f;
-	propFixture.restitution = 0.001f; // Robovac In real world  almost restitute nothing 
+	propFixture.friction = 1.0f;
+	propFixture.restitution = 0.000f; // Robovac In real world  almost restitute nothing 
 	propFixture.shape = _roombaBasics->shape;
 
 
@@ -335,22 +340,22 @@ void RobovacWorld::Update(const float & dtS)
 
 void RobovacWorld::Import(const std::string & pathMap)
 {
-	//// Search For World at robovacWorld.wml in curFolder
-	//XMLParser	xmlParser;
+	// Search For World at robovacWorld.wml in curFolder
+	XMLParser	xmlParser;
 
-	//if (xmlParser.Parse(pathMap))
-	//{
-	//	XMLNode*	tree = xmlParser.GetTree();
+	if (xmlParser.Parse(pathMap))
+	{
+		XMLNode*	tree = xmlParser.GetTree();
 
-	//	if (tree)
-	//	{
-	//		XMLNode* world = tree->GetNodeNamed("World");
-	//		if (world)
-	//		{
-	//			Physic2DWorldXML::Import(_p2dWorld, world);
-	//		}
-	//	}
-	//}
+		if (tree)
+		{
+			XMLNode* world = tree->GetNodeNamed("World");
+			if (world)
+			{
+				Physic2DWorldXML::Import(_p2dWorld, world);
+			}
+		}
+	}
 }
 
 void RobovacWorld::Clear()
@@ -388,28 +393,31 @@ void RobovacWorld::Crazy()
 	size_t NB_OBJ = 100;
 	for (size_t i = 0; i < NB_OBJ; i += 1)
 	{
-		//Vec2 pos;
+		Vec2 pos;
 
-		//pos.x = (float)(rand() % 1000) + 100;
-		//pos.y = (float)(rand() % 800) + 100;
+		pos.x = (float)(rand() % 1000) + 100;
+		pos.y = (float)(rand() % 800) + 100;
 
-		//Physic2DBody::Properties prop;
+		Physic2DBodyProperties		propBody;
+		Physic2DFixtureProperties	propFixture;
 
-		//prop.type = Physic2DBody::TYPE::DYNAMIC;
-		//prop.mass = 10.0f;
-		//prop.restitution = 1.0f; // Those are Crazy balls
-		//prop.position = pos;
-		//prop.shape = _roombaBasics.shape;
-		//
+		propBody.type = Physic2DBodyProperties::TYPE::DYNAMIC;
+		propBody.position = pos;
+		propBody.linearDamping = 0.5f;
 
-		//pos.x = (float)(rand() % 2000) - 1000;
-		//pos.y = (float)(rand() % 2000) - 1000;
 
-		//prop.velocityLinear = pos;
+		//propFixture.mass = 10.0f;
+		b2BodyDef def;
 
-		//Physic2DBody* roomba = _p2dWorld->CreateBody(prop);
-		//if (roomba)
-		//	_idLastRobovac = roomba->GetID();
+		propFixture.density = 1.0f;
+		propFixture.friction = 1.0f;
+		propFixture.restitution = 0.000f; // Robovac In real world  almost restitute nothing 
+		propFixture.shape = _roombaBasics->shape;
+
+
+		Physic2DBody* roomba = _p2dWorld->CreateBody(propBody);
+		propFixture.userdata = roomba;
+		roomba->CreateFixture(propFixture);
 	}
 }
 
@@ -441,7 +449,6 @@ RobovacWorld::RobovacBasics::RobovacBasics(Physic2DWorld* world)
 
 	std::cout << "Create Sprite" << std::endl;
 	sprite = new Sprite(image, Color(0, 0, 0));
-
 	
 	shape = world->CreateShapeCircle();
 	std::cout << "Robovac Basic Shape Type(" << (int)shape->GetType() << ")" << std::endl;

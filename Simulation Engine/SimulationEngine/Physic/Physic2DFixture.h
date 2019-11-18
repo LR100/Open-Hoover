@@ -27,7 +27,9 @@ class Physic2DFixture
 public:
 	Physic2DFixture(Physic2DBody* body, Physic2DFixtureProperties properties) {};
 
-	virtual const Physic2DShape* GetShape() const = 0;
+	virtual void*							GetUserData() const = 0;
+	virtual const Physic2DShape*			GetShape() const = 0;
+	virtual const Physic2DFixtureProperties GetProperties() const = 0;
 
 private:
 	Physic2DFixture();

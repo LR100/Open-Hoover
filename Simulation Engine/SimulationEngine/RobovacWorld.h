@@ -3,7 +3,7 @@
 #include <string>
 #include "Tools\XMLParser.h"
 #include "Physic/Physic2DWorld.h"
-//#include "Physic\Physic2DWorld.h"
+#include "Physic/XML/Physic2DWorldXML.h"
 //#include "Physic\Physic2DBody.h"
 //#include "Physic\Physic2DBodyManager.h" // TMP - For RayTracing
 #include "Maths/VectorTransformer.h"
