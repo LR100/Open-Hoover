@@ -333,6 +333,15 @@
     <ClInclude Include="Physic\XML\Physic2DWorldXML.h">
       <Filter>Fichiers d%27en-tête\Physic\XML</Filter>
     </ClInclude>
+    <ClInclude Include="RobovacControl.h">
+      <Filter>Fichiers d%27en-tête\Robot</Filter>
+    </ClInclude>
+    <ClInclude Include="RobovacBoolArray.h">
+      <Filter>Fichiers d%27en-tête\Robot</Filter>
+    </ClInclude>
+    <ClInclude Include="RobovacMovementController.h">
+      <Filter>Fichiers d%27en-tête\Robot</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graphic\IImage.cpp">
@@ -509,6 +518,10 @@
     </ClCompile>
     <ClCompile Include="Physic\XML\Physic2DWorldXML.cpp">
       <Filter>Fichiers sources\Physic\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="Physic\Physic2DFixture.cpp" />
+    <ClCompile Include="RobovacFindPath.cpp">
+      <Filter>Fichiers sources\Robot</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

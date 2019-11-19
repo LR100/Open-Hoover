@@ -25,10 +25,10 @@ RobovacWorld::RobovacWorld()
 	_p2dWorld = new Physic2DWorldB2D(Vec2(0.0f, 0.0f));
 	
 	Import("robovacWorld.xml");
-	_p2dWorld->SetGravity(Vec2(0.0f, 48.0f)); // In case World Set Other Gravity
+	_p2dWorld->SetGravity(Vec2(0.0f, 0.0f)); // In case World Set Other Gravity
 	_roombaBasics = new RobovacBasics(_p2dWorld);
 	_idLastRobovac = 0;
-	//AddRobovac(Vec2(200, 200));
+	AddRobovac(Vec2(200, 200));
 	//AddRobovac(Vec2(400, 400));
 }
 
@@ -70,7 +70,6 @@ void RobovacWorld::DrawRobovacs(IDrawer2D* drawer)
 
 void RobovacWorld::Draw(IDrawer2D * drawer)
 {
-	std::cout << "Draw" << std::endl;
 	std::vector<Physic2DBody*>	bodies = _p2dWorld->GetBodies();
 
 	_objectsSelectedToDraw = _objectsSelected;
@@ -251,8 +250,8 @@ void RobovacWorld::AddWall(const AABB2& wall)
 	Physic2DShapeBox* box = _p2dWorld->CreateShapeBox();
 	box->SetSize(wall.halfSize.x * 2, wall.halfSize.y * 2);
 	propFixture.shape = box;
-	propFixture.density = 1.0f;
-	propFixture.friction = 1.0f;
+	propFixture.density = 100.0f;
+	propFixture.friction = 10000.0f;
 
 	Physic2DBody* body = _p2dWorld->CreateBody(propBody);
 	body->CreateFixture(propFixture);
@@ -273,7 +272,7 @@ const Robovac* RobovacWorld::AddRobovac(const Vec2 & pos)
 	b2BodyDef def;
 	
 	propFixture.density = 1.0f;
-	propFixture.friction = 1.0f;
+	propFixture.friction = 10000.0f;
 	propFixture.restitution = 0.000f; // Robovac In real world  almost restitute nothing 
 	propFixture.shape = _roombaBasics->shape;
 
@@ -333,7 +332,7 @@ void RobovacWorld::RemoveObjectsAtPosition(const Vec2 & pos)
 
 void RobovacWorld::Update(const float & dtS)
 {
-	std::cout << "World Gravity: (" << _p2dWorld->GetGravity().ToString() << ")" << std::endl;
+	//std::cout << "World Gravity: (" << _p2dWorld->GetGravity().ToString() << ")" << std::endl;
 	_p2dWorld->Simulate(dtS);
 	UpdateRobovacs(dtS * 1000.0f); // Update Robovacs after simulation
 }
@@ -408,8 +407,8 @@ void RobovacWorld::Crazy()
 
 		//propFixture.mass = 10.0f;
 		b2BodyDef def;
-
-		propFixture.density = 1.0f;
+		 
+		propFixture.density = 100.0f; // Heavy Shit
 		propFixture.friction = 1.0f;
 		propFixture.restitution = 0.000f; // Robovac In real world  almost restitute nothing 
 		propFixture.shape = _roombaBasics->shape;

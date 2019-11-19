@@ -20,13 +20,12 @@ public:
 		_b2FixtureDef.restitution = properties.restitution;
 		_b2FixtureDef.friction = properties.friction;
 		_b2FixtureDef.isSensor = properties.isSensor;
-		_b2FixtureDef.userData = properties.userdata;
+		_b2FixtureDef.userData = _data;
 		_b2FixtureDef.shape = (const b2Shape*)properties.shape->GetShape();
 		_properties = properties;
 	};
 
-	virtual void*							GetUserData() const override;
-	virtual const Physic2DShape*			GetShape() const override;
+	virtual Physic2DShape*					GetShape() const override;
 	virtual const Physic2DFixtureProperties GetProperties() const override;
 	void									SetFixtureDefB2D(const b2FixtureDef& fixtureDef);
 	const b2FixtureDef&						GetFixtureDefB2D() const;

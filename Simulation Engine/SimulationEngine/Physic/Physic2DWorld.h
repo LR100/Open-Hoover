@@ -39,8 +39,25 @@ public:
 	virtual Physic2DShapeBox*				CreateShapeBox() = 0;
 	virtual Physic2DShapePolygon*			CreateShapePolygon() = 0;
 
+	struct RaytraceOutput
+	{
+		RaytraceOutput()
+		{
+			found = false;
+			shape = NULL;
+			body = NULL;
+		}
+
+		Vec2			intersection;
+		Physic2DShape*	shape;
+		Physic2DBody*	body;
+		bool			found;
+	};
+
+	virtual RaytraceOutput					Raytrace(const Vec2& origin, const Vec2& dir, const float& maxDist) = 0;
+
 	// Remove Everything in the World and Free Bodies (DO NOT free Shapes)
-	virtual void					Clear() = 0;
+	virtual void							Clear() = 0;
 
 protected:
 

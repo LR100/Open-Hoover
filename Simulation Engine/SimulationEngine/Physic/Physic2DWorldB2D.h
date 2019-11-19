@@ -4,6 +4,7 @@
 #include "Physic2DWorld.h"
 
 
+#include <unordered_map>
 #include <deque>
 
 ///
@@ -54,19 +55,54 @@ public:
 	virtual Physic2DShapeBox*		CreateShapeBox() override;
 	virtual Physic2DShapePolygon*	CreateShapePolygon() override;
 
+
+	virtual RaytraceOutput			Raytrace(const Vec2& origin, const Vec2& dir, const float& maxDist) override;
+
 	// Remove Everything in the World and Free Bodies (DO NOT free Shapes)
 	virtual void					Clear() override;
 
+protected:
+
+
 private:
 
+	class RaytraceQuery : public b2QueryCallback
+	{
+	public:
+		RaytraceQuery(b2World* world, const Vec2& origin, const Vec2& dir, const float& maxDist);
+
+		bool				ReportFixture(b2Fixture* fixture);
+		RaytraceOutput		Raytrace();
+		const size_t&		GetBodyID() const;
+
+	private:
+
+		// Results
+		bool				_found;
+		b2RayCastOutput		_b2output;
+		RaytraceOutput		_output;
+		size_t				_bodyID;
+		// Compute
+		Vec2				_move;
+		size_t				_step;
+		b2RayCastInput		_b2input;
+		float				_distStep;
+		float				_maxDist;
+		b2World*			_world;
+		Vec2				_origin;
+		Vec2				_dir;
+	};
+
+	
 	size_t							GetBodyAvailableID();
 
-	std::vector<Physic2DBody*>	_bodies;
 	b2World*					_b2World;
+	
 	int32						_velocityIterations;  //how strongly to correct velocity
 	int32						_positionIterations;
 
-
-	std::deque<size_t>			_bodiesAvailableIDs;
-	size_t						_bodyCountMax;
+	std::unordered_map<size_t, Physic2DBody*>	_bodiesMAP;
+	std::vector<Physic2DBody*>					_bodies;
+	std::deque<size_t>							_bodiesAvailableIDs;
+	size_t										_bodyCountMax;
 };

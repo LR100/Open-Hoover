@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BGContextSDL.h" />
+    <ClInclude Include="RobovacBoolArray.h" />
     <ClInclude Include="Events\EventHandlerSDL.h" />
     <ClInclude Include="Events\IEvent.h" />
     <ClInclude Include="Events\IEventHandler.h" />
@@ -71,6 +72,8 @@
     <ClInclude Include="Physic\XML\PX2WorldXML.h" />
     <ClInclude Include="QuadTree.hpp" />
     <ClInclude Include="Robovac.h" />
+    <ClInclude Include="RobovacControl.h" />
+    <ClInclude Include="RobovacMovementController.h" />
     <ClInclude Include="RobovacSimulation.h" />
     <ClInclude Include="RobovacWorld.h" />
     <ClInclude Include="RobovacWorldEditor.h" />
@@ -124,6 +127,7 @@
     <ClCompile Include="Maths\Vector.cpp" />
     <ClCompile Include="Maths\VectorTransformer.cpp" />
     <ClCompile Include="Physic\Physic2DBodyB2D.cpp" />
+    <ClCompile Include="Physic\Physic2DFixture.cpp" />
     <ClCompile Include="Physic\Physic2DFixtureB2D.cpp" />
     <ClCompile Include="Physic\Physic2DShapeB2D.cpp" />
     <ClCompile Include="Physic\Physic2DWorldB2D.cpp" />
@@ -140,6 +144,7 @@
     <ClCompile Include="Physic\XML\Physic2DWorldXML.cpp" />
     <ClCompile Include="Physic\XML\PX2WorldXML.cpp" />
     <ClCompile Include="Robovac.cpp" />
+    <ClCompile Include="RobovacFindPath.cpp" />
     <ClCompile Include="RobovacSimulation.cpp" />
     <ClCompile Include="RobovacWorld.cpp" />
     <ClCompile Include="RobovacWorldEditor.cpp" />

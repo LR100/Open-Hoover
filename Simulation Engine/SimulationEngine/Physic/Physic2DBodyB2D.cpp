@@ -25,7 +25,7 @@ void Physic2DBodyB2D::SetIDB2D(const size_t& id)
 
 void Physic2DBodyB2D::SetBodyB2D(b2Body* body)
 {
-	std::cout << "Address of body position (" << &body->GetPosition() << ")" << std::endl;
+	//std::cout << "Address of body position (" << &body->GetPosition() << ")" << std::endl;
 	_b2Body = body;
 }
 
@@ -57,7 +57,7 @@ Vec2 Physic2DBodyB2D::GetPosition() const
 
 void Physic2DBodyB2D::SetVelocityLinear(const Vec2& velocity)
 {
-	std::cout << "Set VL: " << velocity.ToString() << std::endl;
+	// std::cout << "Set VL: " << velocity.ToString() << std::endl;
 	_b2Body->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
 }
 

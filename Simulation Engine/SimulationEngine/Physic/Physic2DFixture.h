@@ -25,12 +25,36 @@ class Physic2DBody;
 class Physic2DFixture
 {
 public:
-	Physic2DFixture(Physic2DBody* body, Physic2DFixtureProperties properties) {};
+	Physic2DFixture(Physic2DBody* body, Physic2DFixtureProperties properties);
 
-	virtual void*							GetUserData() const = 0;
-	virtual const Physic2DShape*			GetShape() const = 0;
-	virtual const Physic2DFixtureProperties GetProperties() const = 0;
+	class UserData
+	{
+		friend class Physic2DFixture;
+	public:
+		UserData() {
+			data = NULL;
+			bodyID = SIZE_MAX;
+		}
+		void*			data;
 
+		const size_t&	GetBodyID() const {
+			return (bodyID);
+		}
+		Physic2DFixture* GetFixture() const {
+			return (self);
+		}
+	private:
+		Physic2DFixture*	self;
+		size_t				bodyID; // Keep track of parent Body (something that Box2D is not helpful with)
+	};
+
+	virtual void*									GetUserData() const { return (_data->data); };
+	virtual Physic2DShape*							GetShape() const = 0;
+	virtual const Physic2DFixtureProperties			GetProperties() const = 0;
+
+protected:
+	UserData*		_data; 
 private:
 	Physic2DFixture();
+	
 };

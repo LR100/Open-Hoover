@@ -1,11 +1,6 @@
 #include "Physic2DFixtureB2D.h"
 
-void* Physic2DFixtureB2D::GetUserData() const
-{
-	return (_properties.userdata);
-}
-
-const Physic2DShape* Physic2DFixtureB2D::GetShape() const
+Physic2DShape* Physic2DFixtureB2D::GetShape() const
 {
 	return (_properties.shape);
 }

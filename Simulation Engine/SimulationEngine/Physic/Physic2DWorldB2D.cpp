@@ -2,7 +2,7 @@
 #include "Physic2DBodyB2D.h"
 #include "Physic2DShapeB2D.h"
 
-#define MAX_BODIES 10000
+#define MAX_BODIES 1000
 
 Physic2DWorldB2D::Physic2DWorldB2D(Vec2 gravity) : Physic2DWorld(gravity)
 {
@@ -14,23 +14,36 @@ Physic2DWorldB2D::Physic2DWorldB2D(Vec2 gravity) : Physic2DWorld(gravity)
 	// Init IDS For Bodies
 	for (size_t i = 0; i < _bodyCountMax; i += 1)
 	{
+		// _bodies.push_back(NULL); // All bodies are available (Getting from ID is O(1))
 		_bodiesAvailableIDs.push_back(_bodyCountMax - i);
 	}
 }
 
 void Physic2DWorldB2D::Simulate(float timePassed)
 {
-	std::cout << "Physic2DWorldB2D::Simulate" << std::endl;
+	//std::cout << "Physic2DWorldB2D::Simulate" << std::endl;
 	_b2World->Step(timePassed, _velocityIterations, _positionIterations);
 }
 
 
 Physic2DBody* Physic2DWorldB2D::CreateBody(Physic2DBodyProperties& properties)
 {
+	size_t			 bodyID = 0;
+	bodyID = GetBodyAvailableID();
+
+	if (bodyID == SIZE_MAX) {
+		std::cerr << "Physic2DWorldB2D::CreateBody() ERROR: Cannot create more bodies" << std::endl;
+		return (NULL);
+	}
+
 	Physic2DBodyB2D* body = new Physic2DBodyB2D(this, properties);
+
 	body->SetBodyB2D(_b2World->CreateBody(&body->GetBodyDefB2D()));
-	body->SetIDB2D(GetBodyAvailableID());
+	body->SetIDB2D(bodyID);
+	_bodiesMAP.emplace(bodyID, body);
+
 	_bodies.push_back(body);
+
 	return (body);
 }
 
@@ -77,9 +90,22 @@ Physic2DShapePolygon* Physic2DWorldB2D::CreateShapePolygon()
 	return (new Physic2DShapePolygonB2D(this));
 }
 
+Physic2DWorld::RaytraceOutput Physic2DWorldB2D::Raytrace(const Vec2& origin, const Vec2& dir, const float& maxDist)
+{
+	RaytraceQuery					rtquery(_b2World, origin, dir, maxDist);
+	Physic2DWorld::RaytraceOutput	rtoutput;
+	rtoutput = rtquery.Raytrace();
+	if (rtoutput.found) {
+		// NO way that fails -> Body cannot arrive here by chance
+		rtoutput.body = _bodiesMAP.at(rtquery.GetBodyID());
+	}
+	return (rtoutput);
+}
+
 void Physic2DWorldB2D::Clear()
 {
 }
+
 
 size_t Physic2DWorldB2D::GetBodyAvailableID()
 {
@@ -95,4 +121,97 @@ size_t Physic2DWorldB2D::GetBodyAvailableID()
 		id = SIZE_MAX;
 	}
 	return (id);
+}
+
+#define RT_QUERY_MAX_LENGTH 20.0f // An AABB of maximum N of width/height
+
+Physic2DWorldB2D::RaytraceQuery::RaytraceQuery(b2World * world, const Vec2 & origin, const Vec2 & dir, const float& maxDist)
+{
+	_origin = origin;
+	_dir = dir;
+	_world = world;
+	_bodyID = 0;
+	_maxDist = maxDist;
+	_distStep = RT_QUERY_MAX_LENGTH;
+	_found = false;
+	_step = 0;
+	_move = (_dir * RT_QUERY_MAX_LENGTH);
+	_output = RaytraceOutput(); // Reset
+}
+
+bool Physic2DWorldB2D::RaytraceQuery::ReportFixture(b2Fixture* fixture)
+{
+	if (fixture->RayCast(&_b2output, _b2input, 0))
+	{
+		// std::cout << "Found" << std::endl;
+		Physic2DFixture::UserData* userData;
+
+		userData = (Physic2DFixture::UserData*)fixture->GetUserData();
+		_bodyID = userData->GetBodyID();
+		
+		_output.intersection.x = _b2input.p1.x + (_move.x * _b2output.fraction);
+		_output.intersection.y = _b2input.p1.y + (_move.y * _b2output.fraction);
+		_output.shape = userData->GetFixture()->GetShape();
+		_output.found = true;
+
+		//std::cout << "AT FRACTION: (" << _b2output.fraction << ")" << std::endl;
+		
+		_found = true;
+		return (false); // STOP
+	}
+	// std::cout << "NOT Found" << std::endl;
+	return (true);
+}
+
+Physic2DWorld::RaytraceOutput Physic2DWorldB2D::RaytraceQuery::Raytrace()
+{
+	size_t				step = 0;
+	b2AABB				aabb;
+	
+	_b2input.maxFraction = 1; // Always
+	// Inputs starting Points
+	_b2input.p1.x = _origin.x;
+	_b2input.p1.y = _origin.y;
+	_b2input.p2.x = _origin.x + _move.x;
+	_b2input.p2.y = _origin.y + _move.y;
+
+	// AABB X
+	if (_b2input.p1.x > _b2input.p2.x) {
+		aabb.lowerBound.x = _b2input.p2.x;
+		aabb.upperBound.x = _b2input.p1.x;
+	} else {
+		aabb.lowerBound.x = _b2input.p1.x;
+		aabb.upperBound.x = _b2input.p2.x;
+	}
+	// AABB Y
+	if (_b2input.p1.y > _b2input.p2.y) {
+		aabb.lowerBound.y = _b2input.p2.y;
+		aabb.upperBound.y = _b2input.p1.y;
+	} else {
+		aabb.lowerBound.y = _b2input.p1.y;
+		aabb.upperBound.y = _b2input.p2.y;
+	}
+
+	while (!_found && _maxDist > 0)
+	{
+		// std::cout << "Query AABB" << std::endl;
+		_world->QueryAABB(this, aabb);
+		_b2input.p1.x = _b2input.p2.x;
+		_b2input.p1.y = _b2input.p2.y;
+		_b2input.p2.x += _move.x;
+		_b2input.p2.y += _move.y;
+		_maxDist -= RT_QUERY_MAX_LENGTH;
+		_step += 1;
+		aabb.lowerBound.x += _move.x;
+		aabb.lowerBound.y += _move.y;
+		aabb.upperBound.x += _move.x;
+		aabb.upperBound.y += _move.y;
+	}
+
+	return (_output);
+}
+
+const size_t& Physic2DWorldB2D::RaytraceQuery::GetBodyID() const
+{
+	return (_bodyID);
 }

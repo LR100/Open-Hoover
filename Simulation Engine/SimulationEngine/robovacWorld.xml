@@ -1,0 +1,103 @@
+<World>
+  <Vec2 id="gravity" x="0" y="0"/>
+  <Bodies>
+    <Body allowSleep="1" linearDamping="0.5" type="1">
+      <Vec2 id="position" x="161.411" y="375.517"/>
+      <Vec2 id="velocityLinear" x="99.2846" y="-10.4325"/>
+      <Fixtures>
+        <Fixture density="1" friction="1" isSensor="0" restitution="0" shape="1463948745664"/>
+      </Fixtures>
+    </Body>
+    <Body allowSleep="1" linearDamping="0" type="0">
+      <Vec2 id="position" x="47" y="399"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+      <Fixtures>
+        <Fixture density="1" friction="1" isSensor="0" restitution="0.001" shape="1463949648832"/>
+      </Fixtures>
+    </Body>
+    <Body allowSleep="1" linearDamping="0" type="0">
+      <Vec2 id="position" x="413" y="731.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+      <Fixtures>
+        <Fixture density="1" friction="1" isSensor="0" restitution="0.001" shape="1463949649200"/>
+      </Fixtures>
+    </Body>
+    <Body allowSleep="1" linearDamping="0" type="0">
+      <Vec2 id="position" x="729.5" y="366.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+      <Fixtures>
+        <Fixture density="1" friction="1" isSensor="0" restitution="0.001" shape="1463949649568"/>
+      </Fixtures>
+    </Body>
+    <Body allowSleep="1" linearDamping="0" type="0">
+      <Vec2 id="position" x="374" y="52.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+      <Fixtures>
+        <Fixture density="1" friction="1" isSensor="0" restitution="0.001" shape="1463949649760"/>
+      </Fixtures>
+    </Body>
+    <Body allowSleep="1" linearDamping="0" type="0">
+      <Vec2 id="position" x="492" y="168.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+      <Fixtures>
+        <Fixture density="1" friction="1" isSensor="0" restitution="0.001" shape="1463949649952"/>
+      </Fixtures>
+    </Body>
+    <Body allowSleep="1" linearDamping="0" type="0">
+      <Vec2 id="position" x="332" y="466.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+      <Fixtures>
+        <Fixture density="1" friction="1" isSensor="0" restitution="0.001" shape="1463949650144"/>
+      </Fixtures>
+    </Body>
+    <Body allowSleep="1" linearDamping="0" type="0">
+      <Vec2 id="position" x="616" y="442.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+      <Fixtures>
+        <Fixture density="1" friction="1" isSensor="0" restitution="0.001" shape="1463949650336"/>
+      </Fixtures>
+    </Body>
+    <Body allowSleep="1" linearDamping="0" type="0">
+      <Vec2 id="position" x="177" y="241.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+      <Fixtures>
+        <Fixture density="1" friction="1" isSensor="0" restitution="0.001" shape="1463990996384"/>
+      </Fixtures>
+    </Body>
+    <Body allowSleep="1" linearDamping="0" type="0">
+      <Vec2 id="position" x="147" y="436"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+      <Fixtures>
+        <Fixture density="1" friction="1" isSensor="0" restitution="0.001" shape="1463990993504"/>
+      </Fixtures>
+    </Body>
+    <Body allowSleep="1" linearDamping="0" type="0">
+      <Vec2 id="position" x="418.5" y="297.5"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+      <Fixtures>
+        <Fixture density="1" friction="1" isSensor="0" restitution="0.001" shape="1463990995232"/>
+      </Fixtures>
+    </Body>
+    <Body allowSleep="1" linearDamping="0" type="0">
+      <Vec2 id="position" x="294" y="300"/>
+      <Vec2 id="velocityLinear" x="0" y="0"/>
+      <Fixtures>
+        <Fixture density="1" friction="1" isSensor="0" restitution="0.001" shape="1463990996576"/>
+      </Fixtures>
+    </Body>
+  </Bodies>
+  <Shapes>
+    <Shape height="673" id="1463949649568" type="1" width="53"/>
+    <Shape height="67" id="1463990996384" type="1" width="38"/>
+    <Shape id="1463948745664" radius="15" type="0"/>
+    <Shape height="720" id="1463949648832" type="1" width="48"/>
+    <Shape height="57" id="1463949649200" type="1" width="684"/>
+    <Shape height="43" id="1463949649760" type="1" width="658"/>
+    <Shape height="75" id="1463949649952" type="1" width="166"/>
+    <Shape height="147" id="1463949650144" type="1" width="238"/>
+    <Shape height="235" id="1463949650336" type="1" width="128"/>
+    <Shape height="64" id="1463990993504" type="1" width="38"/>
+    <Shape height="65" id="1463990995232" type="1" width="97"/>
+    <Shape height="34" id="1463990996576" type="1" width="72"/>
+  </Shapes>
+</World>
