@@ -63,6 +63,7 @@ void RobovacSimulation::InitEvents()
 
 void RobovacSimulation::InitGraphic()
 {
+	std::cout << "RobovacSimulation::InitGraphic()" << std::endl;
 	_window = new WindowSDL(_eventHandler, 800, 800, "Robovac Simulation");
 	_drawer = new Drawer2DSDL(_window->GetBackBuffer()->GetFormat());
 
@@ -92,7 +93,11 @@ void RobovacSimulation::InitGraphic()
 
 	// Init Drawer In World;
 	_robovacWorld->InitDrawer(_drawer);
+	
+
 	//_roombaWorld->InitDrawer(_drawer);
+	// And Set Window Back Buffer again
+	_drawer->SetCurrentImage(_window->GetBackBuffer());
 }
 
 void RobovacSimulation::InitWorld()
@@ -140,7 +145,7 @@ void RobovacSimulation::SetEventsGeneric()
 
 
 	// TMP DEBUG
-	_eventHandler->AddHandlerToEvent(ControlKey::KEY_LCTRL, &RobovacSimulation::AddRobovacRandomly, this);
+	_eventHandler->AddHandlerToEvent(ControlKey::KEY_A, &RobovacSimulation::AddRobovacRandomly, this);
 	//_eventHandler->AddHandlerToEvent(ControlKey::KEY_LCTRL, &RobovacWorld::AddRobovac, //_roombaWorld, Vec2(300, 300));
 	_eventHandler->AddHandlerToEvent(ControlKey::KEY_T, ControlKeyState::RELEASED, &RobovacSimulation::SwitchTreeMode, this);
 	_eventHandler->AddHandlerToEvent(ControlKey::KEY_C, ControlKeyState::RELEASED, &RobovacSimulation::SwitchCalibrateMode, this);
@@ -273,7 +278,7 @@ void RobovacSimulation::AddRobovacRandomly()
 	pos.x = ((rand() % 850) + 400);
 	pos.y = ((rand() % 300) + 300);
 	
-	////_roombaWorld->AddRobovac(pos);
+	_robovacWorld->AddRobovac(pos);
 }
 
 void RobovacSimulation::SwitchMode()
@@ -309,6 +314,7 @@ void RobovacSimulation::SaveWorld()
 {
 	XMLNode* world = Physic2DWorldXML::Export(_robovacWorld->_p2dWorld);
 	world->Export("robovacWorld.xml");
+	std::cout << "RobovacSimulation World Saved" << std::endl;
 }
 
 //#include "Physic/PX2CollisionQuadTree.h"
@@ -450,7 +456,7 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 	//_drawer->DrawCircleFill(posI.x, posI.y, 100, Color::ORANGE());
 	float rotatePos = 0;
 
-	Color line(255, 0, 0);
+	ColorDef line(255, 0, 0);
 	Vec2 inter;
 	uint16_t measureCount = 0;
 	float timeStop = timeMaxToReachFullRotate + (timeMaxToReachFullRotate * 0.5f);
@@ -494,8 +500,7 @@ float RobovacSimulation::CalibrateAngularRotate(float angularVelocityMin, float 
 
 		line.b += 20;
 		line.g += 10;
-		line.ComputeValue();
-
+		
 
 		if (measureCount < markersCount)
 		{

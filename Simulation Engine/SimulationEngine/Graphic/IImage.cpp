@@ -10,19 +10,23 @@
 
 //															DEFAULT,				RGBA,					ARGB,
 //	ABGR, BGRA, 			RGB (5)										
-const AImage::SetAPix AImage::_setAPix[IIMAGE_NB_FORMAT] = { &AImage::SetAPixelRGBA , &AImage::SetAPixelRGBA, &AImage::SetAPixelARGB,\
+const AImage::SetAPix AImage::_setAPix[COLOR_FORMAT_COUNT] = { &AImage::SetAPixelRGBA , &AImage::SetAPixelRGBA, &AImage::SetAPixelARGB,\
 	NULL, NULL, &AImage::SetAPixelRGB };
-const AImage::SetBPix AImage::_setBPix[IIMAGE_NB_FORMAT] = { &AImage::SetBPixelRGBA , &AImage::SetBPixelRGBA, &AImage::SetBPixelARGB,\
+const AImage::SetBPix AImage::_setBPix[COLOR_FORMAT_COUNT] = { &AImage::SetBPixelRGBA , &AImage::SetBPixelRGBA, &AImage::SetBPixelARGB,\
 	NULL, NULL, &AImage::SetBPixelRGB };
-const AImage::GetAPix AImage::_getAPix[IIMAGE_NB_FORMAT] = { &AImage::GetAPixelRGBA , &AImage::GetAPixelRGBA, &AImage::GetAPixelARGB,\
+const AImage::GetAPix AImage::_getAPix[COLOR_FORMAT_COUNT] = { &AImage::GetAPixelRGBA , &AImage::GetAPixelRGBA, &AImage::GetAPixelARGB,\
 	NULL, &AImage::GetAPixelBGRA, &AImage::GetAPixelRGB };
-const AImage::GetBPix AImage::_getBPix[IIMAGE_NB_FORMAT] = { &AImage::GetBPixelRGBA , &AImage::GetBPixelRGBA, &AImage::GetBPixelARGB,\
+const AImage::GetBPix AImage::_getBPix[COLOR_FORMAT_COUNT]
+= { &AImage::GetBPixelRGBA , &AImage::GetBPixelRGBA, &AImage::GetBPixelARGB,\
 	NULL, &AImage::GetBPixelBGRA, &AImage::GetBPixelRGB };
 
 
 AImage::AImage()
 {
-	_format = IImage::DEFAULT;
+	_format = ColorFormat::DEFAULT;
+	_size = 0;
+	_width = 0;
+	_height = 0;
 	_data = 0;
 	_bpp = 0;
 	_sizeLine = 0;
@@ -80,7 +84,7 @@ void AImage::GetPixel(const unsigned int & x, const unsigned int & y, unsigned c
 }
 
 
-const IImage::Format & AImage::GetFormat()
+const ColorFormat & AImage::GetFormat()
 {
 	return (_format);
 }
@@ -199,23 +203,3 @@ void AImage::InitByFormat()
 	_size = ((_sizeLine)* _height);
 }
 
-std::string IImage::FormatToString(const IImage::Format & format)
-{
-	switch (format)
-	{
-	case (DEFAULT): return ("DEFAULT");
-		break;
-	case (RGBA): return ("RGBA");
-		break;
-	case (ARGB): return ("ARGB");
-		break;
-	case (ABGR): return ("ABGR");
-		break;
-	case (BGRA): return ("BGRA");
-		break;
-	case (RGB): return ("RGB");
-		break;
-	default: return ("UNKONWN");
-		break;
-	}
-}

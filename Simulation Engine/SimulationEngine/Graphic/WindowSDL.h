@@ -50,6 +50,7 @@ public:
 	virtual const unsigned int& GetHeight() const override;
 
 	virtual IImage*				GetBackBuffer() const override;
+	virtual const ColorFormat&	GetColorFormat() const override;
 	virtual const uint32_t&		GetID() const override;
 
 	// Property
@@ -86,7 +87,7 @@ protected:
 	SDL_Rect		_rect;
 
 
-
+	ColorFormat		_format;
 	IEventHandler*	_linkedEventHandler;
 };
 

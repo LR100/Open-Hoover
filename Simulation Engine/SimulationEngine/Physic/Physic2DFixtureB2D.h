@@ -23,16 +23,21 @@ public:
 		_b2FixtureDef.userData = _data;
 		_b2FixtureDef.shape = (const b2Shape*)properties.shape->GetShape();
 		_properties = properties;
+		_body = body;
 	};
 
+	virtual Physic2DBody*					GetBody() const override;
 	virtual Physic2DShape*					GetShape() const override;
 	virtual const Physic2DFixtureProperties GetProperties() const override;
+	
 	void									SetFixtureDefB2D(const b2FixtureDef& fixtureDef);
 	const b2FixtureDef&						GetFixtureDefB2D() const;
 	void									SetFixtureB2D(b2Fixture* fixture);
+	
 
 private:
 
+	Physic2DBody*				_body;
 	Physic2DFixtureProperties	_properties;
 	b2FixtureDef				_b2FixtureDef;
 	b2Fixture*					_b2Fixture;

@@ -6,6 +6,7 @@
 
 #include <unordered_map>
 #include <deque>
+#include <set>
 
 ///
 // Box2D
@@ -31,6 +32,7 @@ public:
 		}
 	}
 
+
 	/// BASICS
 	virtual void					Simulate(float timePassed) override;
 
@@ -38,22 +40,22 @@ public:
 	//PX2BodyManager *		GetBodyManager() const;
 
 	/// SET
-	virtual Physic2DBody* CreateBody(Physic2DBodyProperties& properties) override;
-	virtual Physic2DBody* GetBody(const size_t& id) const override;
-	virtual std::vector<Physic2DBody*>		GetBodies() const override;
-	//std::vector<Physic2DBody*>	GetBodiesInAABB(const AABB2&aabb) const;
-	//std::vector<Physic2DBody*>	GetBodiesAtPosition(const Vec2& pos) const;
+	virtual Physic2DBody*				CreateBody(Physic2DBodyProperties& properties) override;
+	virtual std::vector<Physic2DBody*>	GetBodies() const override;
+	virtual Physic2DBody*				GetBody(const size_t& id) const override;
+	virtual void						GetBodiesInAABB(Physic2DQueryBodyCb* querybody, const AABB2& aabb) const override;
+	virtual void						GetBodiesAtPosition(Physic2DQueryBodyCb* querybody, const Vec2& pos) const override;
 
-	virtual void							DestroyBody(Physic2DBody* body) override;
-	virtual void							DestroyAllBodies() override;
+	virtual void						DestroyBody(Physic2DBody* body) override;
+	virtual void						DestroyAllBodies() override;
 
 
-	virtual void							SetGravity(const Vec2& gravity) override;
-	virtual Vec2							GetGravity() const override;
+	virtual void						SetGravity(const Vec2& gravity) override;
+	virtual Vec2						GetGravity() const override;
 
-	virtual Physic2DShapeCircle*	CreateShapeCircle() override;
-	virtual Physic2DShapeBox*		CreateShapeBox() override;
-	virtual Physic2DShapePolygon*	CreateShapePolygon() override;
+	virtual Physic2DShapeCircle*		CreateShapeCircle() override;
+	virtual Physic2DShapeBox*			CreateShapeBox() override;
+	virtual Physic2DShapePolygon*		CreateShapePolygon() override;
 
 
 	virtual RaytraceOutput			Raytrace(const Vec2& origin, const Vec2& dir, const float& maxDist) override;
@@ -93,8 +95,28 @@ private:
 		Vec2				_dir;
 	};
 
+	class AABBQuery : public b2QueryCallback
+	{
+	public:
+		AABBQuery(Physic2DQueryBodyCb* querybody, Physic2DWorld* world, b2World* b2world, const AABB2& aabb);
+		bool								ReportFixture(b2Fixture* fixture);
+		void								Query();
+
+	private:
+
+		// Results
+		std::set<size_t>			_bodiesID;
+		b2AABB						_b2aabb;
+		b2World*					_b2World;
+		Physic2DWorld*				_world;
+		// Compute
+		Physic2DFixture::UserData*  _userData;
+		size_t						_bodyID;
+		Physic2DQueryBodyCb*		_querybody;
+	};
+
 	
-	size_t							GetBodyAvailableID();
+	size_t						GetBodyAvailableID();
 
 	b2World*					_b2World;
 	
@@ -102,7 +124,6 @@ private:
 	int32						_positionIterations;
 
 	std::unordered_map<size_t, Physic2DBody*>	_bodiesMAP;
-	std::vector<Physic2DBody*>					_bodies;
 	std::deque<size_t>							_bodiesAvailableIDs;
 	size_t										_bodyCountMax;
 };

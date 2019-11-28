@@ -15,13 +15,13 @@ ImageSDL::~ImageSDL()
 	}
 }
 
-void ImageSDL::Init(const unsigned int & width, const unsigned int & height, const Format & format)
+void ImageSDL::Init(const unsigned int & width, const unsigned int & height, const ColorFormat & format)
 {
 	_width = width;
 	_height = height;
 	_format = format;
 	
-	if (format == Format::RGBA)
+	if (format == ColorFormat::RGBA)
 	{
 		if (_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, SDL_RED_FLAG, SDL_GREEN_FLAG, SDL_BLUE_FLAG, SDL_ALPHA_FLAG))
 		{
@@ -60,36 +60,80 @@ const unsigned int& ImageSDL::GetHeight() const
 	return (_height);
 }
 
-IImage::Format ImageSDL::GetFormatBySDLFormat(SDL_PixelFormat * format)
+#include <bitset>
+#include <map>
+#include <deque>
+
+ColorFormat ImageSDL::GetFormatBySDLFormat(SDL_PixelFormat * format)
 {
 	Uint32 f = format->format;
-	return (GetFormatBySDLFormat(f));
-}
+	std::map<uint32_t, unsigned char>			formatMap;
+	std::string									formatStr("    "); // 4 spaces
 
-IImage::Format ImageSDL::GetFormatBySDLFormat(Uint32 f)
-{
-	std::cout << "SDL FORMAT (" << SDL_GetPixelFormatName(f) << ")" << std::endl;
-	if (f == SDL_PIXELFORMAT_BGRA8888)
-		return (Format::BGRA);
-	else if (f == SDL_PIXELFORMAT_ARGB8888 || f == SDL_PIXELFORMAT_RGB888) // For SDL RGB888 is in fact XXRRGGBB (4by)
-		return (Format::ARGB);
-	else if (f == SDL_PIXELFORMAT_ABGR8888)
-		return (Format::ABGR);
-	else if (f == SDL_PIXELFORMAT_RGBA8888)
-		return (Format::RGBA);
-	else if (f == SDL_PIXELFORMAT_RGB24)
-		return (Format::RGB);
-	else
-	{
-		std::cout << "UNKOWN FORMAT:" << std::endl;
-		return (Format::DEFAULT);
+
+	formatMap.emplace(format->Rmask, 'R');
+	formatMap.emplace(format->Gmask, 'G');
+	formatMap.emplace(format->Bmask, 'B');
+	formatMap.emplace(format->Amask, 'A');	
+	
+	std::map<uint32_t, unsigned char>::iterator	it = formatMap.begin();
+	std::map<uint32_t, unsigned char>::iterator	itEnd = formatMap.end();
+	uint8_t placed = 4;
+	std::deque<unsigned char> unplaced;
+
+	for (; it != itEnd; it++) {
+		if (it->first == 4278190080) { // 1000
+			formatStr[0] = it->second;
+		} else if (it->first == 16711680) { // 0100
+			formatStr[1] = it->second;
+		} else if (it->first == 65280) { // 0010
+			formatStr[2] = it->second;
+		} else if (it->first == 255) { // 0001
+			formatStr[3] = it->second;
+		} else {
+			placed -= 1;
+			unplaced.push_back(it->second);
+		}
 	}
+
+	while (format->BytesPerPixel > placed && unplaced.size()) {
+		for (size_t i = 0; i < formatStr.size(); i += 1) {
+			if (formatStr.at(i) == ' ') {
+				formatStr[i] = unplaced.back();
+				unplaced.pop_back();
+				placed += 1;
+			}
+		}
+	}
+
+	uint32_t a;
+	std::bitset<32> x;
+
+	a = format->Rmask;
+	x = std::bitset<32>(a);
+	std::cout << "rmask" << x << ' ' << a << ")\n";
+
+	a = format->Gmask;
+	x = std::bitset<32>(a);
+	std::cout << "gmask" << x << ' ' << a << ")\n";
+
+	a = format->Bmask;
+	x = std::bitset<32>(a);
+	std::cout << "bmask" << x << ' ' << a << ")\n";
+
+	a = format->Amask;
+	x = std::bitset<32>(a);
+	std::cout << "amask" << x << ' ' << a << ")\n";
+
+	std::cout << "Format STR (" << formatStr << ")" << std::endl;
+
+	return (ColorFormatFromString(formatStr));
 }
 
 void ImageSDL::InitFormatBySDLFormat(SDL_PixelFormat * format)
 {
 	_format = GetFormatBySDLFormat(format);
-	std::cout << "Format IMAGE SDL (" << IImage::FormatToString(_format) << ")" << std::endl;
+	std::cout << "InitFormatBySDLFormat (" << ColorFormatToString(_format) << ")" << std::endl;
 }
 
 void ImageSDL::InitFromSurface(SDL_Surface * surface)

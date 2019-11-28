@@ -25,7 +25,7 @@
 class Drawer2DSDL : public IDrawer2D
 {
 public:
-	Drawer2DSDL(const IImage::Format& format = IImage::Format::DEFAULT);
+	Drawer2DSDL(const ColorFormat& format);
 	
 
 	// SINGLETON BY CREATING
@@ -55,10 +55,10 @@ public:
 	virtual const std::string&		GetDefaultImageName() override;
 	virtual void					UseDefaultImage() override;
 
-	virtual void					SetDefaultFormatImage(const IImage::Format& format) override;
-	virtual const IImage::Format&	GetDefaultFormatImage() override;
+	virtual void					SetDefaultFormatImage(const ColorFormat& format) override;
+	virtual const ColorFormat&	GetDefaultFormatImage() override;
 
-	virtual IImage*					CreateImage(const std::string& name, const unsigned int& w, const unsigned int& h, const IImage::Format& format) override;
+	virtual IImage*					CreateImage(const std::string& name, const unsigned int& w, const unsigned int& h, const ColorFormat& format) override;
 	virtual void					UseImage(const std::string& name) override;
 	virtual IImage*					GetImage(const std::string& name) override;
 	virtual IImage*					RemoveImage(const std::string& name) override;
@@ -93,7 +93,7 @@ public:
 	virtual	void					AddSprite(const std::string& id, Sprite* sprite) override;
 	virtual	void					LoadSprite(const std::string& id, const std::string& path) override;
 	virtual void					SetSprite(const std::string& id) override; // (Set Current Sprite and use it for next Draw);
-	virtual void					SetSpriteColorTransparency(Color* color) override;
+	virtual void					SetSpriteColorTransparency(const Color& color) override;
 	virtual void					DrawSprite(const int& x, const int& y) override;
 	///
 	// OTHERS -
@@ -139,8 +139,8 @@ private:
 	inline int	CorrectX(const int & x);
 	inline int	CorrectY(const int & y);
 
-	inline void	InternSetPixel(const int& x, const int& y, const Color& color);
-	inline void	InternCheckBFSetPixel(const int& x, const int& y, const Color& color);
+	inline void	InternSetPixel(const int& x, const int& y, const unsigned int& color);
+	inline void	InternCheckBFSetPixel(const int& x, const int& y, const unsigned int& color);
 	
 
 	struct Font
@@ -157,7 +157,7 @@ private:
 	void		Init();
 
 	// Images
-	IImage::Format									_defaultImageFormat;
+	ColorFormat										_defaultImageFormat;
 	ImageSDL*										_currImage;
 	std::string										_currImageName;
 	ImageSDL*										_defaultImage;
@@ -206,9 +206,9 @@ private:
 	// Colors Manipulation attributs
 	float											_offsetColor;
 	float											_stepColor;
-	ColorF											_colorFA;
-	ColorF											_colorFB;
-	ColorF											_colorFC;
+	ColorFDef										_colorFA;
+	ColorFDef										_colorFB;
+	ColorFDef										_colorFC;
 
 };
 

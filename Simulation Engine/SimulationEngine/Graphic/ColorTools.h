@@ -10,9 +10,9 @@ class ColorTools
 public:
 	virtual ~ColorTools() {};
 
-	static void GenColorPalette(std::vector<Color>& colors, const unsigned int& min, const unsigned int& max, const unsigned int& marge);
+	static void GenColorPalette(std::vector<ColorDef>& colors, const unsigned int& min, const unsigned int& max, const unsigned int& marge);
 private:
-	static void WaveLengthToColor(const double& lambda, Color& color);
+	static void WaveLengthToColor(const double& lambda, ColorDef& color);
 
 };
 

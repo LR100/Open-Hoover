@@ -54,6 +54,22 @@ private:
 
 	void	UpdateRobovacs(const float& dtMs);
 
+	class DrawQueryCb : public Physic2DQueryBodyCb
+	{
+	public:
+		DrawQueryCb(RobovacWorld* _world, IDrawer2D* _drawer);
+		void			Reset();
+		const size_t&	GetObjectsCount() const;
+
+	private:
+		// Inherited via Physic2DQueryBody
+		virtual bool	ReportBody(Physic2DBody* body) override;
+
+		IDrawer2D*		drawer;
+		RobovacWorld*	world;
+		size_t			objectsCount;
+	};
+
 	//// END - Draw Part ////
 
 	//// Events Part ////
@@ -68,7 +84,6 @@ private:
 
 	void	Crazy();
 
-
 	struct RobovacBasics
 	{
 		RobovacBasics(Physic2DWorld* world);
@@ -80,8 +95,8 @@ private:
 
 	// For Physics Managment
 	//Physic2DWorld* _pxWorld;
-	Physic2DWorld*  _p2dWorld;
-	AABB2			_screen;
+	Physic2DWorld*		_p2dWorld;
+	AABB2				_screen;
 
 
 	std::vector<size_t>						_objectsSelected;
@@ -94,5 +109,6 @@ private:
 	Vec2					_released;
 
 	RobovacBasics*			_roombaBasics;
+
 };
 

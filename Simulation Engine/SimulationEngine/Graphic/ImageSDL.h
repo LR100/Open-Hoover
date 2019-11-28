@@ -2,7 +2,7 @@
 #define _IMAGESDL_H_
 
 #include <SDL.h>
-#include "IImage.h"
+#include "DImage.h"
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 
@@ -20,20 +20,20 @@
 
 #endif
 
-class ImageSDL : public AImage
+class ImageSDL : public DImage
 {
 public:
 	ImageSDL();
 	virtual ~ImageSDL();
 
-	virtual void	Init(const unsigned int & width, const unsigned int & height, const Format & format) override;
+	virtual void	Init(const unsigned int & width, const unsigned int & height, const ColorFormat & format) override;
 
 	virtual const unsigned int& GetWidth() const override;
 	virtual const unsigned int& GetHeight() const override;
 
 	// OTHERS
-	static IImage::Format	GetFormatBySDLFormat(SDL_PixelFormat* format);
-	static IImage::Format	GetFormatBySDLFormat(Uint32 f);
+	static ColorFormat		GetFormatBySDLFormat(SDL_PixelFormat* format);
+	//static ColorFormat	GetFormatBySDLFormat(Uint32 f);
 	void					InitFormatBySDLFormat(SDL_PixelFormat* format);
 	void					InitFromSurface(SDL_Surface *surface);
 	SDL_Surface*			GetSurface() const { return (_surface); };

@@ -15,6 +15,7 @@ class Physic2DWorldB2D;
 class Physic2DBodyB2D : public Physic2DBody
 {
 public:
+
 	Physic2DBodyB2D(Physic2DWorld* world, Physic2DBodyProperties& properties) : Physic2DBody(world, properties) 
 	{
 		_id = 0;
@@ -111,7 +112,7 @@ public:
 	void				SetIDB2D(const size_t& id);
 	void				SetBodyB2D(b2Body* body);
 	const b2BodyDef&	GetBodyDefB2D() const;
-
+	b2Body*				GetBodyB2D() const;
 
 protected:
 

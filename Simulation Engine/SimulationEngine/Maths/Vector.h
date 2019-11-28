@@ -20,7 +20,6 @@ struct Vec2T
 		y = 0;
 	}
 
-	
 	virtual ~Vec2T() {};
 
 	std::string	ToString() const

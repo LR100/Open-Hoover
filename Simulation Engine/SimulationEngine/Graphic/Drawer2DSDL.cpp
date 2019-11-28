@@ -6,7 +6,9 @@
 
 Drawer2DSDL*	Drawer2DSDL::sptr = NULL;    //initialize Singleton pointer to NULL
 
-Drawer2DSDL::Drawer2DSDL(const IImage::Format & format)
+#include <bitset>
+
+Drawer2DSDL::Drawer2DSDL(const ColorFormat & format)
 {
 	std::cout << "DRAWER 2D ADDR (" << this << ")" << std::endl;
 	if (sptr != this)
@@ -14,25 +16,28 @@ Drawer2DSDL::Drawer2DSDL(const IImage::Format & format)
 		std::cout << std::endl << "-Drawer2DSDL()-" << std::endl;
 		BGContextSDL::Get().NotifyCreatedItem();
 		_spriteActive = NULL;
-		_spriteColorTransparency = NULL;
+		_spriteColorTransparency = new Color();
 		_currImage = NULL;
 		std::cout << "Parameter Format (" << format << ")" << std::endl;
-		if (format == IImage::Format::DEFAULT) // Get Image Format From Screen
+		if (format == ColorFormat::DEFAULT) // Get Image Format From Screen
 		{
-			SDL_DisplayMode modeScreen;
-			SDL_GetCurrentDisplayMode(0, &modeScreen);
-			
-			SDL_Log("SDL_GetDisplayMode(0, 0, &mode):\t\t%i bpp\t%i x %i", SDL_BITSPERPIXEL(modeScreen.format), modeScreen.w, modeScreen.h);
-			
-			_defaultImageFormat = ImageSDL::GetFormatBySDLFormat(modeScreen.format);
+			_defaultImageFormat = ColorFormat::RGB; // Glitchy image if 4 bytes but at least no crash
 		}
 		else
 		{
 			std::cout << "SET DEF FORMAT" << std::endl;
 			_defaultImageFormat = format;
 		}
-		std::cout << "Default Image Format (" << IImage::FormatToString(_defaultImageFormat) << ")" << std::endl;
+		std::cout << "Drawer2DSDL : Default Image Format (" << ColorFormatToString(_defaultImageFormat) << ")" << std::endl;
 	}
+
+	uint32_t a;
+	std::bitset<32> x;
+	Color rouge(255, 0, 0);
+
+	a = rouge.value();
+	x = std::bitset<32>(a);
+	std::cout << "rouge" << x << ' ' << a << ")\n";
 
 
 	sptr = this;
@@ -49,7 +54,7 @@ void * Drawer2DSDL::operator new(size_t size)
 	if (sptr != NULL)    //if already one object is created return reference to same object
 	{
 		std::cout << "1 + Nth Creation Drawer2DSDL" << std::endl;
-		std::cout << "Return Drawer 2D Img Format(" << IImage::FormatToString(sptr->_defaultImageFormat) << ")" << std::endl;
+		std::cout << "Return Drawer 2D Img Format(" << ColorFormatToString(sptr->_defaultImageFormat) << ")" << std::endl;
 		return (sptr);
 	}
 	else
@@ -131,18 +136,18 @@ void Drawer2DSDL::UseDefaultImage()
 	_currImageName = _defaultImageName;
 }
 
-void Drawer2DSDL::SetDefaultFormatImage(const IImage::Format & format)
+void Drawer2DSDL::SetDefaultFormatImage(const ColorFormat & format)
 {
 	std::cout << "SET DEFAULT FORMAT IMAGE (" << format << ")" << std::endl;
 	_defaultImageFormat = format;
 }
 
-const IImage::Format & Drawer2DSDL::GetDefaultFormatImage()
+const ColorFormat & Drawer2DSDL::GetDefaultFormatImage()
 {
 	return (_defaultImageFormat);
 }
 
-IImage*	Drawer2DSDL::CreateImage(const std::string & name, const unsigned int & w, const unsigned int & h, const IImage::Format & format)
+IImage*	Drawer2DSDL::CreateImage(const std::string & name, const unsigned int & w, const unsigned int & h, const ColorFormat & format)
 {
 	ImageSDL	*img = new ImageSDL;
 
@@ -235,7 +240,7 @@ void Drawer2DSDL::DrawPoint(const int & x, const int & y, const Color & color)
 		return;
 	if (x >= _currImage->GetWidth() || y >= _currImage->GetHeight())
 		return;
-	InternSetPixel(x, y, color.value);
+	InternSetPixel(x, y, color.value());
 }
 
 void Drawer2DSDL::DrawLine(const int & xB, const int & yB, const int & xE, const int & yE, const Color& color)
@@ -276,7 +281,7 @@ void Drawer2DSDL::DrawLine(const int & xB, const int & yB, const int & xE, const
 				_iL.sum -= _iL.deltaX;
 				_iL.yi += _iL.incY;
 			}
-			InternCheckBFSetPixel(_iL.xi, _iL.yi, color.value);
+			InternCheckBFSetPixel(_iL.xi, _iL.yi, color.value());
 			_iL.i += 1;
 		}
 	}
@@ -294,7 +299,7 @@ void Drawer2DSDL::DrawLine(const int & xB, const int & yB, const int & xE, const
 				_iL.xi += _iL.incX;
 			}
 
-			InternCheckBFSetPixel(_iL.xi, _iL.yi, color.value);
+			InternCheckBFSetPixel(_iL.xi, _iL.yi, color.value());
 			_iL.i += 1;
 		}
 	}
@@ -326,8 +331,8 @@ void Drawer2DSDL::DrawLine(const int & x, const int & y, const int & xE, const i
 	_iL.deltaX = abs(_iL.deltaX);
 	_iL.deltaY = abs(_iL.deltaY);
 
-	_colorFA = colorB;
-	_colorFB = colorE;
+	_colorFA = ColorFDef(colorB.r(), colorB.g(), colorB.b(), colorB.a());
+	_colorFB = ColorFDef(colorE.r(), colorE.g(), colorE.b(), colorE.a());
 
 	_stepColor = 0;
 
@@ -348,10 +353,10 @@ void Drawer2DSDL::DrawLine(const int & x, const int & y, const int & xE, const i
 			// Step Color Part
 			_colorFC = _colorFA * (1.0f - _stepColor);
 			_colorFC += _colorFB * _stepColor;
-			_colorFC.ComputeValue();
+			
 			_stepColor += _offsetColor; // END Step Color Part
-
-			InternSetPixel(_iL.xi, _iL.yi, _colorFC.value);
+			
+			InternSetPixel(_iL.xi, _iL.yi, Color(_colorFC).value());
 			_iL.i += 1;
 		}
 	}
@@ -373,10 +378,10 @@ void Drawer2DSDL::DrawLine(const int & x, const int & y, const int & xE, const i
 			// Step Color Part
 			_colorFC = _colorFA * (1.0f - _stepColor);
 			_colorFC += _colorFB * _stepColor;
-			_colorFC.ComputeValue();
+
 			_stepColor += _offsetColor; // END Step Color Part
 
-			InternSetPixel(_iL.xi, _iL.yi, _colorFC.value);
+			InternSetPixel(_iL.xi, _iL.yi, Color(_colorFC).value());
 
 			_iL.i += 1;
 		}
@@ -410,19 +415,19 @@ void Drawer2DSDL::DrawBorder(const int & x, const int & y, const unsigned int & 
 
 	if (y >= 0)
 		for (_iR.xi = _iR.cX; _iR.xi < _iR.cXMax; _iR.xi++)
-			InternCheckBFSetPixel(_iR.xi, y, color_l.value);
+			InternCheckBFSetPixel(_iR.xi, y, color_l.value());
 
 	if (x >= 0)
 		for (_iR.yi = _iR.cY; _iR.yi < _iR.cYMax; _iR.yi++)
-			InternCheckBFSetPixel(x, _iR.yi, color_l.value);
+			InternCheckBFSetPixel(x, _iR.yi, color_l.value());
 
 	if (_iR.yMax < _iR.ih)
 		for (_iR.xi = _iR.cX; _iR.xi < _iR.cXMax; _iR.xi++)
-			InternCheckBFSetPixel(_iR.xi, _iR.yMax, color_r.value);
+			InternCheckBFSetPixel(_iR.xi, _iR.yMax, color_r.value());
 
 	if (_iR.xMax < _iR.iw)
 		for (_iR.yi = _iR.cY; _iR.yi < _iR.cYMax; _iR.yi++)
-			InternCheckBFSetPixel(_iR.xMax, _iR.yi, color_r.value);
+			InternCheckBFSetPixel(_iR.xMax, _iR.yi, color_r.value());
 }
 
 void Drawer2DSDL::DrawBorder(const int & x, const int & y, const unsigned int & width, const unsigned int & height, float thickness, const Color & color_l, const Color & color_r)
@@ -482,11 +487,11 @@ void Drawer2DSDL::DrawBorder(const int & x, const int & y, const unsigned int & 
 void Drawer2DSDL::DrawRect(const int & x, const int & y, const unsigned int & width, const unsigned int & height, const Color& color)
 {
 	if (!_currImage)
-		return;
+		return;	
 
 	_iR.iw = (int)_currImage->GetWidth();
 	_iR.ih = (int)_currImage->GetHeight();
-
+	
 	// Inside Image Verification
 	if (x >= _iR.iw || y >= _iR.ih)
 		return;
@@ -497,6 +502,7 @@ void Drawer2DSDL::DrawRect(const int & x, const int & y, const unsigned int & wi
 	if (_iR.xMax <= 0 || _iR.yMax <= 0)
 		return;
 
+
 	// Set Correct Min X and Y
 	(x <= 0) ? _iR.cX = 0 : _iR.cX = x;
 	(y <= 0) ? _iR.cY = 0 : _iR.cY = y;
@@ -504,9 +510,18 @@ void Drawer2DSDL::DrawRect(const int & x, const int & y, const unsigned int & wi
 	(_iR.xMax >= _iR.iw) ? _iR.cXMax = (_iR.iw - 1) : _iR.cXMax = _iR.xMax;
 	(_iR.yMax >= _iR.ih) ? _iR.cYMax = (_iR.ih - 1) : _iR.cYMax = _iR.yMax;
 
+
+	/*uint32_t a;
+	std::bitset<32> bb;
+
+	a = color.value();
+	bb = std::bitset<32>(a);
+	std::cout << "color rect (" <<bb << ")" << a << ") format (" << color.GetFormat() << ")\n";*/
+
 	for (_iR.xi = _iR.cX; _iR.xi < _iR.cXMax; _iR.xi++)
-		for (_iR.yi = _iR.cY; _iR.yi < _iR.cYMax; _iR.yi++)
-			InternSetPixel(_iR.xi, _iR.yi, color.value);
+		for (_iR.yi = _iR.cY; _iR.yi < _iR.cYMax; _iR.yi++) {
+			InternSetPixel(_iR.xi, _iR.yi, color.value());
+		}
 }
 
 
@@ -533,8 +548,8 @@ void Drawer2DSDL::DrawRectFill(const int & x, const int & y, const unsigned int 
 	{
 		while (isy < iey)
 		{
-			InternSetPixel(isx, isy, color.value);
-			InternSetPixel(iex, isy, color.value);
+			InternSetPixel(isx, isy, color.value());
+			InternSetPixel(iex, isy, color.value());
 			isy += 1;
 		}
 		isx += 1;
@@ -547,11 +562,11 @@ void Drawer2DSDL::DrawRectFill(const int & x, const int & y, const unsigned int 
 		iey = eey;
 		while (isy < ey)
 		{
-			InternSetPixel(isx, isy, color.value);
-			InternSetPixel(iex, isy, color.value);
+			InternSetPixel(isx, isy, color.value());
+			InternSetPixel(iex, isy, color.value());
 
-			InternSetPixel(isx, iey, color.value);
-			InternSetPixel(iex, iey, color.value);
+			InternSetPixel(isx, iey, color.value());
+			InternSetPixel(iex, iey, color.value());
 			isy += 1;
 			iey -= 1;
 		}
@@ -578,7 +593,7 @@ void Drawer2DSDL::DrawRectFill(const int & x, const int & y, const unsigned int 
 	//while (!drawed)
 	//{
 	//	// Draw
-	//	InternSetPixel(drawAttrb.x, drawAttrb.y, color.value);
+	//	InternSetPixel(drawAttrb.x, drawAttrb.y, color.value());
 	//	if (drawAttrb.filledRect >= drawAttrb.rectToFill)
 	//		drawed = true;
 	//	drawAttrb.IncDrawRectangle(drawAttrb.dir, drawAttrb.filledRect, drawAttrb.x, drawAttrb.y, drawAttrb.minX, drawAttrb.minY, drawAttrb.maxX, drawAttrb.maxY);
@@ -598,6 +613,14 @@ void Drawer2DSDL::DrawCircleFill(const int & x, const int & y, const unsigned in
 		DrawPoint(x, y, color);
 		return;
 	}
+
+
+	/*uint32_t a;
+	std::bitset<32> bb;
+
+	a = color.value();
+	bb = std::bitset<32>(a);
+	std::cout << "color circle Fill (" << bb << ")" << a << ") format (" << color.GetFormat() << ")\n";*/
 
 	_iC.radius = (int)((float)diameter * 0.5f);
 	_iC.xi = 0;
@@ -639,6 +662,7 @@ void Drawer2DSDL::DrawCircleFill(const int & x, const int & y, const unsigned in
 		return;
 	}
 
+
 	int r = (int)((float)diameter * 0.5f);
 	Color ncolor;
 	int nx, ny;
@@ -661,11 +685,11 @@ void Drawer2DSDL::DrawCircleFill(const int & x, const int & y, const unsigned in
 				dist = (ValueTools::Max(distx, disty) + 1);
 				ratio = ((float)dist / (float)(r + 1));
 
-				ncolor = Color(((colora.r * ratio) + (colorb.r * (1.0f - ratio))), \
-					((colora.g * ratio) + (colorb.g * (1.0f - ratio))), \
-					((colora.b * ratio) + (colorb.b * (1.0f - ratio))));
+				ncolor = Color(((colora.r() * ratio) + (colorb.r() * (1.0f - ratio))), \
+					((colora.g() * ratio) + (colorb.g() * (1.0f - ratio))), \
+					((colora.b() * ratio) + (colorb.b() * (1.0f - ratio))));
 
-				InternSetPixel(nx, ny, ncolor.value);
+				InternSetPixel(nx, ny, ncolor.value());
 			}
 }
 
@@ -690,6 +714,13 @@ void Drawer2DSDL::DrawCircle(const int & x, const int & y, const unsigned int & 
 
 	DrawPoint(x, y - _iC.radius, color);
 	DrawPoint(x, y + _iC.radius, color);
+
+	//uint32_t a;
+	//std::bitset<32> bb;
+
+	//a = color.value();
+	//bb = std::bitset<32>(a);
+	//std::cout << "color circle (" << bb << ")" << a << ") format (" << color.GetFormat() << ")\n";
 
 
 	while (_iC.xi <= _iC.yi)
@@ -750,7 +781,7 @@ int Drawer2DSDL::LoadText(const std::string & text, const unsigned int & sFont, 
 	}
 	else
 		tfont = _fonts[ss.str()].font;
-	SDL_Color		tmp_color = { color.r, color.g, color.b };
+	SDL_Color		tmp_color = { color.r(), color.g(), color.b() };
 	if (_textActive.text)
 	{
 		SDL_FreeSurface(_textActive.text);
@@ -845,7 +876,7 @@ for (unsigned int j = 0; j < (sorted_edges.at(inc).size() - 1); j++)
 {
 if (parity)
 for (x = sorted_edges.at(inc).at(j)->x_to_min_y; x < sorted_edges.at(inc).at(j + 1)->x_to_min_y; x++)
-InternSetPixel(x + xPos, scanline + yPos, color.value);
+InternSetPixel(x + xPos, scanline + yPos, color.value());
 parity = !parity;
 }
 scanline++;
@@ -960,10 +991,11 @@ void Drawer2DSDL::LoadSprite(const std::string & id, const std::string & path)
 	{
 		ImageSDL*	img = new ImageSDL();
 		img->InitFromSurface(tmp);
+		
 
 		Sprite*		sprite;
 		if (_spriteColorTransparency)
-			sprite = new Sprite(img, (*_spriteColorTransparency));
+			sprite = new Sprite(img, _spriteColorTransparency->GetDef());
 		else
 			sprite = new Sprite(img);
 
@@ -979,9 +1011,9 @@ void Drawer2DSDL::SetSprite(const std::string & id)
 	_spriteActive = _sprites.at(id);
 }
 
-void Drawer2DSDL::SetSpriteColorTransparency(Color * color)
+void Drawer2DSDL::SetSpriteColorTransparency(const Color& color)
 {
-	_spriteColorTransparency = color;
+	_spriteColorTransparency = new Color(color);
 }
 
 void Drawer2DSDL::DrawSprite(const int & x, const int & y)
@@ -996,7 +1028,7 @@ void Drawer2DSDL::DrawSprite(const int & x, const int & y)
 		const Sprite::Pixel& pixel = _spriteActive->GetPixels().at(i);
 		mx = x + pixel.x;
 		my = y + pixel.y;
-		InternCheckBFSetPixel(mx, my, pixel.color.value);
+		InternCheckBFSetPixel(mx, my, pixel.color.value());
 
 	}
 }
@@ -1032,18 +1064,19 @@ inline int Drawer2DSDL::CorrectY(const int & y)
 	return (y);
 }
 
-inline void Drawer2DSDL::InternSetPixel(const int & x, const int & y, const Color & color)
-{
-	_currImage->SetPixel((unsigned int)x, (unsigned int)y, color.value);
+inline void Drawer2DSDL::InternSetPixel(const int & x, const int & y, const unsigned int& color)
+{	
+	//std::cout << "Curr Image Format : (" << ColorFormatToString(_currImage->GetFormat()) << ")" << std::endl;
+	_currImage->SetPixel((unsigned int)x, (unsigned int)y, color);
 }
 
-inline void Drawer2DSDL::InternCheckBFSetPixel(const int & x, const int & y, const Color & color)
+inline void Drawer2DSDL::InternCheckBFSetPixel(const int & x, const int & y, const unsigned int& color)
 {
 	if (x < 0 || y < 0)
 		return;
 	if (x >= (int)_currImage->GetWidth() || y >= (int)_currImage->GetHeight())
 		return;
-	_currImage->SetPixel(x, y, color.value);
+	_currImage->SetPixel(x, y, color);
 }
 
 void Drawer2DSDL::Init()

@@ -49,6 +49,7 @@ public:
 	};
 
 	virtual void*									GetUserData() const { return (_data->data); };
+	virtual Physic2DBody*							GetBody() const = 0;
 	virtual Physic2DShape*							GetShape() const = 0;
 	virtual const Physic2DFixtureProperties			GetProperties() const = 0;
 

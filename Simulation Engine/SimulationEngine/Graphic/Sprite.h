@@ -10,7 +10,7 @@ class Sprite
 public:
 
 	Sprite(IImage * image);
-	Sprite(IImage * image, Color colorTransparency);
+	Sprite(IImage * image, ColorDef colorTransparency);
 	~Sprite();
 
 	struct Pixel

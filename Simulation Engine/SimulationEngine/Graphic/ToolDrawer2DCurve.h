@@ -39,9 +39,9 @@ public:
 	void SetMinMaxY(const float& minY, const float& maxY);
 
 
-	Color						colorCurve;
-	Color						colorLegend;
-	Color						colorTitle;
+	Color*						colorCurve;
+	Color*						colorLegend;
+	Color*						colorTitle;
 
 protected:
 

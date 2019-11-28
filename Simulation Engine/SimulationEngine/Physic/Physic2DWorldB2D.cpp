@@ -8,8 +8,8 @@ Physic2DWorldB2D::Physic2DWorldB2D(Vec2 gravity) : Physic2DWorld(gravity)
 {
 	_bodyCountMax = MAX_BODIES;
 	_b2World = new b2World(b2Vec2(gravity.x, gravity.y));
-	_velocityIterations = 8;  //how strongly to correct velocity
-	_positionIterations = 3;
+	_velocityIterations = 10;  //how strongly to correct velocity
+	_positionIterations = 4;
 	std::cout << "Box2DWorld is INIT" << std::endl;
 	// Init IDS For Bodies
 	for (size_t i = 0; i < _bodyCountMax; i += 1)
@@ -42,23 +42,66 @@ Physic2DBody* Physic2DWorldB2D::CreateBody(Physic2DBodyProperties& properties)
 	body->SetIDB2D(bodyID);
 	_bodiesMAP.emplace(bodyID, body);
 
-	_bodies.push_back(body);
-
 	return (body);
-}
-
-Physic2DBody* Physic2DWorldB2D::GetBody(const size_t& id) const
-{
-	return nullptr;
 }
 
 std::vector<Physic2DBody*> Physic2DWorldB2D::GetBodies() const
 {
-	return (_bodies);
+	std::unordered_map<size_t, Physic2DBody*>::const_iterator it = _bodiesMAP.begin();
+	std::unordered_map<size_t, Physic2DBody*>::const_iterator itEnd = _bodiesMAP.end();
+	std::vector<Physic2DBody*>	bodies;
+
+	for (; it != itEnd; it++) {
+		bodies.push_back(it->second);
+	}
+
+	return (bodies);
+}
+
+Physic2DBody* Physic2DWorldB2D::GetBody(const size_t& id) const
+{
+	if (_bodiesMAP.count(id)) {
+		return (_bodiesMAP.at(id));
+	}
+	return (NULL);
+}
+
+void Physic2DWorldB2D::GetBodiesInAABB(Physic2DQueryBodyCb* querybody, const AABB2& aabb) const
+{
+	std::vector<Physic2DBody*>	bodies;
+	AABBQuery					aabbquery(querybody, (Physic2DWorld*)this, _b2World, aabb);
+
+	//std::cout << "Get Bodies in AABB : (" << aabb.ToString() << ")" << std::endl;
+	aabbquery.Query();
+}
+
+void Physic2DWorldB2D::GetBodiesAtPosition(Physic2DQueryBodyCb* querybody, const Vec2& pos) const
+{
+	AABB2 aabb;
+
+	aabb.center = pos;
+	aabb.halfSize.x = 0.5f;
+
+	aabb.halfSize.y = 0.5f;
+	aabb.ComputeMinMax();
+
+
+	std::vector<Physic2DBody*>	bodies;
+	AABBQuery					aabbquery(querybody, (Physic2DWorld*)this, _b2World, aabb);
+
+	aabbquery.Query();
 }
 
 void Physic2DWorldB2D::DestroyBody(Physic2DBody* body)
 {
+	if (_bodiesMAP.count(body->GetID()))
+	{
+		Physic2DBodyB2D* bodyb2d = (Physic2DBodyB2D*)body;
+		_b2World->DestroyBody(bodyb2d->GetBodyB2D());
+		_bodiesMAP.erase(body->GetID());
+		_bodiesAvailableIDs.push_back(body->GetID());
+		delete (body);
+	}
 }
 
 void Physic2DWorldB2D::DestroyAllBodies()
@@ -214,4 +257,35 @@ Physic2DWorld::RaytraceOutput Physic2DWorldB2D::RaytraceQuery::Raytrace()
 const size_t& Physic2DWorldB2D::RaytraceQuery::GetBodyID() const
 {
 	return (_bodyID);
+}
+
+Physic2DWorldB2D::AABBQuery::AABBQuery(Physic2DQueryBodyCb* querybody, Physic2DWorld* world, b2World* b2world, const AABB2& aabb)
+{
+	_b2aabb.lowerBound.x = aabb.min.x;
+	_b2aabb.lowerBound.y = aabb.min.y;
+	_b2aabb.upperBound.x = aabb.max.x;
+	_b2aabb.upperBound.y = aabb.max.y;
+	_b2World = b2world;
+	_world = world;
+	_userData = NULL;
+	_bodyID = 0;
+	_querybody = querybody;
+}
+
+bool Physic2DWorldB2D::AABBQuery::ReportFixture(b2Fixture* fixture)
+{
+	 // std::cout << "Fixture" << std::endl;
+	_userData = (Physic2DFixture::UserData*)fixture->GetUserData();
+	_bodyID = _userData->GetBodyID();
+	if (!_bodiesID.count(_bodyID)) {
+		_bodiesID.emplace(_bodyID);		
+		return (_querybody->ReportBody(_userData->GetFixture()->GetBody()));
+	}
+	return (true);
+}
+
+void Physic2DWorldB2D::AABBQuery::Query()
+{
+	// std::cout << "Query" << std::endl;
+	_b2World->QueryAABB(this, _b2aabb);
 }

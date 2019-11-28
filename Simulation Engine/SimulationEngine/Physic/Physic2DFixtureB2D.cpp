@@ -24,3 +24,8 @@ void Physic2DFixtureB2D::SetFixtureB2D(b2Fixture* fixture)
 {
 	_b2Fixture = fixture;
 }
+
+Physic2DBody* Physic2DFixtureB2D::GetBody() const
+{
+	return (_body);
+}

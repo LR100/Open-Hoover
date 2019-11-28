@@ -5,6 +5,7 @@
 WindowSDL::WindowSDL()
 {
 	InitBasics();
+	Open(500, 500);
 }
 
 WindowSDL::WindowSDL(unsigned int width, unsigned int height, const std::string & name)
@@ -24,7 +25,6 @@ WindowSDL::~WindowSDL()
 {
 	BGContextSDL::Get().NotifyDeletedItem();
 }
-
 
 void WindowSDL::InitBasics()
 {
@@ -89,7 +89,18 @@ bool WindowSDL::Open(unsigned int width, unsigned int height, const std::string 
 		SDL_UpdateWindowSurface(_window);
 		_screen = SDL_GetWindowSurface(_window);
 		
+		SDL_DisplayMode modeScreen;
+		SDL_GetCurrentDisplayMode(0, &modeScreen);
 		
+		SDL_Log("WINDOW OPEN SDL_GetDisplayMode(0, 0, &mode):\t\t%i bpp\t%i x %i", SDL_BITSPERPIXEL(modeScreen.format), modeScreen.w, modeScreen.h);
+		ColorFormat format = ImageSDL::GetFormatBySDLFormat(_screen->format);
+		std::cout << "WINDOW OPEN: Default Image Format (" << ColorFormatToString(format) << ")" << std::endl;
+		ColorFactory::Get().SetFormat(format);
+		std::cout << "COLOR FACTORY FORMAT : (" << ColorFormatToString(ColorFactory::Get().GetFormat()) << ")" << std::endl;
+		//Uint32 f =  SDL_GetWindowPixelFormat(_window);
+		//format = ImageSDL::GetFormatBySDLFormat(f);
+		//std::cout << "WINDOW REAL PIXEL FORMAT (" << IImage::FormatToString(format) << ")" << std::endl;
+
 		_buffer = new ImageSDL();
 		_buffer->InitFromSurface(_screen);
 		_open = true;
@@ -162,6 +173,11 @@ const unsigned int & WindowSDL::GetHeight() const
 IImage * WindowSDL::GetBackBuffer() const
 {
 	return (_buffer);
+}
+
+const ColorFormat& WindowSDL::GetColorFormat() const
+{
+	return (_format);
 }
 
 const uint32_t & WindowSDL::GetID() const

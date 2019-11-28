@@ -26,6 +26,7 @@ public:
 
 	virtual IImage*				GetBackBuffer() const = 0;
 	virtual const uint32_t&		GetID() const = 0;
+	virtual const ColorFormat&	GetColorFormat() const = 0;
 
 	// Property
 	virtual void				SetBorderless(bool state) = 0;

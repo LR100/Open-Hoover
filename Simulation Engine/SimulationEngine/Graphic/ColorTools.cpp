@@ -1,6 +1,6 @@
 #include "ColorTools.h"
 
-void ColorTools::GenColorPalette(std::vector<Color>& colors, const unsigned int & min, const unsigned int & max, const unsigned int & marge)
+void ColorTools::GenColorPalette(std::vector<ColorDef>& colors, const unsigned int & min, const unsigned int & max, const unsigned int & marge)
 {
 	unsigned int mi = min, ma = max;
 
@@ -11,16 +11,15 @@ void ColorTools::GenColorPalette(std::vector<Color>& colors, const unsigned int 
 
 	for (double lambda = mi; lambda < ma; lambda += marge)
 	{
-		Color	color;
+		ColorDef	color;
 		//std::cout << "lambda:" << lambda << std::endl;
 		WaveLengthToColor(lambda, color);
-		color.ComputeValue();
 		//std::cout << color.ToString() << std::endl;
 		colors.push_back(color);
 	}
 }
 
-void ColorTools::WaveLengthToColor(const double & l, Color& color)
+void ColorTools::WaveLengthToColor(const double & l, ColorDef& color)
 {
 	double t;
 

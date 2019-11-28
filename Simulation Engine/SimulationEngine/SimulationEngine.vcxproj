@@ -20,6 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BGContextSDL.h" />
+    <ClInclude Include="Graphic\ColorDefines.h" />
+    <ClInclude Include="Graphic\ColorDefinitions.h" />
+    <ClInclude Include="Graphic\DImage.h" />
     <ClInclude Include="RobovacBoolArray.h" />
     <ClInclude Include="Events\EventHandlerSDL.h" />
     <ClInclude Include="Events\IEvent.h" />
@@ -34,8 +37,6 @@
     <ClInclude Include="Graphic\ImageSDL.h" />
     <ClInclude Include="Graphic\IWindow.h" />
     <ClInclude Include="Graphic\Sprite.h" />
-    <ClInclude Include="Graphic\ToolDrawer2DCurve.h" />
-    <ClInclude Include="Graphic\ToolDrawer2DGraphBar.h" />
     <ClInclude Include="Graphic\Tools\FPSComputer.h" />
     <ClInclude Include="Graphic\Tools\RelativePostion.h" />
     <ClInclude Include="Graphic\WindowSDL.h" />
@@ -106,14 +107,14 @@
     <ClCompile Include="Events\IEventHandler.cpp" />
     <ClCompile Include="Events\MouseTools.cpp" />
     <ClCompile Include="Graphic\Color.cpp" />
+    <ClCompile Include="Graphic\ColorDefines.cpp" />
     <ClCompile Include="Graphic\ColorTools.cpp" />
+    <ClCompile Include="Graphic\DImage.cpp" />
     <ClCompile Include="Graphic\Drawer2DSDL.cpp" />
     <ClCompile Include="Graphic\IImage.cpp" />
     <ClCompile Include="Graphic\ImageRaw.cpp" />
     <ClCompile Include="Graphic\ImageSDL.cpp" />
     <ClCompile Include="Graphic\Sprite.cpp" />
-    <ClCompile Include="Graphic\ToolDrawer2DCurve.cpp" />
-    <ClCompile Include="Graphic\ToolDrawer2DGraphBar.cpp" />
     <ClCompile Include="Graphic\Tools\FPSComputer.cpp" />
     <ClCompile Include="Graphic\Tools\RelativePostion.cpp" />
     <ClCompile Include="Graphic\WindowSDL.cpp" />

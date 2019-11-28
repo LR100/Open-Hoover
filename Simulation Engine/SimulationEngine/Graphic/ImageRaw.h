@@ -9,12 +9,12 @@ public:
 	ImageRaw();
 	~ImageRaw();
 
-	virtual void				Init(const unsigned int & width, const unsigned int & height, const Format & format) override;
+	virtual void				Init(const unsigned int & width, const unsigned int & height, const ColorFormat & format) override;
 	virtual const unsigned int& GetWidth() const override;
 	virtual const unsigned int& GetHeight() const override;
 
 private:
-	virtual void InitByFormat(const Format & format);
+	virtual void InitByFormat(const ColorFormat & format);
 
 	unsigned int			_bpp;
 	unsigned int			_size;

@@ -192,12 +192,6 @@
     <ClInclude Include="Graphic\IWindow.h">
       <Filter>Fichiers d%27en-tête\Graphic</Filter>
     </ClInclude>
-    <ClInclude Include="Graphic\ToolDrawer2DCurve.h">
-      <Filter>Fichiers d%27en-tête\Graphic\Tools</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\ToolDrawer2DGraphBar.h">
-      <Filter>Fichiers d%27en-tête\Graphic\Tools</Filter>
-    </ClInclude>
     <ClInclude Include="Events\IEvent.h">
       <Filter>Fichiers d%27en-tête\Events</Filter>
     </ClInclude>
@@ -342,15 +336,18 @@
     <ClInclude Include="RobovacMovementController.h">
       <Filter>Fichiers d%27en-tête\Robot</Filter>
     </ClInclude>
+    <ClInclude Include="Graphic\ColorDefines.h">
+      <Filter>Fichiers d%27en-tête\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\DImage.h">
+      <Filter>Fichiers d%27en-tête\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\ColorDefinitions.h">
+      <Filter>Fichiers d%27en-tête\Graphic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graphic\IImage.cpp">
-      <Filter>Fichiers sources\Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\ToolDrawer2DCurve.cpp">
-      <Filter>Fichiers sources\Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\ToolDrawer2DGraphBar.cpp">
       <Filter>Fichiers sources\Graphic</Filter>
     </ClCompile>
     <ClCompile Include="Graphic\Tools\FPSComputer.cpp">
@@ -519,9 +516,15 @@
     <ClCompile Include="Physic\XML\Physic2DWorldXML.cpp">
       <Filter>Fichiers sources\Physic\XML</Filter>
     </ClCompile>
-    <ClCompile Include="Physic\Physic2DFixture.cpp" />
     <ClCompile Include="RobovacFindPath.cpp">
       <Filter>Fichiers sources\Robot</Filter>
     </ClCompile>
+    <ClCompile Include="Physic\Physic2DFixture.cpp">
+      <Filter>Fichiers sources\Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\DImage.cpp">
+      <Filter>Fichiers sources\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\ColorDefines.cpp" />
   </ItemGroup>
 </Project>

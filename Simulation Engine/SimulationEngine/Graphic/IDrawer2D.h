@@ -18,6 +18,8 @@ public:
 	/// SHOULD INIT HIS TEXTURE AND SHAPES FROM A FILE AT LAUNCHING
 	//
 
+
+
 	/*
 	EVERY Shapes will always be drawn from the top left pos to the bot right pos!!
 	*/
@@ -36,10 +38,10 @@ public:
 	virtual const std::string&		GetDefaultImageName() = 0;
 	virtual void					UseDefaultImage() = 0;
 
-	virtual void					SetDefaultFormatImage(const IImage::Format& format) = 0;
-	virtual const IImage::Format&	GetDefaultFormatImage() = 0;
+	virtual void					SetDefaultFormatImage(const ColorFormat& format) = 0;
+	virtual const ColorFormat&	GetDefaultFormatImage() = 0;
 
-	virtual IImage*					CreateImage(const std::string& name, const unsigned int& w, const unsigned int& h, const IImage::Format& format = IImage::Format::DEFAULT) = 0;
+	virtual IImage*					CreateImage(const std::string& name, const unsigned int& w, const unsigned int& h, const ColorFormat& format = ColorFormat::DEFAULT) = 0;
 	virtual void					UseImage(const std::string& name) = 0;
 	virtual IImage*					GetImage(const std::string& name) = 0;
 	virtual IImage*					RemoveImage(const std::string& name) = 0;
@@ -73,7 +75,7 @@ public:
 	virtual void					AddSprite(const std::string& id, Sprite* sprite) = 0;
 	virtual	void					LoadSprite(const std::string& id, const std::string& path) = 0;
 	// If NULL -> No Color Transparency
-	virtual void					SetSpriteColorTransparency(Color* color) = 0;
+	virtual void					SetSpriteColorTransparency(const Color& color) = 0;
 	virtual void					SetSprite(const std::string& id) = 0; // (Set Current Sprite and use it for next Draw);
 	virtual void					DrawSprite(const int& x, const int& y) = 0;
 };

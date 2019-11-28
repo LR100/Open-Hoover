@@ -614,8 +614,8 @@ public:
 		SetFreePathInMap(x, y, xE, yE);
 		if (ROBOVACDRAWER && ROBOVACWINDOW)
 		{
-			ROBOVACDRAWER->DrawCircleFill(x, y, 6, Color::BLUE());
-			ROBOVACDRAWER->DrawCircleFill(xE, yE, 6, Color::YELLOW());
+			//ROBOVACDRAWER->DrawCircleFill(x, y, 6, Color::BLUE());
+			//ROBOVACDRAWER->DrawCircleFill(xE, yE, 6, Color::YELLOW());
 			ROBOVACWINDOW->Refresh();
 		}
 		//::cout << "Set Free Path in Map from: ("<< x <<") ("<< y <<") to ("<< xE <<") ("<< yE <<")" << std::endl;

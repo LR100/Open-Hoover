@@ -2,170 +2,244 @@
 
 #include <sstream>
 
-Color::Color(const unsigned int & avalue)
-{
-	value = avalue;
-	r = (unsigned char)(value >> 24);
-	g = (unsigned char)(value >> 16);
-	b = (unsigned char)(value >> 8);
-}
-
-Color::Color(const unsigned char & _r, const unsigned char & _g, const unsigned char & _b)
-{
-	r = _r;
-	g = _g;
-	b = _b;
-	ComputeValue();
-}
+const Color::ComputeValueFCT Color::_computeValues[COLOR_FORMAT_COUNT] = { &Color::ComputeValueRGBA , &Color::ComputeValueRGBA, &Color::ComputeValueARGB,\
+	NULL, NULL, &Color::ComputeValueRGB };
 
 Color::Color()
 {
-	r = 0;
-	g = 0;
-	b = 0;
-	value = 0;
+	_init(0, 0, 0, 0, ColorFactory::Get().GetFormat());
 }
 
-Color::~Color()
+Color::Color(const ColorDef& def)
 {
+	_init(def.r, def.g, def.b, def.a, ColorFactory::Get().GetFormat());
 }
 
-Color::Color(const Color & other)
+Color::Color(const ColorFDef& fdef)
 {
-	r = other.r;
-	g = other.g;
-	b = other.b;
-	value = other.value;
+	_init((unsigned char)fdef.r, (unsigned char)fdef.g, (unsigned char)fdef.b, (unsigned char)fdef.a, ColorFactory::Get().GetFormat());
 }
 
-Color & Color::operator=(const Color & other)
+Color::Color(const ColorName& name)
+{
+	_format = ColorFactory::Get().GetFormat();
+	_initFromName(name);
+}
+
+Color::Color(const ColorFormat& format)
+{
+	_init(0, 0, 0, 0, format);
+}
+
+Color::Color(const unsigned char& r, const unsigned char& g, const unsigned char& b)
+{
+	_init(r, g, b, 0, ColorFactory::Get().GetFormat());
+}
+
+Color::Color(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a)
+{
+	_init(r, g, b, a, ColorFactory::Get().GetFormat());
+}
+
+Color::Color(const unsigned char& r, const unsigned char& g, const unsigned char& b, const ColorFormat& format)
+{
+	_init(r, g, b, 0, format);
+}
+
+Color::Color(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a, const ColorFormat& format)
+{
+	_init(r, g, b, a, format);
+}
+
+Color& Color::operator=(const Color& other)
 {
 	if (this != &other)
 	{
-		r = other.r;
-		g = other.g;
-		b = other.b;
-		value = other.value;
+		_init(other._def.r, other._def.g, other._def.b, other._def.a, other._format);
 	}
 	return (*this);
 }
 
-bool Color::operator==(const Color & other) const
+Color::Color(const ColorName& name, const ColorFormat& format)
 {
-	// Considering That Value is Compute
-	return (value == other.value);
-}
-
-bool Color::operator!=(const Color & other) const
-{
-	return (value != other.value);
+	_format = format;
+	_initFromName(name);
 }
 
 void Color::ComputeValue()
 {
-	value = r << 24;
+	_value = _computeValue(_def.r, _def.g, _def.b, _def.a);
+}
+
+unsigned int Color::ComputeValueRGB(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a)
+{
+	unsigned int value = r << 24;
 	value += g << 16;
 	value += b << 8;
+	return (value);
+}
+
+unsigned int Color::ComputeValueRGBA(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a)
+{
+	unsigned int value = r << 24;
+	value += g << 16;
+	value += b << 8;
+	value += a;
+	return (value);
+}
+
+unsigned int Color::ComputeValueARGB(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a)
+{
+	unsigned int value = a << 24;
+	value += r << 16;
+	value += g << 8;
+	value += b;
+	return (value);
+}
+
+#include <iostream>
+
+void Color::_init(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a, const ColorFormat& format)
+{
+	_def.r = r;
+	_def.g = g;
+	_def.b = b;
+	_def.a = a;
+	_format = format;
+	_computeValue = _computeValues[_format];
+	ComputeValue();
+	// std::cout << "Color Is Format (" << _format << ")" << std::endl;
+}
+
+void Color::_initFromName(const ColorName& name)
+{
+	if (name == ColorName::RED) {
+		_init(255, 0, 0, 0, _format);
+	}
+	else if (name == ColorName::WHITE) {
+		_init(255, 255, 255, 0, _format);
+	}
+	else if (name == ColorName::GREY) {
+		_init(120, 120, 120, 0, _format);
+	}
+	else if (name == ColorName::GREEN) {
+		_init(0, 255, 0, 0, _format);
+	}
+	else if (name == ColorName::BLUE) {
+		_init(0, 0, 255, 0, _format);
+	}
+	else if (name == ColorName::ORANGE) {
+		_init(255, 165, 0, 0, _format);
+	}
+	else if (name == ColorName::YELLOW) {
+		_init(255, 255, 0, 0, _format);
+	}
+	else if (name == ColorName::PURPLE) {
+		_init(130, 0, 130, 0, _format);
+	}
+	else {
+		_init(0, 0, 0, 0, _format); // BLACK
+	}
+}
+
+bool Color::operator==(const Color& other) const
+{
+	return (_value == other._value);
+}
+
+bool Color::operator!=(const Color& other) const
+{
+	return (_value != other._value);
+}
+
+const ColorFormat& Color::GetFormat() const
+{
+	return (_format);
+}
+
+const ColorDef& Color::GetDef() const
+{
+	return (_def);
 }
 
 std::string Color::ToString() const
 {
 	std::stringstream ss;
-
-	ss << "R: (" << (int)(r) << ") G:(" << (int)g << ") B:(" << (int)b << ") V:(" << value << ")";
+	ss << "R: (" << (int)(_def.r) << ") G:(" << (int)_def.g << ") B:(" << (int)_def.b << ") A:(" << (int)_def.a << ") V:(" << _value << ")";
 	return (ss.str());
 }
-
-ColorF::ColorF(const unsigned int & avalue)
+void Color::Set(const unsigned char& r, const unsigned char& g, const unsigned char& b)
 {
-	value = avalue;
-	r = (float)(value >> 24);
-	g = (float)(value >> 16);
-	b = (float)(value >> 8);
+	_def.r = r;
+	_def.g = g;
+	_def.b = b;
+	ComputeValue();
 }
-
-ColorF::ColorF(const float & _r, const float & _g, const float & _b)
+void Color::Set(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a)
 {
-	r = _r;
-	g = _g;
-	b = _b;
+	_def.r = r;
+	_def.g = g;
+	_def.b = b;
+	_def.a = a;
 	ComputeValue();
 }
 
-ColorF::ColorF()
+void Color::Set(const ColorDef& def)
 {
-	r = 0;
-	g = 0;
-	b = 0;
-	value = 0;
+	_def.r = def.r;
+	_def.g = def.g;
+	_def.b = def.b;
+	_def.a = def.a;
+	ComputeValue();
 }
 
-ColorF::~ColorF()
+
+const unsigned char& Color::r() const
 {
+	return (_def.r);
 }
 
-ColorF::ColorF(const ColorF & other)
+const unsigned char& Color::g() const
 {
-	r = other.r;
-	g = other.g;
-	b = other.b;
-	value = other.value;
+	return (_def.g);
 }
 
-ColorF & ColorF::operator=(const Color & other)
+const unsigned char& Color::b() const
 {
-	r = (float)other.r;
-	g = (float)other.g;
-	b = (float)other.b;
-	value = other.value;
-	return (*this);
+	return (_def.b);
 }
 
-ColorF & ColorF::operator=(const ColorF & other)
+const unsigned char& Color::a() const
 {
-	if (this != &other)
-	{
-		r = other.r;
-		g = other.g;
-		b = other.b;
-		value = other.value;
-	}
-	return (*this);
+	return (_def.a);
 }
 
-ColorF & ColorF::operator*=(const float & value)
+const unsigned int& Color::value() const
 {
-	r *= value;
-	g *= value;
-	b *= value;
-	return (*this);
+	return (_value);
 }
 
-ColorF ColorF::operator*(const float & value)
+ColorFactory::ColorFactory()
 {
-	return ColorF(r * value, g * value, b * value);
+	SetFormat(ColorFormat::RGBA);
 }
 
-ColorF & ColorF::operator+=(const ColorF & other)
+void ColorFactory::SetFormat(ColorFormat format)
 {
-	r += other.r;
-	g += other.g;
-	b += other.b;
-	return (*this);
+	_format = format;
 }
 
-void ColorF::ComputeValue()
+Color ColorFactory::Create()
 {
-	value = (unsigned char)r << 24;
-	value += (unsigned char)g << 16;
-	value += (unsigned char)b << 8;
+	return (Color(0, 0, 0, 0, _format));
 }
 
-std::string ColorF::ToString() const
+Color ColorFactory::Create(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a)
 {
-	std::stringstream ss;
+	return (Color(r, g, b, a, _format));
+}
 
-	ss.precision(2);
-	ss << "R: (" << r << ") G:(" << g << ") B:(" << b << ") V:(" << value << ")";
-	return (ss.str());
+const ColorFormat& ColorFactory::GetFormat() const
+{
+	return (_format);
 }

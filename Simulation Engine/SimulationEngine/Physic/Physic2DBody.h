@@ -14,8 +14,6 @@
 
 class Physic2DWorld;
 
-
-
 struct Physic2DBodyProperties
 {
 	Physic2DBodyProperties()
@@ -132,4 +130,11 @@ private:
 protected:
 
 
+};
+
+
+class Physic2DQueryBodyCb
+{
+public:
+	virtual bool ReportBody(Physic2DBody* body) = 0;
 };

@@ -34,6 +34,11 @@ const b2BodyDef& Physic2DBodyB2D::GetBodyDefB2D() const
 	return (_b2BodyDef);
 }
 
+b2Body* Physic2DBodyB2D::GetBodyB2D() const
+{
+	return (_b2Body);
+}
+
 Physic2DWorld* Physic2DBodyB2D::GetWorld() const
 {
 	return ((Physic2DWorld*)_world);

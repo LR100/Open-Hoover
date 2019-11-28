@@ -8,7 +8,7 @@ ImageRaw::~ImageRaw()
 {
 }
 
-void ImageRaw::Init(const unsigned int & width, const unsigned int & height, const Format & format)
+void ImageRaw::Init(const unsigned int & width, const unsigned int & height, const ColorFormat & format)
 {
 	InitByFormat(format);
 	this->_width = width;
@@ -28,7 +28,7 @@ const unsigned int& ImageRaw::GetHeight() const
 	return (_height);
 }
 
-void ImageRaw::InitByFormat(const Format & format)
+void ImageRaw::InitByFormat(const ColorFormat & format)
 {
 	if (format == RGBA || format == ABGR || format == BGRA)
 		_bpp = 4;

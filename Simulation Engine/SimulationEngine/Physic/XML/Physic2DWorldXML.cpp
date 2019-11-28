@@ -103,7 +103,9 @@ void Physic2DWorldXML::ExportBodies(Physic2DWorld* world, XMLNode* nodeWorld, st
 	nodeBodies->SetName("Bodies");
 	nodeWorld->PushBackChild(nodeBodies);
 
-	std::vector<Physic2DBody*>	bodies = world->GetBodies();
+	std::vector<Physic2DBody*>	bodies;
+
+	bodies = world->GetBodies();
 
 	for (size_t i = 0; i < bodies.size(); i += 1) {
 		ExportBody(bodies.at(i), nodeBodies, shapes);
