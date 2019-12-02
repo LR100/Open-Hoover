@@ -73,27 +73,27 @@ void Color::ComputeValue()
 
 unsigned int Color::ComputeValueRGB(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a)
 {
-	unsigned int value = r << 24;
-	value += g << 16;
-	value += b << 8;
+	unsigned int value = b;
+	value += g << 8;
+	value += b << 16;
 	return (value);
 }
 
 unsigned int Color::ComputeValueRGBA(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a)
 {
-	unsigned int value = r << 24;
-	value += g << 16;
+	unsigned int value = a;
 	value += b << 8;
-	value += a;
+	value += g << 16;
+	value += r << 24;
 	return (value);
 }
 
 unsigned int Color::ComputeValueARGB(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a)
 {
-	unsigned int value = a << 24;
-	value += r << 16;
+	unsigned int value = b;
 	value += g << 8;
-	value += b;
+	value += r << 16;
+	value += a << 24;
 	return (value);
 }
 
@@ -227,6 +227,20 @@ ColorFactory::ColorFactory()
 void ColorFactory::SetFormat(ColorFormat format)
 {
 	_format = format;
+	
+	if (format == ColorFormat::RGB || format == ColorFormat::DEFAULT) {
+
+		_formatBytesPerPixel = 3;
+	}
+	else  if (format ==  ColorFormat::RGBA || format == ColorFormat::ABGR
+		|| format == ColorFormat::ARGB || format == ColorFormat::BGRA) 
+	{
+		_formatBytesPerPixel = 4;
+	} 
+	else 
+	{
+		_formatBytesPerPixel = 1; // No Overflow
+	}
 }
 
 Color ColorFactory::Create()
@@ -242,4 +256,9 @@ Color ColorFactory::Create(const unsigned char& r, const unsigned char& g, const
 const ColorFormat& ColorFactory::GetFormat() const
 {
 	return (_format);
+}
+
+const unsigned int& ColorFactory::GetFormatBytesPerPixel() const
+{
+	return (_formatBytesPerPixel);
 }

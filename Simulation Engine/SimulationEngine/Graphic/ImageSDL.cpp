@@ -15,12 +15,12 @@ ImageSDL::~ImageSDL()
 	}
 }
 
-void ImageSDL::Init(const unsigned int & width, const unsigned int & height, const ColorFormat & format)
+void ImageSDL::Init(const unsigned int& width, const unsigned int& height, const ColorFormat& format)
 {
 	_width = width;
 	_height = height;
 	_format = format;
-	
+
 	if (format == ColorFormat::RGBA)
 	{
 		if (_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, SDL_RED_FLAG, SDL_GREEN_FLAG, SDL_BLUE_FLAG, SDL_ALPHA_FLAG))
@@ -28,11 +28,11 @@ void ImageSDL::Init(const unsigned int & width, const unsigned int & height, con
 			_data = (unsigned char*)(_surface->pixels);
 		}
 		else
-			std::cerr << "ImageSDL: Error at init: " << SDL_GetError() << "\n" ;
+			std::cerr << "ImageSDL: Error at init: " << SDL_GetError() << "\n";
 	}
 	else // DEFAULT
 	{
-		SDL_Surface*	nsurface;
+		SDL_Surface* nsurface;
 		_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, SDL_RED_FLAG, SDL_GREEN_FLAG, SDL_BLUE_FLAG, SDL_ALPHA_FLAG);
 		if (_surface)
 		{
@@ -64,18 +64,17 @@ const unsigned int& ImageSDL::GetHeight() const
 #include <map>
 #include <deque>
 
-ColorFormat ImageSDL::GetFormatBySDLFormat(SDL_PixelFormat * format)
+ColorFormat ImageSDL::GetFormatBySDLFormat(SDL_PixelFormat* format)
 {
 	Uint32 f = format->format;
 	std::map<uint32_t, unsigned char>			formatMap;
 	std::string									formatStr("    "); // 4 spaces
 
-
 	formatMap.emplace(format->Rmask, 'R');
 	formatMap.emplace(format->Gmask, 'G');
 	formatMap.emplace(format->Bmask, 'B');
-	formatMap.emplace(format->Amask, 'A');	
-	
+	formatMap.emplace(format->Amask, 'A');
+
 	std::map<uint32_t, unsigned char>::iterator	it = formatMap.begin();
 	std::map<uint32_t, unsigned char>::iterator	itEnd = formatMap.end();
 	uint8_t placed = 4;
@@ -84,18 +83,21 @@ ColorFormat ImageSDL::GetFormatBySDLFormat(SDL_PixelFormat * format)
 	for (; it != itEnd; it++) {
 		if (it->first == 4278190080) { // 1000
 			formatStr[0] = it->second;
-		} else if (it->first == 16711680) { // 0100
+		}
+		else if (it->first == 16711680) { // 0100
 			formatStr[1] = it->second;
-		} else if (it->first == 65280) { // 0010
+		}
+		else if (it->first == 65280) { // 0010
 			formatStr[2] = it->second;
-		} else if (it->first == 255) { // 0001
+		}
+		else if (it->first == 255) { // 0001
 			formatStr[3] = it->second;
-		} else {
+		}
+		else {
 			placed -= 1;
 			unplaced.push_back(it->second);
 		}
 	}
-
 	while (format->BytesPerPixel > placed && unplaced.size()) {
 		for (size_t i = 0; i < formatStr.size(); i += 1) {
 			if (formatStr.at(i) == ' ') {
@@ -130,13 +132,13 @@ ColorFormat ImageSDL::GetFormatBySDLFormat(SDL_PixelFormat * format)
 	return (ColorFormatFromString(formatStr));
 }
 
-void ImageSDL::InitFormatBySDLFormat(SDL_PixelFormat * format)
+void ImageSDL::InitFormatBySDLFormat(SDL_PixelFormat* format)
 {
 	_format = GetFormatBySDLFormat(format);
 	std::cout << "InitFormatBySDLFormat (" << ColorFormatToString(_format) << ")" << std::endl;
 }
 
-void ImageSDL::InitFromSurface(SDL_Surface * surface)
+void ImageSDL::InitFromSurface(SDL_Surface* surface)
 {
 	InitFormatBySDLFormat(surface->format);
 	_surface = surface;
@@ -145,12 +147,39 @@ void ImageSDL::InitFromSurface(SDL_Surface * surface)
 	_data = (unsigned char*)(_surface->pixels);
 	_bpp = surface->format->BytesPerPixel;
 	_sizeLine = _width * _bpp;
-	_size = ((_sizeLine) * _height);
+	_size = ((_sizeLine)* _height);
 }
 
-bool ImageSDL::Export(const std::string & path) const
+bool ImageSDL::Export(const std::string& path) const
 {
 	std::string fpath = path + ".bmp";
 	SDL_SaveBMP(_surface, fpath.c_str());
+	return (true);
+}
+
+bool ImageSDL::Import(const std::string& path)
+{
+	std::cout << "ImageSDL::Import(" << path << ")" << std::endl;
+	SDL_Surface* image = SDL_LoadBMP(path.c_str());
+	if (!image)
+	{
+		std::cerr << "ERROR: Cannot Import ImageSDL (" << path << ") : (" << SDL_GetError() << ")" << std::endl;
+		return (false);
+	}
+
+	_surface = image;
+
+	SDL_Surface* nsurface;
+	SDL_DisplayMode modeScreen;
+
+	SDL_GetCurrentDisplayMode(0, &modeScreen);
+	if ((nsurface = SDL_ConvertSurfaceFormat(_surface, modeScreen.format, SDL_RLEACCEL)))
+	{
+		SDL_FreeSurface(_surface);
+		_surface = nsurface;
+	}
+	_data = (unsigned char*)(_surface->pixels);
+	InitFromSurface(_surface);
+	std::cout << "ImageSDL::Import(" << path << ") OK" << std::endl;
 	return (true);
 }

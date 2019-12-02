@@ -37,12 +37,15 @@ public:
 	void					InitFormatBySDLFormat(SDL_PixelFormat* format);
 	void					InitFromSurface(SDL_Surface *surface);
 	SDL_Surface*			GetSurface() const { return (_surface); };
+
+	// Hérité via AImage
+	virtual bool			Export(const std::string& path) const override;
+	virtual bool			Import(const std::string& path) override;
 	
 protected:
 	SDL_Surface*			_surface;
 
-	// Hérité via AImage
-	virtual bool Export(const std::string & path) const override;
+	
 };
 
 #endif /* !_IMAGESDL_H_ */

@@ -8,8 +8,8 @@ Physic2DWorldB2D::Physic2DWorldB2D(Vec2 gravity) : Physic2DWorld(gravity)
 {
 	_bodyCountMax = MAX_BODIES;
 	_b2World = new b2World(b2Vec2(gravity.x, gravity.y));
-	_velocityIterations = 10;  //how strongly to correct velocity
-	_positionIterations = 4;
+	_velocityIterations = 15;  //how strongly to correct velocity
+	_positionIterations = 5;
 	std::cout << "Box2DWorld is INIT" << std::endl;
 	// Init IDS For Bodies
 	for (size_t i = 0; i < _bodyCountMax; i += 1)

@@ -141,7 +141,7 @@ private:
 
 	inline void	InternSetPixel(const int& x, const int& y, const unsigned int& color);
 	inline void	InternCheckBFSetPixel(const int& x, const int& y, const unsigned int& color);
-	
+	inline void InternSetLine(const int& x, const int& y, const int& xe, const Sprite::Line& line);
 
 	struct Font
 	{
@@ -179,7 +179,6 @@ private:
 		int		i;
 		int		sum;
 		int		xi, yi;
-		
 	};
 	
 	struct InfoRect
@@ -199,9 +198,16 @@ private:
 		int		radius;
 	};
 
+	struct InfoInternLine
+	{
+		int		x;
+		int		xmem;
+	};
+
 	InfoLine										_iL;
 	InfoRect										_iR;
 	InfoCircle										_iC;
+	InfoInternLine									_iIL;
 
 	// Colors Manipulation attributs
 	float											_offsetColor;

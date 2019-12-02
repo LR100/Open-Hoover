@@ -88,6 +88,15 @@ void RobovacWorld::Draw(IDrawer2D * drawer)
 	DrawInfoRobovac(drawer);
 }
 
+void RobovacWorld::RemoveBody(Physic2DBody* body)
+{
+	if (_robovacs.count(body->GetID())) // Erase From Robovacs List
+	{
+		_robovacs.erase(body->GetID());
+	}
+	_p2dWorld->DestroyBody(body);
+}
+
 void RobovacWorld::DrawBody(Physic2DBody * body, IDrawer2D * drawer)
 {
 	//std::cout << "Draw Body" << std::endl;
@@ -260,7 +269,12 @@ void RobovacWorld::AddWall(const AABB2& wall)
 	propFixture.friction = 10000.0f;
 
 	Physic2DBody* body = _p2dWorld->CreateBody(propBody);
-	body->CreateFixture(propFixture);
+	if (body) {
+		body->CreateFixture(propFixture);
+	}
+	else {
+		std::cerr << "Too Much WALLs..." << std::endl;
+	}
 }
 
 const Robovac* RobovacWorld::AddRobovac(const Vec2 & pos)
@@ -273,7 +287,6 @@ const Robovac* RobovacWorld::AddRobovac(const Vec2 & pos)
 	propBody.position = pos;
 	propBody.linearDamping = 0.5f;
 
-
 	//propFixture.mass = 10.0f;
 	b2BodyDef def;
 	
@@ -282,13 +295,12 @@ const Robovac* RobovacWorld::AddRobovac(const Vec2 & pos)
 	propFixture.restitution = 1.000f; // Robovac In real world  almost restitute nothing 
 	propFixture.shape = _roombaBasics->shape;
 
-
 	Physic2DBody* roomba = _p2dWorld->CreateBody(propBody);
-	propFixture.userdata = roomba;
-	roomba->CreateFixture(propFixture);
 
 	if (roomba)
 	{
+		propFixture.userdata = roomba;
+		roomba->CreateFixture(propFixture);
 		_idLastRobovac = roomba->GetID();
 		
 		Robovac* robovac = new Robovac();
@@ -299,7 +311,32 @@ const Robovac* RobovacWorld::AddRobovac(const Vec2 & pos)
 		robovac->Start();
 		return (robovac);
 	}
+	else {
+		std::cerr << "Too Much ROBOVACs..." << std::endl;
+	}
 	return (NULL);
+}
+
+void RobovacWorld::AddRobovacNoIA(const Vec2& pos)
+{
+	Physic2DBodyProperties		propBody;
+	Physic2DFixtureProperties	propFixture;
+
+	propBody.type = Physic2DBodyProperties::TYPE::DYNAMIC;
+	propBody.position = pos;
+	propBody.linearDamping = 0.5f;
+	propBody.allowSleep = true;
+
+	propFixture.density = 100.0f; // Heavy Shit
+	propFixture.friction = 10.0f;
+	propFixture.restitution = .900f; // Bouncy Coefficient
+	propFixture.shape = _roombaBasics->shape;
+
+	Physic2DBody* roomba = _p2dWorld->CreateBody(propBody);
+	if (roomba) {
+		propFixture.userdata = roomba;
+		roomba->CreateFixture(propFixture);
+	}
 }
 
 #include <iostream> // TMP
@@ -320,19 +357,12 @@ void RobovacWorld::SelectObjectsAtPosition(const Vec2 & pos)
 
 void RobovacWorld::RemoveObjectsAtPosition(const Vec2 & pos)
 {
-	//std::vector<Physic2DBody*>	bodies = _p2dWorld->GetBodiesAtPosition(pos);
-
 	std::cout << "Remove Objects At Position (" << pos.ToString() << ") :" << std::endl;
+	RemoveQueryCb removequerycb(this);
+	//std::cout << "Draw Screen AABB: (" << _screen.ToString() << ")" << std::endl;
+	AABB2 aabb(pos, Vec2(1.0f, 1.0f));
 
-	//for (size_t i = 0; i < bodies.size(); i += 1)
-	//{
-	//	std::cout << "- (" << bodies.at(i)->GetID() << ")" << std::endl;
-	//	if (_robovacs.count(bodies.at(i)->GetID())) // Erase From Robovacs List
-	//	{
-	//		_robovacs.erase(bodies.at(i)->GetID());
-	//	}
-	//	_p2dWorld->DestroyBody(bodies.at(i));
-	//}
+	_p2dWorld->GetBodiesInAABB(&removequerycb, aabb);
 }
 
 void RobovacWorld::Update(const float & dtS)
@@ -392,6 +422,7 @@ void RobovacWorld::MoveLastRobovac(Vec2 dir)
 	}
 }
 
+
 void RobovacWorld::Crazy()
 {
 	size_t NB_OBJ = 100;
@@ -401,30 +432,7 @@ void RobovacWorld::Crazy()
 
 		pos.x = (float)(rand() % 1000) + 100;
 		pos.y = (float)(rand() % 800) + 100;
-
-		Physic2DBodyProperties		propBody;
-		Physic2DFixtureProperties	propFixture;
-
-		propBody.type = Physic2DBodyProperties::TYPE::DYNAMIC;
-		propBody.position = pos;
-		propBody.linearDamping = 0.5f;
-
-
-		//propFixture.mass = 10.0f;
-		b2BodyDef def;
-		 
-		propFixture.density = 100.0f; // Heavy Shit
-		propFixture.friction = 1.0f;
-		propFixture.restitution = 1.000f; // Robovac In real world  almost restitute nothing 
-		propFixture.shape = _roombaBasics->shape;
-
-
-		Physic2DBody* roomba = _p2dWorld->CreateBody(propBody);
-		if (roomba) {
-			propFixture.userdata = roomba;
-			roomba->CreateFixture(propFixture);
-		}
-		
+		AddRobovacNoIA(pos);
 	}
 }
 
@@ -454,8 +462,12 @@ RobovacWorld::RobovacBasics::RobovacBasics(Physic2DWorld* world)
 	drawer->DrawCircle(pos.x, pos.y, diameter - 2, Color(25, 25, 25));
 	drawer->DrawCircle(pos.x, pos.y, diameter - 1, Color(25, 25, 25));
 
+	ImageSDL* imageImported = new ImageSDL();
+
+	imageImported->Import("OpenHooverLogo.bmp");
+
 	std::cout << "Create Sprite" << std::endl;
-	sprite = new Sprite(image, Color(0, 0, 0).GetDef());
+	sprite = new Sprite(imageImported, Color(255, 255, 255).GetDef());
 	
 	shape = world->CreateShapeCircle();
 	std::cout << "Robovac Basic Shape Type(" << (int)shape->GetType() << ")" << std::endl;
@@ -484,4 +496,15 @@ bool RobovacWorld::DrawQueryCb::ReportBody(Physic2DBody* body)
 	world->DrawBody(body, drawer);
 	objectsCount += 1;
 	return (true); // Continue to draw all bodies
+}
+
+RobovacWorld::RemoveQueryCb::RemoveQueryCb(RobovacWorld* _world)
+{
+	world = _world;
+}
+
+bool RobovacWorld::RemoveQueryCb::ReportBody(Physic2DBody* body)
+{
+	world->RemoveBody(body);
+	return (true); // Continue to remove all bodies
 }

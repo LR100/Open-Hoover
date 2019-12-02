@@ -26,8 +26,6 @@ void RobovacWorldEditor::SetEvents(IEventHandler * eventHandler)
 
 void RobovacWorldEditor::Draw(IDrawer2D * drawer)
 {
-
-
 	if (_mouseLeftPressedRemain)
 	{
 		Color			colorWall(255, 255, 255);
@@ -39,7 +37,6 @@ void RobovacWorldEditor::Draw(IDrawer2D * drawer)
 
 		origin.x = (int)std::min(_pressed.x, _released.x);
 		origin.y = (int)std::min(_pressed.y, _released.y);
-
 
 
 		drawer->DrawBorder(origin.x, origin.y, width, height, colorWall, colorWall);
@@ -102,7 +99,10 @@ void RobovacWorldEditor::MouseLeftReleased(const Mouse* mouse)
 
 		if (size.x < minSize || size.y < minSize)
 		{
-			std::cerr << "Wall is too Small (Minimum size (" << minSize << "))" << std::endl;
+			//std::cerr << "Wall is too Small (Minimum size (" << minSize << "))" << std::endl;
+			// Create Robovac
+			_roombaWorld->AddRobovacNoIA(_released);
+
 		}
 		else
 		{

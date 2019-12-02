@@ -35,6 +35,16 @@ void DImage::Clear()
 		memset(_data, 0, _size);
 }
 
+void DImage::SetLine(const unsigned int& x, const unsigned int& y, unsigned char* line, const unsigned int& lineSize)
+{
+	unsigned char* p = _data;
+	unsigned int	pos = (y * _sizeLine) + (x * _bpp);
+	if (pos >= _size)
+		return;
+	p += pos;
+	memcpy(p, line, lineSize);
+}
+
 // COLOR Received here is ALWAYS in RGBA Mode (Always !)
 void DImage::SetPixel(const unsigned int& x, const unsigned int& y, const unsigned int& color)
 {
@@ -76,10 +86,19 @@ void DImage::GetPixel(const unsigned int& x, const unsigned int& y, unsigned cha
 	_getBPix[_format](p, r, g, b, a);
 }
 
-
-const ColorFormat& DImage::GetFormat()
+const ColorFormat& DImage::GetFormat() const
 {
 	return (_format);
+}
+
+const unsigned int& DImage::GetSizeLine() const
+{
+	return (_sizeLine);
+}
+
+const unsigned int& DImage::GetBytesPerPixel() const
+{
+	return (_bpp);
 }
 
 void DImage::SetAPixelRGBA(unsigned char* p, const unsigned int& color)
@@ -114,16 +133,17 @@ void DImage::SetBPixelRGB(unsigned char* p, const unsigned char& r, const unsign
 void DImage::SetAPixelARGB(unsigned char* p, const unsigned int& color)
 {
 	//std::cout << "SetAPixelARGB(" << std::endl;
-	*p = color;
+	memcpy(p, &color, sizeof(unsigned int));
+	//*p = color;
 	//p[3] = 255;
 }
 
 void DImage::SetBPixelARGB(unsigned char* p, const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a)
 {
 	//std::cout << "SetAPixelARGB(rgba" << std::endl;
-	p[0] = b;
-	p[1] = g;
-	p[2] = r;
+	p[1] = r;
+	p[2] = g;
+	p[3] = b;
 }
 
 void DImage::GetAPixel(unsigned char* p, unsigned char& r, unsigned char& g, unsigned char& b, const unsigned int& pr, const unsigned int& pg, const unsigned int& pb)

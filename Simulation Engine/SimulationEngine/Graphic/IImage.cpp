@@ -42,6 +42,17 @@ void AImage::Clear()
 		memset(_data, 0, _size);
 }
 
+void AImage::SetLine(const unsigned int& x, const unsigned int& y, unsigned char* line, const unsigned int& lineSize)
+{
+	unsigned char* p = _data;
+	unsigned int	pos = (y * _sizeLine) + (x * _bpp);
+	if (pos >= _size)
+		return;
+	p += pos;
+	memcpy(p, line, lineSize);
+}
+
+
 // COLOR Received here is ALWAYS in RGBA Mode (Always !)
 void AImage::SetPixel(const unsigned int & x, const unsigned int & y, const unsigned int & color)
 {
@@ -83,10 +94,19 @@ void AImage::GetPixel(const unsigned int & x, const unsigned int & y, unsigned c
 	_getBPix[_format](p, r, g, b, a);
 }
 
-
-const ColorFormat & AImage::GetFormat()
+const ColorFormat& AImage::GetFormat() const
 {
 	return (_format);
+}
+
+const unsigned int& AImage::GetSizeLine() const
+{
+	return (_sizeLine);
+}
+
+const unsigned int& AImage::GetBytesPerPixel() const
+{
+	return (_bpp);
 }
 
 void AImage::SetAPixelRGBA(unsigned char * p, const unsigned int & color)

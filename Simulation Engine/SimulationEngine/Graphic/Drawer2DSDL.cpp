@@ -39,6 +39,16 @@ Drawer2DSDL::Drawer2DSDL(const ColorFormat & format)
 	x = std::bitset<32>(a);
 	std::cout << "rouge" << x << ' ' << a << ")\n";
 
+	Color bleu(0, 0, 255);
+	a = bleu.value();
+	x = std::bitset<32>(a);
+	std::cout << "bleu" << x << ' ' << a << ")\n";
+
+
+	Color vert(0, 255, 0);
+	a = vert.value();
+	x = std::bitset<32>(a);
+	std::cout << "vert" << x << ' ' << a << ")\n";
 
 	sptr = this;
 }
@@ -1021,15 +1031,25 @@ void Drawer2DSDL::DrawSprite(const int & x, const int & y)
 	if (!_spriteActive || !_currImage)
 		return;
 
-	int mx, my;
-
+	int mx, my, mxe;
+	/*
 	for (size_t i = 0; i < _spriteActive->GetPixels().size(); i += 1)
 	{
 		const Sprite::Pixel& pixel = _spriteActive->GetPixels().at(i);
 		mx = x + pixel.x;
 		my = y + pixel.y;
 		InternCheckBFSetPixel(mx, my, pixel.color.value());
+	}*/
 
+	const std::vector<Sprite::Line>& lines = _spriteActive->GetLines();
+
+	for (size_t i = 0; i < lines.size(); i += 1)
+	{
+		const Sprite::Line& line = lines.at(i);
+		mx = x + (int)line.x;
+		my = y + (int)line.y;
+		mxe = x + (int)line.xE;
+		InternSetLine(mx, my, mxe, line);
 	}
 }
 
@@ -1077,6 +1097,22 @@ inline void Drawer2DSDL::InternCheckBFSetPixel(const int & x, const int & y, con
 	if (x >= (int)_currImage->GetWidth() || y >= (int)_currImage->GetHeight())
 		return;
 	_currImage->SetPixel(x, y, color);
+}
+
+inline void Drawer2DSDL::InternSetLine(const int& x, const int& y, const int& xe, const Sprite::Line& line)
+{
+	if (y < 0)
+		return;
+	if (x >= (int)_currImage->GetWidth() || y >= (int)_currImage->GetHeight())
+		return;
+	if (x < 0 && xe > 0) {
+		_iIL.xmem = ((int)line.lineSize - xe) * _currImage->GetBytesPerPixel();
+		_currImage->SetLine(0, y, &line.line[_iIL.xmem], line.lineBytesSize - _iIL.xmem);
+	} else if (xe >= (int)_currImage->GetWidth()) {
+
+	} else {
+		_currImage->SetLine(x, y, line.line, line.lineBytesSize);
+	}
 }
 
 void Drawer2DSDL::Init()

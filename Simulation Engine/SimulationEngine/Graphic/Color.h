@@ -54,7 +54,6 @@ public:
 
 private:
 
-
 	// Compute Value by Format
 	void					ComputeValue();
 	static unsigned int		ComputeValueRGB(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a);
@@ -88,11 +87,13 @@ public:
 	Color						Create();
 	Color						Create(const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a);
 	const ColorFormat&			GetFormat() const;
+	const unsigned int&			GetFormatBytesPerPixel() const;
 
 private:
 	ColorFactory();
 
 	ColorFormat			_format;
+	unsigned int		_formatBytesPerPixel;
 };
 
 //class ColorRGBF

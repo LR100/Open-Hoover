@@ -216,11 +216,9 @@ void RobovacSimulation::Stop()
 
 void RobovacSimulation::Draw()
 {
-
 	// Update Physics
 	UpdatePhysic();
 
-	
 	// Clear Screen
 	_drawer->ClearImage();
 
@@ -237,12 +235,7 @@ void RobovacSimulation::Draw()
 		DrawCalibrate();
 	}
 
-
 	// END TMP DEBUG
-
-
-	
-
 
 	Color				colorText;
 	std::stringstream	ss;
@@ -251,7 +244,7 @@ void RobovacSimulation::Draw()
 	{
 		ss << "Edit Mode (Press E To Play)";
 		colorText = Color(25, 255, 50);
-		////_roombaWorldEditor->Draw(_drawer);
+		_roombaWorldEditor->Draw(_drawer);
 	}
 	else
 	{

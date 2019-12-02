@@ -13,12 +13,15 @@ public:
 	virtual void* GetData() const { return (_data); };
 
 	virtual void					Clear() override;
+	virtual void					SetLine(const unsigned int& x, const unsigned int& y, unsigned char* line, const unsigned int& lineSize);
 	virtual void					SetPixel(const unsigned int& x, const unsigned int& y, const unsigned int& color) override;
 	virtual void					SetPixel(const unsigned int& x, const unsigned int& y, const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a) override;
 
 	virtual void					GetPixel(const unsigned int& x, const unsigned int& y, unsigned char& r, unsigned char& g, unsigned char& b) const override;
 	virtual void					GetPixel(const unsigned int& x, const unsigned int& y, unsigned char& r, unsigned char& g, unsigned char& b, unsigned char& a) const override;
-	virtual const ColorFormat& GetFormat() override;
+	virtual const ColorFormat&		GetFormat() const override;
+	virtual const unsigned int&		GetSizeLine() const override;
+	virtual const unsigned int&		GetBytesPerPixel() const override;
 
 protected:
 

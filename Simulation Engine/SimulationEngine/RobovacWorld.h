@@ -33,6 +33,7 @@ public:
 
 	void			AddWall(const AABB2& wall);
 	const Robovac*	AddRobovac(const Vec2& pos);
+	void			AddRobovacNoIA(const Vec2& pos);
 
 	void	SelectObjectsAtPosition(const Vec2& pos);
 	void	RemoveObjectsAtPosition(const Vec2& pos);
@@ -43,6 +44,9 @@ public:
 	void	Clear();
 
 private:
+	///////////////////
+	//// Bodies		///
+	void	RemoveBody(Physic2DBody* body);
 
 	//// Draw Part ////
 	// Body
@@ -70,6 +74,19 @@ private:
 		size_t			objectsCount;
 	};
 
+
+	class RemoveQueryCb : public Physic2DQueryBodyCb
+	{
+	public:
+		RemoveQueryCb(RobovacWorld* _world);
+
+	private:
+		// Inherited via Physic2DQueryBody
+		virtual bool	ReportBody(Physic2DBody* body) override;
+
+		RobovacWorld*	world;
+	};
+
 	//// END - Draw Part ////
 
 	//// Events Part ////
@@ -81,7 +98,6 @@ private:
 	//// END - Events Part ////
 
 	// For FUN
-
 	void	Crazy();
 
 	struct RobovacBasics

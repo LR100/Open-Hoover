@@ -28,13 +28,17 @@ public:
 	virtual void*				GetData() const = 0;
 
 	virtual void				Clear() = 0;
+	virtual void				SetLine(const unsigned int& x, const unsigned int& y, unsigned char* line, const unsigned int& lineSize) = 0;
 	virtual void				SetPixel(const unsigned int& x, const unsigned int& y, const unsigned int& color) = 0;
 	virtual void				SetPixel(const unsigned int& x, const unsigned int& y, const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a) = 0;
 	virtual void				GetPixel(const unsigned int& x, const unsigned int& y, unsigned char& r, unsigned char& g, unsigned char& b) const = 0;
 	virtual void				GetPixel(const unsigned int& x, const unsigned int& y, unsigned char& r, unsigned char& g, unsigned char& b, unsigned char& a) const = 0;
-	virtual const ColorFormat&	GetFormat() = 0;
+	virtual const ColorFormat&	GetFormat() const = 0;
+	virtual const unsigned int&	GetSizeLine() const = 0;
+	virtual const unsigned int& GetBytesPerPixel() const = 0;
 
 	virtual bool				Export(const std::string& path) const = 0;
+	virtual bool				Import(const std::string& path) = 0;
 };
 
 
@@ -50,12 +54,16 @@ public:
 	virtual void *					GetData() const { return (_data); };
 
 	virtual void					Clear() override;
+	virtual void					SetLine(const unsigned int& x, const unsigned int& y, unsigned char* line, const unsigned int& lineSize) override;
 	virtual void					SetPixel(const unsigned int& x, const unsigned int& y, const unsigned int& color) override;
 	virtual void					SetPixel(const unsigned int& x, const unsigned int& y, const unsigned char& r, const unsigned char& g, const unsigned char& b, const unsigned char& a) override;
 
 	virtual void					GetPixel(const unsigned int& x, const unsigned int& y, unsigned char& r, unsigned char& g, unsigned char& b) const override;
 	virtual void					GetPixel(const unsigned int& x, const unsigned int& y, unsigned char& r, unsigned char& g, unsigned char& b, unsigned char& a) const override;
-	virtual const ColorFormat&		GetFormat() override;
+	virtual const ColorFormat&		GetFormat() const override;
+	virtual const unsigned int&		GetSizeLine() const override;
+	virtual const unsigned int&		GetBytesPerPixel() const override;
+
 
 protected:
 
