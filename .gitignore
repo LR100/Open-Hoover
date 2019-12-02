@@ -348,3 +348,8 @@ healthchecksdb
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
 Simulation Engine/Report20191129-0015 OPTI COLOR (2).diagsession
+*.diagsession
+Simulation Engine/SimulationEngine/AzUrV.png
+Simulation Engine/SimulationEngine/OpenHooverLogo.png
+Simulation Engine/SimulationEngine/OpenHooverLogo - Copy.bmp
+Simulation Engine/SimulationEngine/OpenHooverLogo3.bmp
