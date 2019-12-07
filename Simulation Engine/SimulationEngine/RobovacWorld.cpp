@@ -27,14 +27,17 @@ RobovacWorld::RobovacWorld()
 	_p2dWorld = new Physic2DWorldB2D(Vec2(0.0f, 0.0f));
 	
 	Import("robovacWorld.xml");
-	_p2dWorld->SetGravity(Vec2(0.0f, 100.0f)); // In case XML World Set Other Gravity
+	_p2dWorld->SetGravity(Vec2(0.0f, 0.0f)); // In case XML World Set Other Gravity
 	
 	_idLastRobovac = 0;
+	
+
 
 	_screen = AABB2(Vec2(1000.0f, 1000.0f), Vec2(1000.0f, 1000.0f));
 	std::cout << "Screen AABB: (" << _screen.ToString() << ")" << std::endl;
 	//AddRobovac(Vec2(200, 200));
 	//AddRobovac(Vec2(400, 400));
+	_debugDraw = true;
 }
 
 void RobovacWorld::SetEvents(IEventHandler * eventHandler)
@@ -59,6 +62,12 @@ void RobovacWorld::InitDrawer(IDrawer2D * drawer)
 {
 	_roombaBasics = new RobovacBasics(_p2dWorld);
 	drawer->AddSprite("roomba", _roombaBasics->sprite);
+	_p2dd = new Physic2DDebugDrawer(drawer);
+	// Register Bodies Imported in the Debug Drawer
+	std::vector<Physic2DBody*> bodies = _p2dWorld->GetBodies();
+	for (size_t i = 0; i < bodies.size(); i += 1) {
+		_p2dd->RegisterBody(bodies.at(i));
+	}
 }
 
 void RobovacWorld::DrawRobovacs(IDrawer2D* drawer)
@@ -76,15 +85,30 @@ void RobovacWorld::DrawRobovacs(IDrawer2D* drawer)
 
 void RobovacWorld::Draw(IDrawer2D * drawer)
 {
-	DrawQueryCb drawquerycb(this, drawer);
+	
 	//std::cout << "Draw Screen AABB: (" << _screen.ToString() << ")" << std::endl;
-	_p2dWorld->GetBodiesInAABB(&drawquerycb, _screen);
-
-	_objectsSelectedToDraw = _objectsSelected;
-	_objectsCount = drawquerycb.GetObjectsCount();
-	//std::cout << "Bodies to Draw: (" << _objectsCount << ")" << std::endl;
 
 	DrawRobovacs(drawer); // Draw Robovacs First
+
+	if (_debugDraw)
+	{
+		_p2dd->ResetObjectsCount();
+		_p2dWorld->GetBodiesInAABB(_p2dd, _screen);
+		_objectsCount = _p2dd->GetObjectsCount();
+	}
+	else {
+		DrawQueryCb drawquerycb(this, drawer);
+		_p2dWorld->GetBodiesInAABB(&drawquerycb, _screen);
+		_objectsSelectedToDraw = _objectsSelected;
+		_objectsCount = drawquerycb.GetObjectsCount();
+	}
+
+	
+
+	
+	//std::cout << "Bodies to Draw: (" << _objectsCount << ")" << std::endl;
+
+	
 	DrawInfoRobovac(drawer);
 }
 
@@ -259,7 +283,7 @@ void RobovacWorld::AddWall(const AABB2& wall)
 	propBody.type = Physic2DBodyProperties::TYPE::STATIC;
 	propBody.position = wall.center;
 
-	propFixture.restitution = 1.001f; // Wall of an appartment In real world almost restitute nothing 
+	propFixture.restitution = 0.7f; // Wall of an appartment In real world almost restitute nothing 
 	//// (Except if Really Bouncing material encounter it) -> So set on 0.7 to avoid bug
 	
 	Physic2DShapeBox* box = _p2dWorld->CreateShapeBox();
@@ -271,6 +295,7 @@ void RobovacWorld::AddWall(const AABB2& wall)
 	Physic2DBody* body = _p2dWorld->CreateBody(propBody);
 	if (body) {
 		body->CreateFixture(propFixture);
+		_p2dd->RegisterBody(body); // Register wall in debug drawer
 	}
 	else {
 		std::cerr << "Too Much WALLs..." << std::endl;
@@ -302,7 +327,9 @@ const Robovac* RobovacWorld::AddRobovac(const Vec2 & pos)
 		propFixture.userdata = roomba;
 		roomba->CreateFixture(propFixture);
 		_idLastRobovac = roomba->GetID();
-		
+	
+		_p2dd->RegisterBody(roomba); // Register roomba in debug drawer
+
 		Robovac* robovac = new Robovac();
 		_robovacs.emplace(roomba->GetID(), robovac);
 
@@ -317,7 +344,7 @@ const Robovac* RobovacWorld::AddRobovac(const Vec2 & pos)
 	return (NULL);
 }
 
-void RobovacWorld::AddRobovacNoIA(const Vec2& pos)
+void RobovacWorld::AddRobovacNoIA(const Vec2& pos, const float& radius)
 {
 	Physic2DBodyProperties		propBody;
 	Physic2DFixtureProperties	propFixture;
@@ -326,16 +353,26 @@ void RobovacWorld::AddRobovacNoIA(const Vec2& pos)
 	propBody.position = pos;
 	propBody.linearDamping = 0.5f;
 	propBody.allowSleep = true;
-
+	propBody.fixedRotation = false;
+	
 	propFixture.density = 100.0f; // Heavy Shit
 	propFixture.friction = 10.0f;
 	propFixture.restitution = .900f; // Bouncy Coefficient
-	propFixture.shape = _roombaBasics->shape;
+	if (_roombaBasics->shape->GetRadius() == radius) {
+		propFixture.shape = _roombaBasics->shape;
+	}
+	else {
+		Physic2DShapeCircle* circle = _p2dWorld->CreateShapeCircle();
+		circle->SetRadius(radius);
+		propFixture.shape = circle;
+	}
+	
 
 	Physic2DBody* roomba = _p2dWorld->CreateBody(propBody);
 	if (roomba) {
 		propFixture.userdata = roomba;
 		roomba->CreateFixture(propFixture);
+		_p2dd->RegisterBody(roomba); // Register roomba in debug drawer
 	}
 }
 
@@ -426,13 +463,27 @@ void RobovacWorld::MoveLastRobovac(Vec2 dir)
 void RobovacWorld::Crazy()
 {
 	size_t NB_OBJ = 100;
-	for (size_t i = 0; i < NB_OBJ; i += 1)
-	{
-		Vec2 pos;
+	float	radius;
+	Vec2	pos;
+	AABB2	area;
+	
 
-		pos.x = (float)(rand() % 1000) + 100;
-		pos.y = (float)(rand() % 800) + 100;
-		AddRobovacNoIA(pos);
+	for (size_t i = 0; i < NB_OBJ; i += 1)
+	{	
+		radius = (float)(rand() % 20) + 2;
+		pos.x = (float)(rand() % (unsigned int)_screen.max.x) + 20;
+		pos.y = (float)(rand() % (unsigned int)_screen.max.y) + 20;
+		area.center = pos;
+		area.halfSize.x = radius;
+		area.halfSize.y = radius;
+		area.ComputeMinMax();
+
+		LocationAvailableQueryCb locquery;
+
+		_p2dWorld->GetBodiesInAABB(&locquery, area);
+		if (locquery.LocationIsAvailable()) {
+			AddRobovacNoIA(pos, radius);
+		}
 	}
 }
 
@@ -507,4 +558,20 @@ bool RobovacWorld::RemoveQueryCb::ReportBody(Physic2DBody* body)
 {
 	world->RemoveBody(body);
 	return (true); // Continue to remove all bodies
+}
+
+RobovacWorld::LocationAvailableQueryCb::LocationAvailableQueryCb()
+{
+	_locationIsAvailable = true;
+}
+
+bool RobovacWorld::LocationAvailableQueryCb::LocationIsAvailable()
+{
+	return (_locationIsAvailable);
+}
+
+bool RobovacWorld::LocationAvailableQueryCb::ReportBody(Physic2DBody* body)
+{
+	_locationIsAvailable = false;
+	return (false);
 }

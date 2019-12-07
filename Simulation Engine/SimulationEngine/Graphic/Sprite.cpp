@@ -39,7 +39,7 @@ Sprite::Sprite(IImage* image, ColorDef colorTransparency)
 	_w = (int)image->GetWidth();
 	_h = (int)image->GetHeight();
 
-	std::cout << "Sprite Image Format (" << ColorFormatToString(image->GetFormat()) << ")" << std::endl;
+	// std::cout << "Sprite Image Format (" << ColorFormatToString(image->GetFormat()) << ")" << std::endl;
 
 	for (y = 0; y < image->GetHeight(); y += 1)
 	{
@@ -117,7 +117,7 @@ void Sprite::PushLine(const unsigned int& x, const unsigned int& y, unsigned int
 				pos += 1;
 			}
 		}
-		std::cout << "Start Line At (" << _lines.back().x << ") (" << _lines.back().y << ") of Size (" << linePixelCount << ")" << std::endl;
+		// std::cout << "Start Line At (" << _lines.back().x << ") (" << _lines.back().y << ") of Size (" << linePixelCount << ")" << std::endl;
 		// Reset Line
 		lineBuffer.clear();
 		linePixelCount = 0;

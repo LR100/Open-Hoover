@@ -21,13 +21,14 @@ public:
 		_id = 0;
 		_properties = properties;
 		if (properties.type == properties.DYNAMIC) {
-			std::cout << "Dynamic Object" << std::endl;
+			// std::cout << "Dynamic Object" << std::endl;
 			_b2BodyDef.type = b2_dynamicBody; //this will be a dynamic body
-			properties.allowSleep = false;
+			// properties.allowSleep = false;
 		}
 		else {
 			_b2BodyDef.type = b2_staticBody; //this will be a static body
 		}
+		_b2BodyDef.fixedRotation = properties.fixedRotation;
 		_b2BodyDef.linearDamping = properties.linearDamping;
 		_b2BodyDef.allowSleep = properties.allowSleep;
 		_b2BodyDef.position.Set(properties.position.x, properties.position.y); //set the starting position

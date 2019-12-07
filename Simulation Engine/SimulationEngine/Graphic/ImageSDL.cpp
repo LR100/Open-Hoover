@@ -108,7 +108,7 @@ ColorFormat ImageSDL::GetFormatBySDLFormat(SDL_PixelFormat* format)
 		}
 	}
 
-	uint32_t a;
+	/*uint32_t a; // Debug Format Of Image
 	std::bitset<32> x;
 
 	a = format->Rmask;
@@ -127,7 +127,7 @@ ColorFormat ImageSDL::GetFormatBySDLFormat(SDL_PixelFormat* format)
 	x = std::bitset<32>(a);
 	std::cout << "amask" << x << ' ' << a << ")\n";
 
-	std::cout << "Format STR (" << formatStr << ")" << std::endl;
+	std::cout << "Format STR (" << formatStr << ")" << std::endl;*/
 
 	return (ColorFormatFromString(formatStr));
 }
@@ -135,7 +135,7 @@ ColorFormat ImageSDL::GetFormatBySDLFormat(SDL_PixelFormat* format)
 void ImageSDL::InitFormatBySDLFormat(SDL_PixelFormat* format)
 {
 	_format = GetFormatBySDLFormat(format);
-	std::cout << "InitFormatBySDLFormat (" << ColorFormatToString(_format) << ")" << std::endl;
+	//std::cout << "InitFormatBySDLFormat (" << ColorFormatToString(_format) << ")" << std::endl;
 }
 
 void ImageSDL::InitFromSurface(SDL_Surface* surface)

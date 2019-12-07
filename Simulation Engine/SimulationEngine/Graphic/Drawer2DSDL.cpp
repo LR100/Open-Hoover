@@ -10,6 +10,7 @@ Drawer2DSDL*	Drawer2DSDL::sptr = NULL;    //initialize Singleton pointer to NULL
 
 Drawer2DSDL::Drawer2DSDL(const ColorFormat & format)
 {
+	_defaultImage = NULL;
 	std::cout << "DRAWER 2D ADDR (" << this << ")" << std::endl;
 	if (sptr != this)
 	{
@@ -125,6 +126,11 @@ bool Drawer2DSDL::SetCurrentImage(IImage * image)
 	return (false);
 }
 
+IImage* Drawer2DSDL::GetCurrentImage() const
+{
+	return (_currImage);
+}
+
 void Drawer2DSDL::SetDefaultImage(const std::string & name)
 {
 	std::cerr << "Drawer2DSDL::SetDefaultImage() " << std::endl;
@@ -163,7 +169,6 @@ IImage*	Drawer2DSDL::CreateImage(const std::string & name, const unsigned int & 
 
 	img->Init(w, h, format);
 	_images[name] = img;
-	UseImage(name);
 	return (img);
 }
 
@@ -1053,6 +1058,25 @@ void Drawer2DSDL::DrawSprite(const int & x, const int & y)
 	}
 }
 
+void Drawer2DSDL::DrawSprite(const int& x, const int& y, Sprite* sprite)
+{
+	if (!sprite || !_currImage)
+		return;
+
+	int mx, my, mxe;
+
+	const std::vector<Sprite::Line>& lines = sprite->GetLines();
+
+	for (size_t i = 0; i < lines.size(); i += 1)
+	{
+		const Sprite::Line& line = lines.at(i);
+		mx = x + (int)line.x;
+		my = y + (int)line.y;
+		mxe = x + (int)line.xE;
+		InternSetLine(mx, my, mxe, line);
+	}
+}
+
 void Drawer2DSDL::AddImage(const std::string & name, ImageSDL * img)
 {
 	_images[name] = img;
@@ -1109,7 +1133,8 @@ inline void Drawer2DSDL::InternSetLine(const int& x, const int& y, const int& xe
 		_iIL.xmem = ((int)line.lineSize - xe) * _currImage->GetBytesPerPixel();
 		_currImage->SetLine(0, y, &line.line[_iIL.xmem], line.lineBytesSize - _iIL.xmem);
 	} else if (xe >= (int)_currImage->GetWidth()) {
-
+		_iIL.xmem = (xe - (int)_currImage->GetWidth() + 1) * _currImage->GetBytesPerPixel();
+		_currImage->SetLine(x, y, line.line, line.lineBytesSize - _iIL.xmem);
 	} else {
 		_currImage->SetLine(x, y, line.line, line.lineBytesSize);
 	}

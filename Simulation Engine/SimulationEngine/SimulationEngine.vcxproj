@@ -23,6 +23,7 @@
     <ClInclude Include="Graphic\ColorDefines.h" />
     <ClInclude Include="Graphic\ColorDefinitions.h" />
     <ClInclude Include="Graphic\DImage.h" />
+    <ClInclude Include="Graphic\Physic2DDebugDrawer.h" />
     <ClInclude Include="RobovacBoolArray.h" />
     <ClInclude Include="Events\EventHandlerSDL.h" />
     <ClInclude Include="Events\IEvent.h" />
@@ -114,6 +115,7 @@
     <ClCompile Include="Graphic\IImage.cpp" />
     <ClCompile Include="Graphic\ImageRaw.cpp" />
     <ClCompile Include="Graphic\ImageSDL.cpp" />
+    <ClCompile Include="Graphic\Physic2DDebugDrawer.cpp" />
     <ClCompile Include="Graphic\Sprite.cpp" />
     <ClCompile Include="Graphic\Tools\FPSComputer.cpp" />
     <ClCompile Include="Graphic\Tools\RelativePostion.cpp" />

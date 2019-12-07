@@ -103,6 +103,12 @@
     <Filter Include="Fichiers sources\Physic\XML">
       <UniqueIdentifier>{79e840ef-89ca-482c-b087-6f6e9da68136}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers d%27en-tête\Graphic\Physic">
+      <UniqueIdentifier>{4ccc2f06-7c78-4a28-a44d-d7670859091a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Graphic\Physic">
+      <UniqueIdentifier>{5fd79be5-cbdf-46d4-af57-76679e9ead14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphic\IDrawer2D.h">
@@ -345,6 +351,9 @@
     <ClInclude Include="Graphic\ColorDefinitions.h">
       <Filter>Fichiers d%27en-tête\Graphic</Filter>
     </ClInclude>
+    <ClInclude Include="Graphic\Physic2DDebugDrawer.h">
+      <Filter>Fichiers d%27en-tête\Graphic\Physic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graphic\IImage.cpp">
@@ -526,5 +535,8 @@
       <Filter>Fichiers sources\Graphic</Filter>
     </ClCompile>
     <ClCompile Include="Graphic\ColorDefines.cpp" />
+    <ClCompile Include="Graphic\Physic2DDebugDrawer.cpp">
+      <Filter>Fichiers sources\Graphic\Physic</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

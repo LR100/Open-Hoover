@@ -34,12 +34,13 @@ public:
 
 	// Images
 	virtual bool					SetCurrentImage(IImage* image) = 0;
+	virtual IImage*					GetCurrentImage() const = 0;
 	virtual void					SetDefaultImage(const std::string& name) = 0;
 	virtual const std::string&		GetDefaultImageName() = 0;
 	virtual void					UseDefaultImage() = 0;
 
 	virtual void					SetDefaultFormatImage(const ColorFormat& format) = 0;
-	virtual const ColorFormat&	GetDefaultFormatImage() = 0;
+	virtual const ColorFormat&		GetDefaultFormatImage() = 0;
 
 	virtual IImage*					CreateImage(const std::string& name, const unsigned int& w, const unsigned int& h, const ColorFormat& format = ColorFormat::DEFAULT) = 0;
 	virtual void					UseImage(const std::string& name) = 0;
@@ -78,6 +79,7 @@ public:
 	virtual void					SetSpriteColorTransparency(const Color& color) = 0;
 	virtual void					SetSprite(const std::string& id) = 0; // (Set Current Sprite and use it for next Draw);
 	virtual void					DrawSprite(const int& x, const int& y) = 0;
+	virtual void					DrawSprite(const int& x, const int& y, Sprite* sprite) = 0;
 };
 
 #endif /* !_IDRAWER2D_H_ */

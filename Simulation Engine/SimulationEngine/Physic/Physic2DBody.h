@@ -25,6 +25,7 @@ struct Physic2DBodyProperties
 		position.y = 0;
 		angle = 0;
 		allowSleep = true;
+		fixedRotation = true;
 		linearDamping = 0;
 	}
 
@@ -42,6 +43,7 @@ struct Physic2DBodyProperties
 	float		angle;
 	bool		allowSleep;
 	float		linearDamping;
+	bool		fixedRotation;
 	//Physic2DShape*	shape;
 };
 // By default bodies have no shapes
@@ -132,9 +134,3 @@ protected:
 
 };
 
-
-class Physic2DQueryBodyCb
-{
-public:
-	virtual bool ReportBody(Physic2DBody* body) = 0;
-};

@@ -51,6 +51,7 @@ public:
 
 	// Images
 	virtual bool					SetCurrentImage(IImage* image) override;
+	virtual IImage*					GetCurrentImage() const override;
 	virtual void					SetDefaultImage(const std::string& name) override;
 	virtual const std::string&		GetDefaultImageName() override;
 	virtual void					UseDefaultImage() override;
@@ -95,6 +96,7 @@ public:
 	virtual void					SetSprite(const std::string& id) override; // (Set Current Sprite and use it for next Draw);
 	virtual void					SetSpriteColorTransparency(const Color& color) override;
 	virtual void					DrawSprite(const int& x, const int& y) override;
+	virtual void					DrawSprite(const int& x, const int& y, Sprite* sprite) override;
 	///
 	// OTHERS -
 	///

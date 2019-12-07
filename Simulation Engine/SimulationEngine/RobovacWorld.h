@@ -11,6 +11,7 @@
 #include "Graphic\IDrawer2D.h"
 #include "Events\IEventHandler.h"
 #include "Graphic\IWindow.h"
+#include "Graphic/Physic2DDebugDrawer.h" // Debug Draw !!
 
 #include "RobovacControl.h"
 
@@ -33,7 +34,7 @@ public:
 
 	void			AddWall(const AABB2& wall);
 	const Robovac*	AddRobovac(const Vec2& pos);
-	void			AddRobovacNoIA(const Vec2& pos);
+	void			AddRobovacNoIA(const Vec2& pos, const float& radius = 15);
 
 	void	SelectObjectsAtPosition(const Vec2& pos);
 	void	RemoveObjectsAtPosition(const Vec2& pos);
@@ -58,15 +59,12 @@ private:
 
 	void	UpdateRobovacs(const float& dtMs);
 
-	class DrawQueryCb : public Physic2DQueryBodyCb
-	{
+	class DrawQueryCb : public Physic2DQueryBodyCb {
 	public:
 		DrawQueryCb(RobovacWorld* _world, IDrawer2D* _drawer);
 		void			Reset();
 		const size_t&	GetObjectsCount() const;
-
 	private:
-		// Inherited via Physic2DQueryBody
 		virtual bool	ReportBody(Physic2DBody* body) override;
 
 		IDrawer2D*		drawer;
@@ -75,16 +73,21 @@ private:
 	};
 
 
-	class RemoveQueryCb : public Physic2DQueryBodyCb
-	{
+	class RemoveQueryCb : public Physic2DQueryBodyCb {
 	public:
 		RemoveQueryCb(RobovacWorld* _world);
-
 	private:
-		// Inherited via Physic2DQueryBody
 		virtual bool	ReportBody(Physic2DBody* body) override;
-
 		RobovacWorld*	world;
+	};
+
+	class LocationAvailableQueryCb : public Physic2DQueryBodyCb {
+	public:
+		LocationAvailableQueryCb();
+		bool			LocationIsAvailable();
+	private:
+		virtual bool	ReportBody(Physic2DBody* body) override;
+		bool			_locationIsAvailable;
 	};
 
 	//// END - Draw Part ////
@@ -111,7 +114,9 @@ private:
 
 	// For Physics Managment
 	//Physic2DWorld* _pxWorld;
-	Physic2DWorld*		_p2dWorld;
+	Physic2DWorld*			_p2dWorld;
+	Physic2DDebugDrawer*	_p2dd;
+	bool					_debugDraw;
 	AABB2				_screen;
 
 
@@ -119,12 +124,13 @@ private:
 	std::vector<size_t>						_objectsSelectedToDraw;
 	std::unordered_map<size_t, Robovac*>	_robovacs;
 
+	
 	size_t					_objectsCount;
 
 	size_t					_idLastRobovac;
 	Vec2					_released;
 
 	RobovacBasics*			_roombaBasics;
-
+	
 };
 

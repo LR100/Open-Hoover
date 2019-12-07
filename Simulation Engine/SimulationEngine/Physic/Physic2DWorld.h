@@ -6,13 +6,17 @@
 #include "Physic2DShape.h"
 
 
+class Physic2DQueryBodyCb {
+public:
+	virtual bool ReportBody(Physic2DBody* body) = 0;
+};
 
 class Physic2DWorld
 {
 public:
 	Physic2DWorld(Vec2 gravity = Vec2(0, 9.8f))
 	{
-		
+
 	}
 	virtual ~Physic2DWorld() {};
 
@@ -23,8 +27,8 @@ public:
 	//PX2BodyManager *		GetBodyManager() const;
 
 	/// SET
-	virtual Physic2DBody*				CreateBody(Physic2DBodyProperties& properties) = 0;
-	virtual Physic2DBody*				GetBody(const size_t& id) const = 0;
+	virtual Physic2DBody* CreateBody(Physic2DBodyProperties& properties) = 0;
+	virtual Physic2DBody* GetBody(const size_t& id) const = 0;
 	virtual std::vector< Physic2DBody*>	GetBodies() const = 0;
 	virtual void						GetBodiesInAABB(Physic2DQueryBodyCb* querybody, const AABB2& aabb) const = 0;
 	virtual void						GetBodiesAtPosition(Physic2DQueryBodyCb* querybody, const Vec2& pos) const = 0;
@@ -33,13 +37,13 @@ public:
 	virtual void						DestroyAllBodies() = 0;
 
 
-	virtual void						SetGravity(const Vec2 &gravity) = 0;
+	virtual void						SetGravity(const Vec2& gravity) = 0;
 	virtual Vec2						GetGravity() const = 0;
 
 
-	virtual Physic2DShapeCircle*		CreateShapeCircle() = 0;
-	virtual Physic2DShapeBox*			CreateShapeBox() = 0;
-	virtual Physic2DShapePolygon*		CreateShapePolygon() = 0;
+	virtual Physic2DShapeCircle* CreateShapeCircle() = 0;
+	virtual Physic2DShapeBox* CreateShapeBox() = 0;
+	virtual Physic2DShapePolygon* CreateShapePolygon() = 0;
 
 	struct RaytraceOutput
 	{
@@ -51,8 +55,8 @@ public:
 		}
 
 		Vec2			intersection;
-		Physic2DShape*	shape;
-		Physic2DBody*	body;
+		Physic2DShape* shape;
+		Physic2DBody* body;
 		bool			found;
 	};
 
@@ -65,6 +69,6 @@ protected:
 
 private:
 
-	
+
 
 };

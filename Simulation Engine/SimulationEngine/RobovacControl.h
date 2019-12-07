@@ -226,6 +226,9 @@ public:
 
 	void		Draw(IDrawer2D* drawer, bool drawMap = true)
 	{
+		if (drawMap) { // Map under everything
+			DrawMap(drawer);
+		}
 		//std::cout << "Draw Robovac" << std::endl;
 		if (_state == FINDPATH) {
 			DrawFindPath(drawer);
@@ -237,9 +240,7 @@ public:
 			DrawBlocked(drawer);
 		}
 		DrawDir(drawer);
-		if (drawMap) {
-			DrawMap(drawer);
-		}
+		
 	}
 
 	void		Update(const float& dt)
@@ -267,8 +268,10 @@ public:
 	void		DrawBox(const uint8_t boxX, const uint8_t boxY, IDrawer2D* drawer) {
 
 		Color	color;
+		Color	coolGrey(25, 35, 30);
+		Color	coolClean(5, 50, 150);
 
-		color = Color::WHITE();
+		color = coolGrey;
 
 		Vec2i	posScaled;
 		unsigned int w = _diameter;
@@ -283,14 +286,17 @@ public:
 
 		if (!_map.Get(boxX, boxY))
 		{
-			drawer->DrawRect(posScaled.x, posScaled.y, w, h, Color::GREY());
+			drawer->DrawRect(posScaled.x, posScaled.y, w, h, coolGrey);
 			//drawer->DrawRectFill(posScaled.x, posScaled.y, w, h, 0.2f, color);
 		}
 		// CLEAN Map
-		if (_mapClean.Get(boxX, boxY))
-			color = Color::GREEN();
-		else
-			color = Color::RED();
+		if (_mapClean.Get(boxX, boxY)) {
+			color = coolClean;
+		}
+		else {
+
+		}
+			
 
 		posScaled.x = (_centerMap.x - (xToMid * (int)_diameter)) + 1;
 		posScaled.y = (_centerMap.y - (yToMid * (int)_diameter)) + 1; // Middle Map
